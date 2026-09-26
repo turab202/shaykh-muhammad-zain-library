@@ -1,0 +1,217 @@
+{
+  "site": {
+    "name": "مكتبة الشيخ محمد زين",
+    "description": "محتوى إسلامي تعليمي — دروس وكتب وتسجيلات صوتية"
+  },
+
+  "brand": {
+    "name": "محمد زين",
+    "subtitle": "مكتبة الشيخ محمد زين",
+    "arabic": "مكتبة الشيخ محمد زين",
+    "archive": "مكتبة وأرشيف الدروس العلمية"
+  },
+
+  "hero": {
+    "tagline": "مكتبة الشيخ محمد زين",
+    "description": "حفظ العلم النافع وتيسيره للجميع. استمع إلى الدروس الصوتية، واطلع على الكتب العلمية والمواد التعليمية الموثقة.",
+    "telegramNotice": "القناة الرسمية للأرشيف @ShaykhMuhammadZain_Archive",
+    "exploreDuruus": "استكشف الدروس",
+    "browseSeries": "تصفح السلاسل",
+    "browseKutub": "تصفح الكتب",
+    "viewBooks": "أمهات الكتب",
+    "audioHoursCount": "ساعة صوتية مسجلة",
+    "featuredSeries": "السلاسل العلمية",
+    "recentLessons": "أحدث الدروس المرفوعة",
+    "categoriesSection": "أبواب العلوم الشرعية"
+  },
+
+  "nav": {
+    "home": "الرئيسية",
+    "lessons": "الدروس",
+    "series": "السلاسل العلمية",
+    "books": "الكتب",
+    "categories": "الأقسام",
+    "search": "البحث",
+    "about": "عن المكتبة",
+    "admin": "لوحة الإدارة",
+    "myLearning": "متابعة التعلم"
+  },
+
+  "actions": {
+    "play": "تشغيل",
+    "pause": "إيقاف مؤقت",
+    "playing": "قيد التشغيل",
+    "audioLecture": "درس صوتي",
+    "listen": "استماع",
+    "read": "قراءة",
+    "readPdf": "قراءة الكتاب",
+    "viewPdf": "عرض الكتاب PDF",
+    "downloadPdf": "تحميل PDF",
+    "downloadAudio": "تحميل الصوت",
+    "share": "مشاركة",
+    "shareCopied": "تم نسخ الرابط إلى الحافظة",
+    "markCompleted": "تحديد كمكتمل",
+    "completed": "تم الاستماع",
+    "saveLesson": "حفظ",
+    "saved": "محفوظ",
+    "bookmark": "حفظ في المفضلة",
+    "bookmarked": "تم الحفظ",
+    "continueListening": "متابعة الاستماع",
+    "startSeries": "بدء السلسلة",
+    "viewAll": "عرض الكل",
+    "filter": "تصفية",
+    "resetFilters": "إعادة ضبط",
+    "clearFilters": "مسح الفلاتر",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "approve": "اعتماد ونقل",
+    "edit": "تعديل البيانات",
+    "reject": "استبعاد",
+    "saveDraft": "حفظ كمسودة",
+    "publish": "نشر في المكتبة",
+    "preview": "معاينة"
+  },
+
+  "search": {
+    "placeholder": "ابحث في الدروس، الكتب، السلاسل، أو المسائل...",
+    "command": "بحث سريع...",
+    "quick": "البحث السريع",
+    "recent": "عمليات البحث الأخيرة",
+    "popularDisciplines": "الأقسام الشائعة",
+    "results": "نتائج البحث",
+    "noResultsFound": "لم يتم العثور على نتائج",
+    "noResults": "لم يتم العثور على نتائج",
+    "noResultsDescription": "جرّب تغيير كلمات البحث أو إعادة ضبط خيارات التصفية.",
+    "searchButton": "بحث"
+  },
+
+  "catalog": {
+    "allCategories": "جميع الأقسام",
+    "allSeries": "جميع السلاسل",
+    "allBooks": "جميع الكتب",
+    "sortBy": "ترتيب حسب",
+    "sortNewest": "الأحدث أولاً",
+    "sortOldest": "الأقدم أولاً",
+    "sortLessonNumber": "رقم الدرس",
+    "sortTitle": "أبجدياً (أ-ي)",
+    "viewGrid": "عرض شبكي",
+    "viewList": "عرض قائمة",
+    "filterDuration": "المدة الزمنية",
+    "durationAll": "جميع المدد",
+    "durationShort": "أقل من ٣٠ دقيقة",
+    "durationMedium": "٣٠ - ٦٠ دقيقة",
+    "durationLong": "أكثر من ٦٠ دقيقة",
+    "lessonsFound": "درساً متاحاً",
+    "lessonNumber": "الدرس"
+  },
+
+  "lesson": {
+    "info": "معلومات الدرس",
+    "telegramSource": "المصدر الأصلي في تيليجرام",
+    "telegramPost": "منشور قناة التيليجرام",
+    "materials": "المواد والملفات المرفقة",
+    "relatedBook": "الكتاب المشروح",
+    "relatedLessons": "دروس هذه السلسلة",
+    "previous": "الدرس السابق",
+    "next": "الدرس التالي",
+    "playbackSpeed": "السرعة",
+    "volume": "مستوى الصوت",
+    "rewind10": "١٠ ثوانٍ للخلف",
+    "forward10": "١٠ ثوانٍ للأمام",
+    "archivalSource": "مصدر التوثيق",
+    "datePublished": "تاريخ الدرس"
+  },
+
+  "series": {
+    "description": "نبذة عن السلسلة",
+    "lessonsIn": "دروس السلسلة",
+    "totalDuration": "إجمالي الساعات",
+    "progress": "نسبة الإنجاز"
+  },
+
+  "book": {
+    "author": "المؤلف",
+    "tableOfContents": "فهرس المحتويات",
+    "chapter": "الباب / الفصل",
+    "pageCount": "الصفحات",
+    "fileSize": "الحجم"
+  },
+
+  "categories": {
+    "subtitle": "تصفح الفنون والعلوم الإسلامية المصنفة بعناية.",
+    "lessonsCount": "درس",
+    "duruusCount": "درس",
+    "seriesCount": "سلسلة",
+    "booksCount": "كتاب"
+  },
+
+  "learning": {
+    "title": "سجل متابعة التعلم",
+    "recentlyPlayed": "آخر الدروس المستمع إليها",
+    "savedItems": "المواد المحفوظة",
+    "completedTitle": "الدروس المكتملة",
+    "noSavedYet": "لا توجد عناصر محفوظة حالياً",
+    "noSavedDescription": "يمكنك حفظ الدروس والكتب أثناء التصفح للرجوع إليها في أي وقت."
+  },
+
+  "admin": {
+    "dashboard": "الرئيسية",
+    "lessons": "إدارة الدروس",
+    "series": "إدارة السلاسل",
+    "books": "إدارة الكتب",
+    "categories": "الأقسام العلمية",
+    "tags": "الوسوم",
+    "media": "مكتبة الوسائط",
+    "imports": "صندوق وارد تيليجرام",
+    "settings": "الإعدادات",
+    "totalLessons": "إجمالي الدروس",
+    "totalSeries": "إجمالي السلاسل",
+    "totalBooks": "إجمالي الكتب",
+    "totalAudio": "التسجيلات الصوتية",
+    "totalPdfs": "الملفات المرفقة",
+    "needsReview": "بحاجة للمراجعة",
+    "recentActivity": "النشاط التوثيقي الأخير",
+    "importTitle": "صندوق استيراد منشورات تيليجرام",
+    "importSubtitle": "مراجعة المواد المستخرجة من القناة قبل نشرها في الفهرس. المراجعة البشرية الدقيقة إلزامية.",
+    "messagesDiscovered": "الرسائل المكتشفة",
+    "audioFiles": "ملفات صوتية",
+    "alreadyOrganized": "تمت الفهرسة",
+    "aiSuggestionNotice": "اقتراحات الذكاء الاصطناعي استرشادية فقط. يجب التحقق والتأكد قبل الاعتماد.",
+    "humanReviewNotice": "التوثيق العلمي يتطلب المراجعة البشرية الدقيقة.",
+    "confidence": "نسبة المطابقة",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "suggestedSeries": "السلسلة المقترحة",
+    "suggestedBook": "الكتاب المقترح",
+    "suggestedCategory": "القسم المقترح"
+  },
+
+  "common": {
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ ما.",
+    "notFound": "الصفحة غير موجودة.",
+    "backHome": "العودة إلى الرئيسية",
+    "darkMode": "الوضع الليلي",
+    "lightMode": "الوضع النهاري",
+    "languageSelect": "اللغة",
+    "minutes": "دقيقة",
+    "hours": "ساعة"
+  },
+
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "adminArea": "لوحة الإدارة"
+  },
+
+  "status": {
+    "draft": "مسودة",
+    "published": "منشور",
+    "archived": "مؤرشف"
+  }
+}

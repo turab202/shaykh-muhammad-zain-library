@@ -1,0 +1,217 @@
+{
+  "site": {
+    "name": "Shaykh Muhammad Zain Library",
+    "description": "Islamic educational content — lessons, books, and audio recordings"
+  },
+
+  "brand": {
+    "name": "Shaykh Muhammad Zain",
+    "subtitle": "Digital Library",
+    "arabic": "مكتبة الشيخ محمد زين",
+    "archive": "Scholarly Islamic Knowledge Archive"
+  },
+
+  "hero": {
+    "tagline": "Shaykh Muhammad Zain Digital Library",
+    "description": "Preserving beneficial knowledge and making it accessible to everyone. Explore audio lessons, scholarly books, and educational archives.",
+    "telegramNotice": "Official Archival Channel @ShaykhMuhammadZain_Archive",
+    "exploreDuruus": "Explore Duruus",
+    "browseSeries": "Browse Series",
+    "browseKutub": "Browse Kutub",
+    "viewBooks": "Classical Books",
+    "audioHoursCount": "hours of audio",
+    "featuredSeries": "Thematic Studies",
+    "recentLessons": "Recent Lessons",
+    "categoriesSection": "Sacred Sciences"
+  },
+
+  "nav": {
+    "home": "Home",
+    "lessons": "Duruus",
+    "series": "Series",
+    "books": "Kutub",
+    "categories": "Categories",
+    "search": "Search",
+    "about": "About",
+    "admin": "Admin",
+    "myLearning": "My Learning"
+  },
+
+  "actions": {
+    "play": "Play",
+    "pause": "Pause",
+    "playing": "Now Playing",
+    "audioLecture": "Audio Lecture",
+    "listen": "Listen",
+    "read": "Read",
+    "readPdf": "Read PDF",
+    "viewPdf": "View PDF",
+    "downloadPdf": "Download PDF",
+    "downloadAudio": "Download Audio",
+    "share": "Share",
+    "shareCopied": "Link copied to clipboard",
+    "markCompleted": "Mark as Completed",
+    "completed": "Completed",
+    "saveLesson": "Save",
+    "saved": "Saved",
+    "bookmark": "Save Bookmark",
+    "bookmarked": "Bookmarked",
+    "continueListening": "Continue Listening",
+    "startSeries": "Start Series",
+    "viewAll": "View All",
+    "filter": "Filter",
+    "resetFilters": "Reset Filters",
+    "clearFilters": "Clear Filters",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "approve": "Approve & Stage",
+    "edit": "Edit Metadata",
+    "reject": "Dismiss",
+    "saveDraft": "Save Draft",
+    "publish": "Publish to Library",
+    "preview": "Preview"
+  },
+
+  "search": {
+    "placeholder": "Search lessons, books, series, or topics...",
+    "command": "Quick search...",
+    "quick": "Quick Search",
+    "recent": "Recent Searches",
+    "popularDisciplines": "Popular Disciplines",
+    "results": "Search Results",
+    "noResultsFound": "No results found",
+    "noResults": "No results found",
+    "noResultsDescription": "Try adjusting your search terms or clearing active filters.",
+    "searchButton": "Search"
+  },
+
+  "catalog": {
+    "allCategories": "All Categories",
+    "allSeries": "All Series",
+    "allBooks": "All Books",
+    "sortBy": "Sort by",
+    "sortNewest": "Newest First",
+    "sortOldest": "Oldest First",
+    "sortLessonNumber": "Lesson Number",
+    "sortTitle": "Title A-Z",
+    "viewGrid": "Grid View",
+    "viewList": "List View",
+    "filterDuration": "Duration",
+    "durationAll": "All Durations",
+    "durationShort": "Under 30 mins",
+    "durationMedium": "30 - 60 mins",
+    "durationLong": "Over 60 mins",
+    "lessonsFound": "lessons found",
+    "lessonNumber": "Lesson"
+  },
+
+  "lesson": {
+    "info": "Lesson Information",
+    "telegramSource": "Telegram Source Archive",
+    "telegramPost": "Telegram Channel Post",
+    "materials": "Study Materials & Notes",
+    "relatedBook": "Related Book",
+    "relatedLessons": "Related Lessons in this Series",
+    "previous": "Previous Lesson",
+    "next": "Next Lesson",
+    "playbackSpeed": "Speed",
+    "volume": "Volume",
+    "rewind10": "10s Back",
+    "forward10": "10s Forward",
+    "archivalSource": "Archival Source",
+    "datePublished": "Date"
+  },
+
+  "series": {
+    "description": "Series Overview",
+    "lessonsIn": "Lessons in this Series",
+    "totalDuration": "Total Duration",
+    "progress": "Progress"
+  },
+
+  "book": {
+    "author": "Author",
+    "tableOfContents": "Table of Contents",
+    "chapter": "Chapter",
+    "pageCount": "Pages",
+    "fileSize": "Size"
+  },
+
+  "categories": {
+    "subtitle": "Explore Islamic disciplines and organized lesson collections.",
+    "lessonsCount": "lessons",
+    "duruusCount": "duruus",
+    "seriesCount": "series",
+    "booksCount": "books"
+  },
+
+  "learning": {
+    "title": "My Learning Progress",
+    "recentlyPlayed": "Recently Played Lessons",
+    "savedItems": "Saved Lessons & Books",
+    "completedTitle": "Completed Lessons",
+    "noSavedYet": "No saved items yet",
+    "noSavedDescription": "Bookmark lessons or books while browsing to study them here anytime."
+  },
+
+  "admin": {
+    "dashboard": "Dashboard",
+    "lessons": "Lessons Management",
+    "series": "Series Management",
+    "books": "Books Management",
+    "categories": "Categories",
+    "tags": "Tags",
+    "media": "Media Library",
+    "imports": "Telegram Import Inbox",
+    "settings": "Settings",
+    "totalLessons": "Total Lessons",
+    "totalSeries": "Total Series",
+    "totalBooks": "Total Books",
+    "totalAudio": "Audio Recordings",
+    "totalPdfs": "Attached PDFs",
+    "needsReview": "Needs Review",
+    "recentActivity": "Recent Archival Activity",
+    "importTitle": "Telegram Import Inbox",
+    "importSubtitle": "Review incoming channel broadcasts before catalog publication. Human editorial verification is always required.",
+    "messagesDiscovered": "Discovered Messages",
+    "audioFiles": "Audio Files",
+    "alreadyOrganized": "Organized",
+    "aiSuggestionNotice": "AI metadata suggestions are assistive drafts. Review and verify accuracy before publishing.",
+    "humanReviewNotice": "Scholarly editorial review is mandatory.",
+    "confidence": "Match Confidence",
+    "status": "Status",
+    "actions": "Actions",
+    "suggestedSeries": "Suggested Series",
+    "suggestedBook": "Suggested Book",
+    "suggestedCategory": "Suggested Category"
+  },
+
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "notFound": "Page not found.",
+    "backHome": "Back to home",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "languageSelect": "Language",
+    "minutes": "min",
+    "hours": "hrs"
+  },
+
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "email": "Email address",
+    "password": "Password",
+    "invalidCredentials": "Invalid email or password.",
+    "adminArea": "Admin area"
+  },
+
+  "status": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  }
+}

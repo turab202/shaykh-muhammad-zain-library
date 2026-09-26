@@ -1,0 +1,217 @@
+{
+  "site": {
+    "name": "የሼኽ መሐመድ ዘይን ቤተ-መጻሕፍት",
+    "description": "እስላማዊ ትምህርታዊ ይዘት — ትምህርቶች፣ መጻሕፍት እና የድምጽ ቅጂዎች"
+  },
+
+  "brand": {
+    "name": "ሸይኽ ሙሓመድ ዘይን",
+    "subtitle": "የሸይኽ ሙሓመድ ዘይን ዲጂታል ቤተ-መጻሕፍት",
+    "arabic": "مكتبة الشيخ محمد زين",
+    "archive": "ኢስላማዊ የትምህርት ዲጂታል ማህደር"
+  },
+
+  "hero": {
+    "tagline": "የሸይኽ ሙሓመድ ዘይን ዲጂታል ቤተ-መጻሕፍት",
+    "description": "ጠቃሚ ዕውቀትን መጠበቅ እና ለሁሉም ተደራሽ ማድረግ። የድምጽ ትምህርቶችን፣ የኪታብ ማብራሪያዎችን እና የትምህርት ማህደሮችን በቀላሉ ያግኙ።",
+    "telegramNotice": "የቴሌግራም ቻናል @ShaykhMuhammadZain_Archive",
+    "exploreDuruus": "ትምህርቶችን ይፈልጉ",
+    "browseSeries": "ተከታታይ ትምህርቶች",
+    "browseKutub": "ኪታቦችን ይመልከቱ",
+    "viewBooks": "ዋና ዋና ኪታቦች",
+    "audioHoursCount": "የድምጽ ሰዓታት",
+    "featuredSeries": "ተከታታይ ትምህርቶች",
+    "recentLessons": "የቅርብ ጊዜ ትምህርቶች",
+    "categoriesSection": "የዕውቀት ዘርፎች"
+  },
+
+  "nav": {
+    "home": "ዋና ገጽ",
+    "lessons": "ትምህርቶች (ዱሩስ)",
+    "series": "ተከታታይ ትምህርቶች",
+    "books": "ኪታቦች",
+    "categories": "ዘርፎች",
+    "search": "ፍለጋ",
+    "about": "ስለ ቤተ-መጻሕፍቱ",
+    "admin": "አስተዳደር",
+    "myLearning": "የትምህርት ጉዞዬ"
+  },
+
+  "actions": {
+    "play": "አጫውት",
+    "pause": "አቁም",
+    "playing": "እየተጫወተ ነው",
+    "audioLecture": "የድምጽ ደርስ",
+    "listen": "ያዳምጡ",
+    "read": "ያንብቡ",
+    "readPdf": "PDF ያንብቡ",
+    "viewPdf": "ፒዲኤፍ እይ",
+    "downloadPdf": "PDF አውርድ",
+    "downloadAudio": "ድምጹን አውርድ",
+    "share": "አጋራ",
+    "shareCopied": "ሊንኩ ተገልብጧል",
+    "markCompleted": "እንደተጠናቀቀ ምልክት አድርግ",
+    "completed": "ተጠናቋል",
+    "saveLesson": "አስቀምጥ",
+    "saved": "ተቀምጧል",
+    "bookmark": "ምልክት አድርግ",
+    "bookmarked": "ተቀምጧል",
+    "continueListening": "ማዳመጥ ይቀጥሉ",
+    "startSeries": "ተከታታይ ትምህርቱን ጀምር",
+    "viewAll": "ሁሉንም አሳይ",
+    "filter": "አጣራ",
+    "resetFilters": "ማጣሪያዎችን አጽዳ",
+    "clearFilters": "ማጣሪያዎችን አጽዳ",
+    "close": "ዝጋ",
+    "back": "ተመለስ",
+    "next": "ቀጣይ",
+    "previous": "ቀዳሚ",
+    "approve": "አጽድቅ",
+    "edit": "አስተካክል",
+    "reject": "አትቀበል",
+    "saveDraft": "ረቂቅ አስቀምጥ",
+    "publish": "ወደ ላይብረሪው አትም",
+    "preview": "ቅድመ እይታ"
+  },
+
+  "search": {
+    "placeholder": "ትምህርቶችን፣ ኪታቦችን ወይም ርዕሶችን ይፈልጉ...",
+    "command": "ፈጣን ፍለጋ...",
+    "quick": "ፈጣን ፍለጋ",
+    "recent": "የቅርብ ጊዜ ፍለጋዎች",
+    "popularDisciplines": "ዋና ዋና ዘርፎች",
+    "results": "የፍለጋ ውጤቶች",
+    "noResultsFound": "ምንም ውጤት አልተገኘም",
+    "noResults": "ምንም ውጤት አልተገኘም",
+    "noResultsDescription": "የተለየ የፍለጋ ቃል በመጠቀም ወይም ማጣሪያዎችን በማጽዳት እንደገና ይሞክሩ።",
+    "searchButton": "ፈልግ"
+  },
+
+  "catalog": {
+    "allCategories": "ሁሉም ዘርፎች",
+    "allSeries": "ሁሉም ተከታታይ ትምህርቶች",
+    "allBooks": "ሁሉም ኪታቦች",
+    "sortBy": "ደርድር በ",
+    "sortNewest": "አዳዲሶች መጀመሪያ",
+    "sortOldest": "ቀደምቶቹ መጀመሪያ",
+    "sortLessonNumber": "የትምህርት ቁጥር",
+    "sortTitle": "በፊደል ተራ",
+    "viewGrid": "ፍርግርግ እይታ",
+    "viewList": "ዝርዝር እይታ",
+    "filterDuration": "የቆይታ ጊዜ",
+    "durationAll": "ሁሉም ርዝመቶች",
+    "durationShort": "ከ30 ደቂቃ በታች",
+    "durationMedium": "30 - 60 ደቂቃ",
+    "durationLong": "ከ60 ደቂቃ በላይ",
+    "lessonsFound": "ትምህርቶች ተገኝተዋል",
+    "lessonNumber": "ትምህርት"
+  },
+
+  "lesson": {
+    "info": "የትምህርቱ መረጃ",
+    "telegramSource": "የቴሌግራም መገኛ",
+    "telegramPost": "የቴሌግራም መልእክት",
+    "materials": "ተያያዥ ሰነዶች",
+    "relatedBook": "ተዛማጅ ኪታብ",
+    "relatedLessons": "በዚህ ተከታታይ ውስጥ ያሉ ትምህርቶች",
+    "previous": "ቀዳሚ ትምህርት",
+    "next": "ቀጣይ ትምህርት",
+    "playbackSpeed": "ፍጥነት",
+    "volume": "ድምጽ መጠን",
+    "rewind10": "10 ሰከንድ ወደ ኋላ",
+    "forward10": "10 ሰከንድ ወደ ፊት",
+    "archivalSource": "የመረጃ ምንጭ",
+    "datePublished": "ቀን"
+  },
+
+  "series": {
+    "description": "ስለ ተከታታይ ትምህርቱ",
+    "lessonsIn": "በተከታታዩ ያሉ ትምህርቶች",
+    "totalDuration": "አጠቃላይ ቆይታ",
+    "progress": "የደረሱበት ደረጃ"
+  },
+
+  "book": {
+    "author": "ደራሲ / አዘጋጅ",
+    "tableOfContents": "የርዕሶች ማውጫ",
+    "chapter": "ምዕራፍ",
+    "pageCount": "ገጾች",
+    "fileSize": "መጠን"
+  },
+
+  "categories": {
+    "subtitle": "የተደራጁ የኢስላማዊ ዕውቀት ዘርፎችን ያስሱ።",
+    "lessonsCount": "ትምህርቶች",
+    "duruusCount": "ትምህርቶች",
+    "seriesCount": "ተከታታዮች",
+    "booksCount": "ኪታቦች"
+  },
+
+  "learning": {
+    "title": "የትምህርት ክትትል",
+    "recentlyPlayed": "በቅርብ የተደመጡ",
+    "savedItems": "የተቀመጡ ትምህርቶች",
+    "completedTitle": "ያለቋቸው ትምህርቶች",
+    "noSavedYet": "ምንም የተቀመጠ ነገር የለም",
+    "noSavedDescription": "በማሰስ ላይ ሳሉ ትምህርቶችን ወይም ኪታቦችን ምልክት በማድረግ እዚህ በማንኛውም ጊዜ ያግኟቸው።"
+  },
+
+  "admin": {
+    "dashboard": "ዳሽቦርድ",
+    "lessons": "የትምህርቶች አስተዳደር",
+    "series": "የተከታታዮች አስተዳደር",
+    "books": "የኪታቦች አስተዳደር",
+    "categories": "ዘርፎች",
+    "tags": "መለያዎች",
+    "media": "የሚዲያ ማህደር",
+    "imports": "የቴሌግራም መልእክቶች ሳጥን",
+    "settings": "ቅንብሮች",
+    "totalLessons": "አጠቃላይ ትምህርቶች",
+    "totalSeries": "አጠቃላይ ተከታታዮች",
+    "totalBooks": "አጠቃላይ ኪታቦች",
+    "totalAudio": "የድምጽ ትምህርቶች",
+    "totalPdfs": "የተያያዙ PDF ሰነዶች",
+    "needsReview": "ክለሳ የሚሹ",
+    "recentActivity": "የቅርብ ጊዜ እንቅስቃሴዎች",
+    "importTitle": "የቴሌግራም ገቢ መልእክቶች ሳጥን",
+    "importSubtitle": "ከቴሌግራም ቻናል የተገኙ ትምህርቶች ከመታተማቸው በፊት ይገምግሙ። የአዘጋጅ ማረጋገጫ ግዴታ ነው።",
+    "messagesDiscovered": "የተገኙ መልእክቶች",
+    "audioFiles": "የድምጽ ፋይሎች",
+    "alreadyOrganized": "የተደራጁ",
+    "aiSuggestionNotice": "የአይአይ (AI) ጥቆማዎች አጋዥ ረቂቆች ናቸው። ከመጽደቃቸው በፊት ትክክለኛነታቸውን ያረጋግጡ።",
+    "humanReviewNotice": "የሰው ክለሳ እና ማረጋገጫ አስፈላጊ ነው።",
+    "confidence": "የተስማሚነት መጠን",
+    "status": "ሁኔታ",
+    "actions": "እርምጃዎች",
+    "suggestedSeries": "የተጠቆመ ተከታታይ",
+    "suggestedBook": "የተጠቆመ ኪታብ",
+    "suggestedCategory": "የተጠቆመ ዘርፍ"
+  },
+
+  "common": {
+    "loading": "በመጫን ላይ…",
+    "error": "ችግር ተፈጥሯል።",
+    "notFound": "ገጹ አልተገኘም።",
+    "backHome": "ወደ መነሻ ተመለስ",
+    "darkMode": "ጨለማ ገጽታ",
+    "lightMode": "ብርሃን ገጽታ",
+    "languageSelect": "ቋንቋ",
+    "minutes": "ደቂቃ",
+    "hours": "ሰዓት"
+  },
+
+  "auth": {
+    "login": "ግባ",
+    "logout": "ውጣ",
+    "email": "ኢሜይል አድራሻ",
+    "password": "የይለፍ ቃል",
+    "invalidCredentials": "ኢሜይል ወይም የይለፍ ቃል ትክክል አይደለም።",
+    "adminArea": "የአስተዳዳሪ ቦታ"
+  },
+
+  "status": {
+    "draft": "ረቂቅ",
+    "published": "ታትሟል",
+    "archived": "ተከማችቷል"
+  }
+}
