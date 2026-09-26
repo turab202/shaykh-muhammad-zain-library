@@ -6,6 +6,8 @@ import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { isRtlLocale } from "@/types/i18n";
 import type { Locale } from "@/types/i18n";
+import { ThemeProvider } from "@/lib/context/ThemeContext";
+import { AudioProvider } from "@/lib/context/AudioContext";
 import "@/app/globals.css";
 
 type Props = {
@@ -43,9 +45,13 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={dir} className="h-full">
-      <body className="min-h-full flex flex-col antialiased">
+      <body className="min-h-full flex flex-col antialiased bg-[var(--bg-parchment)] text-[var(--text-primary)] transition-colors duration-200">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <ThemeProvider>
+            <AudioProvider>
+              {children}
+            </AudioProvider>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>
