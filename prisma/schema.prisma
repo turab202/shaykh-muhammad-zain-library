@@ -1,0 +1,254 @@
+// ─────────────────────────────────────────────────────────
+// Muhammad Zain Islamic Digital Library — Prisma Schema
+// Phase 1 Foundation
+// ─────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection URL is configured in prisma.config.ts (Prisma ORM v7)
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  EDITOR
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum StorageProvider {
+  LOCAL
+  S3
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum ImportSource {
+  TELEGRAM
+}
+
+// ─── User ────────────────────────────────────────────────
+// Admin-only in Phase 1. Public users are deferred.
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         UserRole @default(EDITOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  imports Import[]
+
+  @@map("users")
+}
+
+// ─── Category ────────────────────────────────────────────
+// Supports a single level of hierarchy (parent/children).
+// Translations stored as JSONB: { en?, ar?, am? }
+
+model Category {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String   // Default/fallback name (usually English)
+  translations Json     @default("{}")
+  parentId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Self-referential hierarchy
+  parent   Category?  @relation("CategoryParent", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryParent")
+
+  // Content relations
+  series  Series[]
+  books   Book[]
+  lessons Lesson[]
+
+  @@map("categories")
+}
+
+// ─── Tag ─────────────────────────────────────────────────
+
+model Tag {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  lessons LessonTag[]
+
+  @@map("tags")
+}
+
+// ─── Series ──────────────────────────────────────────────
+// A named collection of lessons (e.g. a course or lecture series).
+
+model Series {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  title        String
+  translations Json          @default("{}")
+  description  String?
+  descTranslations Json      @default("{}")
+  categoryId   String?
+  coverImageKey String?
+  status       ContentStatus @default(DRAFT)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  category Category? @relation(fields: [categoryId], references: [id])
+  lessons  Lesson[]
+
+  @@map("series")
+}
+
+// ─── Book ─────────────────────────────────────────────────
+// A book or text that lessons may be tied to.
+
+model Book {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  title            String
+  translations     Json          @default("{}")
+  author           String?
+  description      String?
+  descTranslations Json          @default("{}")
+  categoryId       String?
+  coverImageKey    String?
+  status           ContentStatus @default(DRAFT)
+  publishedAt      DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  category Category? @relation(fields: [categoryId], references: [id])
+  lessons  Lesson[]
+  media    Media[]
+
+  @@map("books")
+}
+
+// ─── Lesson ───────────────────────────────────────────────
+// The core content unit. A lesson may belong to:
+//   - a Series (optional)
+//   - a Book (optional)
+//   - both (intentional — not XOR)
+//   - neither (standalone lesson)
+
+model Lesson {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  lessonNumber     Int?
+  title            String
+  translations     Json          @default("{}")
+  description      String?
+  descTranslations Json          @default("{}")
+  categoryId       String?
+  seriesId         String?
+  bookId           String?
+  status           ContentStatus @default(DRAFT)
+  publishedAt      DateTime?
+  duration         Int?          // Duration in seconds
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  category Category? @relation(fields: [categoryId], references: [id])
+  series   Series?   @relation(fields: [seriesId], references: [id])
+  book     Book?     @relation(fields: [bookId], references: [id])
+  tags     LessonTag[]
+  media    Media[]
+
+  @@map("lessons")
+}
+
+// ─── LessonTag ────────────────────────────────────────────
+// Join table: Lesson ↔ Tag (many-to-many)
+
+model LessonTag {
+  lessonId String
+  tagId    String
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, tagId])
+  @@map("lesson_tags")
+}
+
+// ─── Media ────────────────────────────────────────────────
+// Metadata for audio files, PDFs, and other attachments.
+// Actual files live in local storage or object storage — NOT in PostgreSQL.
+
+model Media {
+  id              String          @id @default(cuid())
+  filename        String
+  mimeType        String
+  size            Int             // File size in bytes
+  duration        Int?            // Audio/video duration in seconds
+  storageKey      String          // Path/key within the storage provider
+  storageProvider StorageProvider @default(LOCAL)
+  lessonId        String?
+  bookId          String?
+  createdAt       DateTime        @default(now())
+
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  book   Book?   @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  @@map("media")
+}
+
+// ─── Import ───────────────────────────────────────────────
+// Tracks a batch import job (e.g. from Telegram).
+// Telegram importer is deferred to a later phase.
+
+model Import {
+  id          String       @id @default(cuid())
+  source      ImportSource
+  status      ImportStatus @default(PENDING)
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdById String?
+  createdAt   DateTime     @default(now())
+
+  createdBy       User?             @relation(fields: [createdById], references: [id])
+  telegramMessages TelegramMessage[]
+
+  @@map("imports")
+}
+
+// ─── TelegramMessage ──────────────────────────────────────
+// Raw messages pulled from Telegram, held in review inbox
+// until a human admin approves/rejects them for publication.
+
+model TelegramMessage {
+  id          String    @id @default(cuid())
+  messageId   Int
+  chatId      String
+  text        String?
+  date        DateTime
+  rawJson     Json
+  importId    String?
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  import Import? @relation(fields: [importId], references: [id])
+
+  @@unique([chatId, messageId])
+  @@map("telegram_messages")
+}
