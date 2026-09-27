@@ -34,7 +34,8 @@
     "search": "ፍለጋ",
     "about": "ስለ ቤተ-መጻሕፍቱ",
     "admin": "አስተዳደር",
-    "myLearning": "የትምህርት ጉዞዬ"
+    "myLearning": "የትምህርት ጉዞዬ",
+    "telegramChannel": "የቴሌግራም ቻናል ማህደር"
   },
 
   "actions": {
@@ -84,7 +85,10 @@
     "noResultsFound": "ምንም ውጤት አልተገኘም",
     "noResults": "ምንም ውጤት አልተገኘም",
     "noResultsDescription": "የተለየ የፍለጋ ቃል በመጠቀም ወይም ማጣሪያዎችን በማጽዳት እንደገና ይሞክሩ።",
-    "searchButton": "ፈልግ"
+    "searchButton": "ፈልግ",
+    "enterForFull": "ሙሉ ፍለጋ ለማካሄድ Enter ይጫኑ",
+    "seeAll": "ሁሉንም ውጤቶች ይመልከቱ",
+    "tryExample": "\"ሐዲስ\"፣ \"ተፍሲር\" ወይም \"الإخلاص\" ይፈልጉ"
   },
 
   "catalog": {
@@ -186,6 +190,17 @@
     "suggestedSeries": "የተጠቆመ ተከታታይ",
     "suggestedBook": "የተጠቆመ ኪታብ",
     "suggestedCategory": "የተጠቆመ ዘርፍ"
+  },
+
+  "footer": {
+    "catalog": "የቤተ-መጻሕፍት ዝርዝር",
+    "collections": "ዋና ዋና ስብስቦች",
+    "archive": "ስለ ፕሮጀክቱ",
+    "telegram": "ይፋዊ የቴሌግራም ቻናል",
+    "copyright": "የሸይኽ ሙሓመድ ዘይን ዲጂታል ቤተ-መጻሕፍት። ጠቃሚ ዕውቀትን ለመጠበቅ ተሰጥቷል።",
+    "multilingualNote": "ባለብዙ ቋንቋ (አረብኛ / እንግሊዝኛ / አማርኛ)",
+    "noCommercial": "ለንግድ ዓላማ አይፈቀድም",
+    "telegramMirror": "የቴሌግራም ማህደር"
   },
 
   "common": {

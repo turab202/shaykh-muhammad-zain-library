@@ -34,7 +34,8 @@
     "search": "Search",
     "about": "About",
     "admin": "Admin",
-    "myLearning": "My Learning"
+    "myLearning": "My Learning",
+    "telegramChannel": "Telegram Channel Archive"
   },
 
   "actions": {
@@ -84,7 +85,10 @@
     "noResultsFound": "No results found",
     "noResults": "No results found",
     "noResultsDescription": "Try adjusting your search terms or clearing active filters.",
-    "searchButton": "Search"
+    "searchButton": "Search",
+    "enterForFull": "Press Enter for full catalog search",
+    "seeAll": "See all results",
+    "tryExample": "Try searching for \"Hadith\", \"Tafsir\", or \"الإخلاص\""
   },
 
   "catalog": {
@@ -186,6 +190,17 @@
     "suggestedSeries": "Suggested Series",
     "suggestedBook": "Suggested Book",
     "suggestedCategory": "Suggested Category"
+  },
+
+  "footer": {
+    "catalog": "Library Catalog",
+    "collections": "Featured Collections",
+    "archive": "The Archive",
+    "telegram": "Telegram Official Channel",
+    "copyright": "Shaykh Muhammad Zain Digital Library. Dedicated to preserving beneficial knowledge.",
+    "multilingualNote": "Multilingual (AR / EN / AM)",
+    "noCommercial": "No Commercial Use",
+    "telegramMirror": "Archival Telegram Mirror"
   },
 
   "common": {

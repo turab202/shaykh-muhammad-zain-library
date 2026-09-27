@@ -34,7 +34,8 @@
     "search": "البحث",
     "about": "عن المكتبة",
     "admin": "لوحة الإدارة",
-    "myLearning": "متابعة التعلم"
+    "myLearning": "متابعة التعلم",
+    "telegramChannel": "قناة التيليجرام الأرشيفية"
   },
 
   "actions": {
@@ -84,7 +85,10 @@
     "noResultsFound": "لم يتم العثور على نتائج",
     "noResults": "لم يتم العثور على نتائج",
     "noResultsDescription": "جرّب تغيير كلمات البحث أو إعادة ضبط خيارات التصفية.",
-    "searchButton": "بحث"
+    "searchButton": "بحث",
+    "enterForFull": "اضغط Enter للبحث في الفهرس الكامل",
+    "seeAll": "عرض جميع النتائج",
+    "tryExample": "ابحث عن «حديث» أو «تفسير» أو «الإخلاص»"
   },
 
   "catalog": {
@@ -186,6 +190,17 @@
     "suggestedSeries": "السلسلة المقترحة",
     "suggestedBook": "الكتاب المقترح",
     "suggestedCategory": "القسم المقترح"
+  },
+
+  "footer": {
+    "catalog": "فهرس المكتبة",
+    "collections": "السلاسل المميزة",
+    "archive": "عن المشروع",
+    "telegram": "القناة الرسمية على تيليجرام",
+    "copyright": "مكتبة الشيخ محمد زين الرقمية. جميع الحقوق محفوظة لوجه الله تعالى.",
+    "multilingualNote": "متعدد اللغات (عربي / إنجليزي / أمهري)",
+    "noCommercial": "لا يُسمح بالاستخدام التجاري",
+    "telegramMirror": "أرشيف قناة تيليجرام"
   },
 
   "common": {
