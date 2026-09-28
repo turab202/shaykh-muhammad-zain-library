@@ -192,6 +192,22 @@
     "suggestedCategory": "Suggested Category"
   },
 
+  "home": {
+    "statsLessons": "audio lessons",
+    "statsSeries": "lecture series",
+    "statsBooks": "classical books",
+    "statsHours": "hours of audio",
+    "statsCategories": "disciplines",
+    "missionBadge": "Official Telegram Archive",
+    "missionTitle": "Preserving Sacred Knowledge — from Telegram to a Structured Digital Library",
+    "missionBody": "Thousands of audio recordings, lesson PDFs, and lecture series delivered by Shaykh Muhammad Zain are gathered from the official Telegram channel, verified, catalogued into systematic curricula, and made freely accessible for students of Islamic knowledge worldwide.",
+    "joinTelegram": "Join Official Telegram Channel",
+    "learnMore": "Learn About the Preservation Project",
+    "noLessons": "No lessons available yet.",
+    "noSeries": "No series available yet.",
+    "noCategories": "No categories available yet."
+  },
+
   "footer": {
     "catalog": "Library Catalog",
     "collections": "Featured Collections",
