@@ -108,7 +108,21 @@
     "durationMedium": "30 - 60 mins",
     "durationLong": "Over 60 mins",
     "lessonsFound": "lessons found",
-    "lessonNumber": "Lesson"
+    "lessonNumber": "Lesson",
+    "noResults": "No results found",
+    "noResultsHint": "Try a different search term or remove the active filter.",
+    "searchSeries": "Search series by title or subject…",
+    "searchBooks": "Search books by title, author, or keyword…",
+    "filterByCategory": "Filter by category",
+    "disciplines": "Disciplines & Branches of Knowledge",
+    "disciplinesEyebrow": "Sacred Sciences & Classifications",
+    "disciplinesSubtitle": "Structured taxonomy classifying lessons, audio recordings, and classical books across the major branches of traditional Islamic sacred knowledge.",
+    "seriesTitle": "Educational Series & Curricula",
+    "seriesEyebrow": "Curricula & Thematic Collections",
+    "seriesSubtitle": "Structured, multi-part scholarly commentary series explaining fundamental classical texts from start to completion.",
+    "booksTitle": "Books, Treatises & Texts",
+    "booksEyebrow": "Classical Texts & Treatises",
+    "booksSubtitle": "Curated collection of classical texts and annotated treatises explained by Shaykh Muhammad Zain, complete with chapter navigation and downloadable PDFs."
   },
 
   "lesson": {
@@ -132,7 +146,23 @@
     "description": "Series Overview",
     "lessonsIn": "Lessons in this Series",
     "totalDuration": "Total Duration",
-    "progress": "Progress"
+    "progress": "Progress",
+    "startListening": "Start from Lesson 1",
+    "bookAvailable": "Book Available",
+    "searchLessons": "Search lessons in this series…",
+    "goToSeries": "Series Page",
+    "exploreSeries": "Explore Series",
+    "noSeriesFound": "No series found matching your search.",
+    "collectionsIn": "Series & Collections",
+    "studiedTexts": "Studied Texts & Treatises",
+    "lessonDirectory": "Curriculum Lesson Directory",
+    "orderedLessons": "Ordered Lessons by Series",
+    "allDisciplines": "All Disciplines",
+    "sacredScience": "Islamic Sacred Science",
+    "structured": "Structured Curricular Collection",
+    "seriesAndCollections": "Series & Collections",
+    "studiedBooks": "Studied Books",
+    "catalogedLessons": "Cataloged Lessons"
   },
 
   "book": {
@@ -140,7 +170,17 @@
     "tableOfContents": "Table of Contents",
     "chapter": "Chapter",
     "pageCount": "Pages",
-    "fileSize": "Size"
+    "fileSize": "Size",
+    "pdfAvailable": "PDF Available",
+    "goToSeries": "Go to Audio Series",
+    "tabReader": "PDF Manuscript Reader",
+    "tabContents": "Table of Contents",
+    "tabAudio": "Audio Commentary",
+    "tocEmpty": "Detailed table of contents is currently being prepared for this edition.",
+    "lessonsEmpty": "Lessons for this book are being catalogued.",
+    "keyChapters": "Key Chapters",
+    "bookDetails": "Book Details & PDF",
+    "audioSeries": "Audio Series"
   },
 
   "categories": {
@@ -148,7 +188,20 @@
     "lessonsCount": "lessons",
     "duruusCount": "duruus",
     "seriesCount": "series",
-    "booksCount": "books"
+    "booksCount": "books",
+    "notFound": "Category not found.",
+    "notFoundHint": "The requested discipline could not be found.",
+    "returnToCategories": "Return to Categories",
+    "primaryCollections": "Primary Educational Collections",
+    "seriesInCategory": "Series & Collections",
+    "seriesInCategorySubtitle": "Curated curriculum series. Each collection organizes individual lessons sequentially with their attached audio lectures and texts.",
+    "booksInCategory": "Classical Books",
+    "booksInCategorySubtitle": "Classical source texts and treatises explained in these lessons with direct PDF reading and download support.",
+    "lessonDirectoryEyebrow": "Curriculum Lesson Directory",
+    "lessonDirectoryTitle": "Ordered Lessons by Series",
+    "lessonDirectorySubtitle": "Lessons are strictly structured under their respective parent series, reflecting authentic classical progression.",
+    "moreLessons": "more lessons",
+    "expandSeries": "Toggle series lesson list"
   },
 
   "learning": {

@@ -108,7 +108,21 @@
     "durationMedium": "30 - 60 ደቂቃ",
     "durationLong": "ከ60 ደቂቃ በላይ",
     "lessonsFound": "ትምህርቶች ተገኝተዋል",
-    "lessonNumber": "ትምህርት"
+    "lessonNumber": "ትምህርት",
+    "noResults": "ምንም ውጤት አልተገኘም",
+    "noResultsHint": "የተለየ ቃል ይሞክሩ ወይም ማጣሪያውን ያጽዱ።",
+    "searchSeries": "ተከታታዮችን በርዕስ ወይም ርዕሰ-ጉዳይ ይፈልጉ…",
+    "searchBooks": "ኪታቦችን በርዕስ፣ ደራሲ ወይም ቁልፍ ቃል ይፈልጉ…",
+    "filterByCategory": "በዘርፍ አጣሪ",
+    "disciplines": "የዕውቀት ዘርፎችና ቅርንጫፎች",
+    "disciplinesEyebrow": "ቅዱስ ሳይንስ & ምደቦች",
+    "disciplinesSubtitle": "ለባህላዊ የእስልምና ዕውቀት ዋና ቅርንጫፎች ትምህርቶችን፣ የድምጽ ቅጂዎችን እና ኪታቦችን የሚመድብ ሥርዓት ያለው ታክሶኖሚ።",
+    "seriesTitle": "የትምህርት ተከታታዮች እና ሥርዓተ ትምህርቶች",
+    "seriesEyebrow": "ሥርዓተ ትምህርቶች & ጭብጥ ስብስቦች",
+    "seriesSubtitle": "መሠረታዊ ክላሲካዊ ጽሑፎችን ከመጀመሪያ እስከ ፍጻሜ የሚያብራሩ ሥርዓት ያላቸው ብዙ-ክፍል የምሁራዊ ትርጓሜ ተከታታዮች።",
+    "booksTitle": "ኪታቦች፣ ጽሑፎች እና ጽሑፎች",
+    "booksEyebrow": "ክላሲካዊ ጽሑፎች & ትርጓሜዎች",
+    "booksSubtitle": "ሸይኽ ሙሓመድ ዘይን ያብራሯቸው ምርጥ ክላሲካዊ ጽሑፎች እና ዓብይ ትርጓሜዎች ስብስብ — ምዕራፍ ዳሳሽ እና ለማውረድ ዝግጁ PDF ያካትታሉ።"
   },
 
   "lesson": {
@@ -132,7 +146,23 @@
     "description": "ስለ ተከታታይ ትምህርቱ",
     "lessonsIn": "በተከታታዩ ያሉ ትምህርቶች",
     "totalDuration": "አጠቃላይ ቆይታ",
-    "progress": "የደረሱበት ደረጃ"
+    "progress": "የደረሱበት ደረጃ",
+    "startListening": "ከትምህርት 1 ጀምሮ ያዳምጡ",
+    "bookAvailable": "ኪታብ አለ",
+    "searchLessons": "በዚህ ተከታታይ ውስጥ ትምህርቶችን ይፈልጉ…",
+    "goToSeries": "የተከታታዩ ገጽ",
+    "exploreSeries": "ተከታታዩን ያስሱ",
+    "noSeriesFound": "ፍለጋዎን ከሚዛመዱ ተከታታዮች አልተገኙም።",
+    "collectionsIn": "ስብስቦች እና ተከታታዮች",
+    "studiedTexts": "የተጠኑ ጽሑፎች እና ትርጓሜዎች",
+    "lessonDirectory": "ሥርዓተ ትምህርት ማውጫ",
+    "orderedLessons": "በተከታታዮች የተደራጁ ትምህርቶች",
+    "allDisciplines": "ሁሉም ዘርፎች",
+    "sacredScience": "የእስልምና ቅዱስ ዕውቀት",
+    "structured": "ሥርዓት ያለው ሥርዓተ ትምህርት ስብስብ",
+    "seriesAndCollections": "ተከታታዮች እና ስብስቦች",
+    "studiedBooks": "የተጠኑ ኪታቦች",
+    "catalogedLessons": "የተዘረዘሩ ትምህርቶች"
   },
 
   "book": {
@@ -140,7 +170,17 @@
     "tableOfContents": "የርዕሶች ማውጫ",
     "chapter": "ምዕራፍ",
     "pageCount": "ገጾች",
-    "fileSize": "መጠን"
+    "fileSize": "መጠን",
+    "pdfAvailable": "PDF አለ",
+    "goToSeries": "ወደ ድምጽ ተከታታይ ሂድ",
+    "tabReader": "PDF ማንበቢያ",
+    "tabContents": "የምዕራፍ ዝርዝር",
+    "tabAudio": "የድምጽ ትርጓሜ",
+    "tocEmpty": "ዝርዝር ማውጫ ለዚህ እትም እየተዘጋጀ ነው።",
+    "lessonsEmpty": "ለዚህ ኪታብ ትምህርቶች እየተዘረዘሩ ነው።",
+    "keyChapters": "ዋና ምዕራፎች",
+    "bookDetails": "የኪታብ ዝርዝር እና PDF",
+    "audioSeries": "የድምጽ ተከታታይ"
   },
 
   "categories": {
@@ -148,7 +188,20 @@
     "lessonsCount": "ትምህርቶች",
     "duruusCount": "ትምህርቶች",
     "seriesCount": "ተከታታዮች",
-    "booksCount": "ኪታቦች"
+    "booksCount": "ኪታቦች",
+    "notFound": "ዘርፉ አልተገኘም።",
+    "notFoundHint": "የተጠየቀው ዲሲፕሊን ወይም ምድብ አልተገኘም።",
+    "returnToCategories": "ወደ ዘርፎች ዝርዝር ተመለስ",
+    "primaryCollections": "ዋና ዋና የትምህርት ስብስቦች",
+    "seriesInCategory": "ተከታታዮች እና ስብስቦች",
+    "seriesInCategorySubtitle": "በዚህ ዘርፍ ውስጥ የተደራጁ የትምህርት ስብስቦች — እያንዳንዱ ስብስብ ትምህርቶችን ለድምጽ ትምህርቶቻቸው ቅደም ተከተል ያደርጋል።",
+    "booksInCategory": "ክላሲካዊ ኪታቦች",
+    "booksInCategorySubtitle": "ዋናዎቹ ምንጭ ጽሑፎች እና ትርጓሜዎች — PDF ማንበብ እና ማውረድ ይቻላል።",
+    "lessonDirectoryEyebrow": "ሥርዓተ ትምህርት ማውጫ",
+    "lessonDirectoryTitle": "በተከታታዮች የተደራጁ ትምህርቶች",
+    "lessonDirectorySubtitle": "ትምህርቶች በዘፈቀደ አይቀርቡም — ትክክለኛ ክላሲካዊ ቅደም ተከተልን ሲያንፀባርቁ ከወላጅ ተከታታዮቻቸው ሥር ናቸው።",
+    "moreLessons": "ተጨማሪ ትምህርቶች",
+    "expandSeries": "የተከታታዩ ትምህርቶች ዝርዝር አሳይ"
   },
 
   "learning": {

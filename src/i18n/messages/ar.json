@@ -108,7 +108,21 @@
     "durationMedium": "٣٠ - ٦٠ دقيقة",
     "durationLong": "أكثر من ٦٠ دقيقة",
     "lessonsFound": "درساً متاحاً",
-    "lessonNumber": "الدرس"
+    "lessonNumber": "الدرس",
+    "noResults": "لم يتم العثور على نتائج",
+    "noResultsHint": "جرّب تغيير كلمات البحث أو إزالة الفلتر المحدد.",
+    "searchSeries": "ابحث في السلاسل بالعنوان أو الموضوع…",
+    "searchBooks": "ابحث في الكتب بالعنوان أو المؤلف أو الكلمة المفتاحية…",
+    "filterByCategory": "تصفية حسب القسم",
+    "disciplines": "أبواب وفنون العلوم الشرعية",
+    "disciplinesEyebrow": "تصنيف العلوم الإسلامية",
+    "disciplinesSubtitle": "تصنيف منهجي لكافة الدروس والكتب وفق أبواب العلوم الإسلامية الكبرى: من أصول التوحيد والتفسير إلى دقائق اللغة والفقه والمواريث.",
+    "seriesTitle": "السلاسل العلمية والمناهج المكتملة",
+    "seriesEyebrow": "المناهج والسلاسل الموضوعية",
+    "seriesSubtitle": "سلاسل علمية منهجية متكاملة تشرح أمهات الكتب في العقيدة والحديث والتفسير والفقه والنحو برواية منهجية متصلة.",
+    "booksTitle": "الكتب والمتون والمذكرات العلمية",
+    "booksEyebrow": "المتون والأصول التراثية",
+    "booksSubtitle": "مكتبة المتون التراثية والكتب المقررة المشروحة في دروس الشيخ محمد زين، متوفرة للقراءة والتحميل بصيغة PDF مع فهرس تفصيلي."
   },
 
   "lesson": {
@@ -132,7 +146,23 @@
     "description": "نبذة عن السلسلة",
     "lessonsIn": "دروس السلسلة",
     "totalDuration": "إجمالي الساعات",
-    "progress": "نسبة الإنجاز"
+    "progress": "نسبة الإنجاز",
+    "startListening": "بدء الاستماع من المجلس الأول",
+    "bookAvailable": "كتاب متاح",
+    "searchLessons": "بحث في دروس هذه السلسلة…",
+    "goToSeries": "صفحة السلسلة",
+    "exploreSeries": "استعراض السلسلة والدروس",
+    "noSeriesFound": "لا توجد سلاسل تطابق بحثك.",
+    "collectionsIn": "السلاسل والمجموعات",
+    "studiedTexts": "المتون والمصادر المعتمدة",
+    "lessonDirectory": "فهرس الدروس المنهجي",
+    "orderedLessons": "فهرس الدروس مرتبة حسب السلاسل",
+    "allDisciplines": "جميع التصنيفات",
+    "sacredScience": "العلوم الشرعية",
+    "structured": "تصنيف منهجي متكامل",
+    "seriesAndCollections": "السلاسل والشروحات العلمية",
+    "studiedBooks": "الكتب المقررة",
+    "catalogedLessons": "الدروس المفهرسة"
   },
 
   "book": {
@@ -140,7 +170,17 @@
     "tableOfContents": "فهرس المحتويات",
     "chapter": "الباب / الفصل",
     "pageCount": "الصفحات",
-    "fileSize": "الحجم"
+    "fileSize": "الحجم",
+    "pdfAvailable": "PDF متاح",
+    "goToSeries": "الانتقال إلى سلسلة الشرح الصوتي",
+    "tabReader": "قراءة المخطوط PDF",
+    "tabContents": "فهرس الأبواب",
+    "tabAudio": "الشرح الصوتي",
+    "tocEmpty": "فهرس التفصيلي قيد الإعداد لهذه الطبعة.",
+    "lessonsEmpty": "دروس هذا الكتاب قيد الفهرسة.",
+    "keyChapters": "أبواب المتن",
+    "bookDetails": "تفاصيل الكتاب والفهرس",
+    "audioSeries": "سلسلة الشرح الصوتي"
   },
 
   "categories": {
@@ -148,7 +188,20 @@
     "lessonsCount": "درس",
     "duruusCount": "درس",
     "seriesCount": "سلسلة",
-    "booksCount": "كتاب"
+    "booksCount": "كتاب",
+    "notFound": "القسم غير موجود.",
+    "notFoundHint": "لم يتم العثور على الفن العلمي المطلوب.",
+    "returnToCategories": "العودة إلى قائمة الأقسام",
+    "primaryCollections": "السلاسل العلمية المقررة",
+    "seriesInCategory": "السلاسل والشروحات العلمية",
+    "seriesInCategorySubtitle": "مجموعات الدروس المنظمة في هذا الباب، كل سلسلة تضم فهرساً مرتباً بالمجالس الصوتية والمتن المصاحب.",
+    "booksInCategory": "الكتب والمتون المقررة",
+    "booksInCategorySubtitle": "المتون الأصلية والكتب التراثية المشروحة في هذه الدروس مع إمكانية القراءة والتحميل المباشر بصيغة PDF.",
+    "lessonDirectoryEyebrow": "التسلسل المنهجي للمجالس",
+    "lessonDirectoryTitle": "فهرس الدروس مرتبة حسب السلاسل",
+    "lessonDirectorySubtitle": "لا يتم عرض الدروس بشكل عشوائي، بل وفق تسلسل كل كتاب وسلسلة لضمان التحصيل العلمي المتدرج.",
+    "moreLessons": "دروس إضافية",
+    "expandSeries": "توسيع قائمة دروس السلسلة"
   },
 
   "learning": {
