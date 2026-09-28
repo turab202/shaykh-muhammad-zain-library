@@ -88,7 +88,16 @@
     "searchButton": "Search",
     "enterForFull": "Press Enter for full catalog search",
     "seeAll": "See all results",
-    "tryExample": "Try searching for \"Hadith\", \"Tafsir\", or \"الإخلاص\""
+    "tryExample": "Try searching for \"Hadith\", \"Tafsir\", or \"الإخلاص\"",
+    "libraryTitle": "Search the Digital Library",
+    "allResults": "All Results",
+    "tabLessons": "Lessons",
+    "tabSeries": "Series",
+    "tabBooks": "Books",
+    "tabDisciplines": "Disciplines",
+    "foundMatches": "found for",
+    "noMatchHint": "No library items matched your query. Try exploring by category or browsing the full catalog.",
+    "emptyPrompt": "Type any term to search across lessons, series, books, and subjects."
   },
 
   "catalog": {
@@ -287,6 +296,31 @@
     "noLessons": "No lessons available yet.",
     "noSeries": "No series available yet.",
     "noCategories": "No categories available yet."
+  },
+
+  "about": {
+    "eyebrow": "Archival Documentation",
+    "title": "About the Digital Library",
+    "arabicTitle": "مكتبة الشيخ محمد زين حفظه الله ورعاه",
+    "subtitle": "Dedicated to systematically preserving, indexing, and freely disseminating the scholarly heritage and lesson recordings of Shaykh Muhammad Zain.",
+    "scholarTitle": "About Shaykh Muhammad Zain",
+    "scholarBody1": "Shaykh Muhammad Zain (حفظه الله) is an esteemed Islamic scholar and educator recognized for his dedication to traditional Islamic sciences, teaching authentic creed (Aqeedah), prophetic hadith, exegesis of the Quran (Tafsir), and classical Arabic grammar. His instructional methodology focuses on elucidating foundational classical texts with clarity, linguistic precision, and deep practical relevance for students of knowledge.",
+    "scholarBody2": "Over many years, the Shaykh has delivered extensive lesson cycles covering standard Islamic curricula including Riyad as-Salihin, Tafsir Ibn Kathir, Al-Aqeedah Al-Wasitiyyah, Matn al-Ajrumiyyah, Matn Abi Shuja', and many other cornerstone manuals of traditional Islamic learning.",
+    "telegramEyebrow": "Telegram Archive Origin & Transformation",
+    "telegramTitle": "From Telegram Stream to Structured Archival System",
+    "telegramBody1": "The original recordings and course handouts originated within the Shaykh's active Telegram broadcast channel. While Telegram serves as a reliable channel for immediate dissemination, thousands of recordings posted over months and years quickly become challenging to search, navigate sequentially, or study systematically.",
+    "telegramBody2": "This Digital Library platform was developed to transform that unstructured repository into an organized, permanent digital library:",
+    "telegramBullet1": "Thematic Series: Individual lectures organized into chronological lesson cycles aligned with their respective books.",
+    "telegramBullet2": "Chapter Cross-Referencing: Table of contents and audio chapters mapped directly to studied classical texts.",
+    "telegramBullet3": "Multilingual Accessibility: Trilingual interfaces in Arabic, English, and Amharic to serve diverse communities.",
+    "telegramBullet4": "Continuous Audio Experience: High-performance audio player with speed control and progress persistence.",
+    "principlesTitle": "Core Archival Principles",
+    "principle1Title": "Authenticity & Fidelity",
+    "principle1Body": "Preserving original lectures in their exact recorded state with verified provenance linking back to the original Telegram posts.",
+    "principle2Title": "Free Open Access",
+    "principle2Body": "100% free of charge, with no advertisements or commercial barriers, dedicated solely to the pleasure of Allah and spreading beneficial knowledge.",
+    "principle3Title": "Multilingual Bridge",
+    "principle3Body": "Full localization supporting native Arabic typography, English translation, and Amharic representation for East African and international students."
   },
 
   "footer": {
