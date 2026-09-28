@@ -122,7 +122,16 @@
     "seriesSubtitle": "Structured, multi-part scholarly commentary series explaining fundamental classical texts from start to completion.",
     "booksTitle": "Books, Treatises & Texts",
     "booksEyebrow": "Classical Texts & Treatises",
-    "booksSubtitle": "Curated collection of classical texts and annotated treatises explained by Shaykh Muhammad Zain, complete with chapter navigation and downloadable PDFs."
+    "booksSubtitle": "Curated collection of classical texts and annotated treatises explained by Shaykh Muhammad Zain, complete with chapter navigation and downloadable PDFs.",
+    "duruusTitle": "Curated Audio Lessons Catalog",
+    "duruusEyebrow": "Curriculum & Audio Lessons",
+    "duruusSubtitle": "Scholarly lessons sequentially structured within their parent collections and books, with audio lectures and attached texts.",
+    "viewBySeries": "By Series",
+    "showingN": "Showing {count} lessons",
+    "exploreDiscipline": "Explore Discipline",
+    "noLessonsHint": "No lessons match your current filters. Try clearing filters or searching another keyword.",
+    "disciplineContext": "Discipline",
+    "disciplineContextHint": "Explore this discipline's dedicated page to see its structured collections and classical texts."
   },
 
   "lesson": {
@@ -139,7 +148,26 @@
     "rewind10": "10s Back",
     "forward10": "10s Forward",
     "archivalSource": "Archival Source",
-    "datePublished": "Date"
+    "datePublished": "Date",
+    "summary": "Lesson Summary & Topics",
+    "tags": "Keywords",
+    "audioFile": "Complete Audio Lecture (MP3)",
+    "audioQuality": "High Quality Sound",
+    "readBook": "Read Book",
+    "openPdf": "Open PDF",
+    "of": "of",
+    "sequentialLessons": "sequential lessons",
+    "lessonPrefix": "Lesson",
+    "seriesCollection": "Series Collection",
+    "otherLessons": "Other Lessons in Series",
+    "notFound": "Lesson not found.",
+    "notFoundHint": "The requested lesson could not be found in the archive.",
+    "returnToDuruus": "Return to Duruus",
+    "shortcuts": "Shortcuts",
+    "backgroundAudio": "Background audio continues while navigating",
+    "playPause": "Play / Pause",
+    "seek10": "Seek 10s",
+    "viewOriginalPost": "View Original Telegram Post"
   },
 
   "series": {

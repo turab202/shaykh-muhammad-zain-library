@@ -119,10 +119,19 @@
     "disciplinesSubtitle": "ለባህላዊ የእስልምና ዕውቀት ዋና ቅርንጫፎች ትምህርቶችን፣ የድምጽ ቅጂዎችን እና ኪታቦችን የሚመድብ ሥርዓት ያለው ታክሶኖሚ።",
     "seriesTitle": "የትምህርት ተከታታዮች እና ሥርዓተ ትምህርቶች",
     "seriesEyebrow": "ሥርዓተ ትምህርቶች & ጭብጥ ስብስቦች",
-    "seriesSubtitle": "መሠረታዊ ክላሲካዊ ጽሑፎችን ከመጀመሪያ እስከ ፍጻሜ የሚያብራሩ ሥርዓት ያላቸው ብዙ-ክፍል የምሁራዊ ትርጓሜ ተከታታዮች።",
-    "booksTitle": "ኪታቦች፣ ጽሑፎች እና ጽሑፎች",
+    "seriesSubtitle": "መሠረታዊ ክላሲካዊ ጽሑፎችን ከመጀመሪያ እስከ ፍጻሜ የሚያብራሩ ሥርዓት ያላቸው ተከታታዮች።",
+    "booksTitle": "ኪታቦች፣ ጽሑፎች እና ትርጓሜዎች",
     "booksEyebrow": "ክላሲካዊ ጽሑፎች & ትርጓሜዎች",
-    "booksSubtitle": "ሸይኽ ሙሓመድ ዘይን ያብራሯቸው ምርጥ ክላሲካዊ ጽሑፎች እና ዓብይ ትርጓሜዎች ስብስብ — ምዕራፍ ዳሳሽ እና ለማውረድ ዝግጁ PDF ያካትታሉ።"
+    "booksSubtitle": "ሸይኽ ሙሓመድ ዘይን ያብራሯቸው ምርጥ ክላሲካዊ ጽሑፎች እና ዓብይ ትርጓሜዎች — PDF ይጨምራሉ።",
+    "duruusTitle": "የድምጽ ትምህርቶች ፋይል",
+    "duruusEyebrow": "ሥርዓተ ትምህርት & የድምጽ ትምህርቶች",
+    "duruusSubtitle": "ምሁራዊ ትምህርቶች በወላጅ ስብስቦቻቸው እና ኪታቦቻቸው ተደርድረው — ከፍተኛ ጥራት ያለው ድምጽ ጋር።",
+    "viewBySeries": "በተከታታዮች",
+    "showingN": "{count} ትምህርቶች እየታዩ ነው",
+    "exploreDiscipline": "ዘርፉን ያስሱ",
+    "noLessonsHint": "ምንም ትምህርቶች ከማጣሪያ ቅናሾዎ ጋር አይዛመዱም። ማጣሪያዎቹን ያጽዱ ወይም ሌላ ቃል ፈልጉ።",
+    "disciplineContext": "ዘርፍ",
+    "disciplineContextHint": "ሥርዓት ያላቸው ስብስቦቹን እና ክላሲካዊ ጽሑፎቹን ለማየት ለዚህ ዘርፍ ያለውን ገጽ ያስሱ።"
   },
 
   "lesson": {
@@ -139,7 +148,26 @@
     "rewind10": "10 ሰከንድ ወደ ኋላ",
     "forward10": "10 ሰከንድ ወደ ፊት",
     "archivalSource": "የመረጃ ምንጭ",
-    "datePublished": "ቀን"
+    "datePublished": "ቀን",
+    "summary": "የትምህርቱ ማጠቃለያ እና ርዕሶች",
+    "tags": "ቁልፍ ቃላት",
+    "audioFile": "የተሟላ የድምጽ ትምህርት (MP3)",
+    "audioQuality": "ከፍተኛ የድምጽ ጥራት",
+    "readBook": "ኪታቡን አንብብ",
+    "openPdf": "PDF ክፈት",
+    "of": "ከ",
+    "sequentialLessons": "ተከታታይ ትምህርቶች",
+    "lessonPrefix": "ትምህርት",
+    "seriesCollection": "ተከታታይ ስብስብ",
+    "otherLessons": "በዚህ ተከታታይ ውስጥ ሌሎች ትምህርቶች",
+    "notFound": "ትምህርቱ አልተገኘም።",
+    "notFoundHint": "የተጠየቀው ትምህርት በማህደሩ ውስጥ አልተገኘም።",
+    "returnToDuruus": "ወደ ዱሩስ ተመለስ",
+    "shortcuts": "አቋራጭ ቁልፎች",
+    "backgroundAudio": "በማሰስ ወቅት ድምጽ ይቀጥላል",
+    "playPause": "አጫውት / አቁም",
+    "seek10": "10 ሰከንድ ዝለል",
+    "viewOriginalPost": "ዋናውን የቴሌግራም ልጥፍ ይመልከቱ"
   },
 
   "series": {
