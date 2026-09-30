@@ -1,10 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
-import { SeriesCard } from "@/components/cards/SeriesCard";
 import { SeriesFilter } from "./SeriesFilter";
-import { CATALOG_SERIES, CATALOG_CATEGORIES } from "@/lib/fixtures/catalog";
-
-// TEMPORARY — replace with Prisma queries
+import { getPublishedSeries } from "@/server/series/queries";
+import { getPublishedCategories } from "@/server/categories/queries";
+import type { Locale } from "@/types/i18n";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,14 +13,15 @@ export default async function SeriesPage({ params }: Props) {
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
 
-  const series = CATALOG_SERIES;
-  const categories = CATALOG_CATEGORIES;
+  const [series, categories] = await Promise.all([
+    getPublishedSeries(locale as Locale),
+    getPublishedCategories(locale as Locale),
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Breadcrumbs items={[{ label: tNav("series") }]} />
 
-      {/* Header */}
       <div className="pb-6 border-b border-stone-200 dark:border-stone-800 mb-8">
         <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 tracking-wider uppercase">
           {t("seriesEyebrow")}
@@ -34,7 +34,6 @@ export default async function SeriesPage({ params }: Props) {
         </p>
       </div>
 
-      {/* Client filter island + grid */}
       <SeriesFilter
         series={series}
         categories={categories}

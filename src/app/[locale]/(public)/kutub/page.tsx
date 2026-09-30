@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { BooksFilter } from "./BooksFilter";
-import { CATALOG_BOOKS, CATALOG_CATEGORIES } from "@/lib/fixtures/catalog";
-
-// TEMPORARY — replace with Prisma queries
+import { getPublishedBooks } from "@/server/books/queries";
+import { getPublishedCategories } from "@/server/categories/queries";
+import type { Locale } from "@/types/i18n";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -13,6 +13,11 @@ export default async function KutubPage({ params }: Props) {
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
   const tBook = await getTranslations({ locale, namespace: "book" });
+
+  const [books, categories] = await Promise.all([
+    getPublishedBooks(locale as Locale),
+    getPublishedCategories(locale as Locale),
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -31,8 +36,8 @@ export default async function KutubPage({ params }: Props) {
       </div>
 
       <BooksFilter
-        books={CATALOG_BOOKS}
-        categories={CATALOG_CATEGORIES}
+        books={books}
+        categories={categories}
         duruusLabel={tCat("duruusCount")}
         pdfLabel={tBook("pdfAvailable")}
         allCategoriesLabel={t("allCategories")}

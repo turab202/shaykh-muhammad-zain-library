@@ -2,9 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { CategoryCard } from "@/components/cards/CategoryCard";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
-import { CATALOG_CATEGORIES } from "@/lib/fixtures/catalog";
-
-// TEMPORARY — replace with: prisma.category.findMany({ orderBy: { name: 'asc' } })
+import { getPublishedCategories } from "@/server/categories/queries";
+import type { Locale } from "@/types/i18n";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,7 +13,7 @@ export default async function CategoriesPage({ params }: Props) {
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
 
-  const categories = CATALOG_CATEGORIES;
+  const categories = await getPublishedCategories(locale as Locale);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

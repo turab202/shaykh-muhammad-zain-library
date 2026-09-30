@@ -1,16 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { DuruusFilter } from "./DuruusFilter";
-import {
-  CATALOG_LESSONS,
-  CATALOG_CATEGORIES,
-  CATALOG_SERIES,
-} from "@/lib/fixtures/catalog";
-
-// TEMPORARY — replace fixture calls with Prisma queries:
-//   lessons    → prisma.lesson.findMany({ where: { status: 'PUBLISHED' }, include: … })
-//   categories → prisma.category.findMany()
-//   series     → prisma.series.findMany({ where: { status: 'PUBLISHED' } })
+import { getPublishedLessons } from "@/server/lessons/queries";
+import { getPublishedCategories } from "@/server/categories/queries";
+import { getPublishedSeries } from "@/server/series/queries";
+import type { Locale } from "@/types/i18n";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -22,15 +16,16 @@ export default async function DuruusPage({ params }: Props) {
   const tCat = await getTranslations({ locale, namespace: "categories" });
   const tSeries = await getTranslations({ locale, namespace: "series" });
 
-  const lessons = CATALOG_LESSONS;
-  const categories = CATALOG_CATEGORIES;
-  const seriesList = CATALOG_SERIES;
+  const [lessons, categories, seriesList] = await Promise.all([
+    getPublishedLessons(locale as Locale),
+    getPublishedCategories(locale as Locale),
+    getPublishedSeries(locale as Locale),
+  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Breadcrumbs items={[{ label: tNav("lessons") }]} />
 
-      {/* Page header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-stone-200 dark:border-stone-800 mb-8">
         <div>
           <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 tracking-wider uppercase">
@@ -45,7 +40,6 @@ export default async function DuruusPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Client island — all filter/sort/view state lives here */}
       <DuruusFilter
         lessons={lessons}
         categories={categories}

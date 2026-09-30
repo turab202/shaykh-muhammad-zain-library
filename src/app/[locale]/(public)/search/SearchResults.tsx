@@ -70,8 +70,20 @@ function SearchContent({ labels }: { labels: SearchResultsLabels }) {
     setQuery(queryParam);
   }, [queryParam]);
 
-  // TEMPORARY: stub — replace with real API call in Stage H
-  const results: ResultSet = EMPTY_RESULTS;
+  // Real search — calls /api/search when query is non-empty
+  const [results, setResults] = useState<ResultSet>(EMPTY_RESULTS);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    const q = queryParam.trim();
+    if (!q) { setResults(EMPTY_RESULTS); return; }
+    setSearching(true);
+    fetch(`/api/search?q=${encodeURIComponent(q)}&locale=${locale}`)
+      .then((r) => r.json())
+      .then((data) => setResults(data ?? EMPTY_RESULTS))
+      .catch(() => setResults(EMPTY_RESULTS))
+      .finally(() => setSearching(false));
+  }, [queryParam, locale]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,23 +158,42 @@ function SearchContent({ labels }: { labels: SearchResultsLabels }) {
           </div>
 
           {/* Empty state — shown until real search is wired in Stage H */}
-          <div className="py-20 text-center border border-dashed border-stone-300 dark:border-stone-800 rounded-xl">
-            <Compass
-              className="w-10 h-10 mx-auto text-stone-400 mb-3 opacity-60"
-              aria-hidden="true"
-            />
-            <h3 className="font-serif font-bold text-base text-stone-800 dark:text-stone-200">
-              {labels.noResults}
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">
-              {labels.noMatchHint}
-            </p>
-            {/* Stage H note — do not remove until real search is implemented */}
-            <p className="text-[10px] text-stone-400 mt-4 italic">
-              Full-text search will be available in Stage H (PostgreSQL FTS).
-            </p>
-          </div>
-        </div>
+          {searching ? (
+            <div className="py-16 text-center"><div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
+          ) : results.totalCount > 0 ? (
+            <div className="space-y-10">
+              {(activeTab === "all" || activeTab === "lessons") && results.lessons.length > 0 && (
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100 mb-4">{labels.tabLessons} ({results.lessons.length})</h3>
+                  <div className="flex flex-col gap-2.5">{results.lessons.map((l) => <LessonCard key={l.id} lesson={l} viewMode="row" />)}</div>
+                </div>
+              )}
+              {(activeTab === "all" || activeTab === "series") && results.series.length > 0 && (
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100 mb-4">{labels.tabSeries} ({results.series.length})</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{results.series.map((s) => <SeriesCard key={s.id} series={s} duruusLabel={labels.duruusLabel} />)}</div>
+                </div>
+              )}
+              {(activeTab === "all" || activeTab === "books") && results.books.length > 0 && (
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100 mb-4">{labels.tabBooks} ({results.books.length})</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{results.books.map((b) => <BookCard key={b.id} book={b} duruusLabel={labels.duruusLabel} />)}</div>
+                </div>
+              )}
+              {(activeTab === "all" || activeTab === "categories") && results.categories.length > 0 && (
+                <div>
+                  <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100 mb-4">{labels.tabDisciplines} ({results.categories.length})</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{results.categories.map((c) => <CategoryCard key={c.id} category={c} />)}</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-20 text-center border border-dashed border-stone-300 dark:border-stone-800 rounded-xl">
+              <Compass className="w-10 h-10 mx-auto text-stone-400 mb-3 opacity-60" aria-hidden="true" />
+              <h3 className="font-serif font-bold text-base text-stone-800 dark:text-stone-200">{labels.noResults}</h3>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 max-w-sm mx-auto">{labels.noMatchHint}</p>
+            </div>
+          )}        </div>
       ) : (
         <div className="py-20 text-center text-stone-400 dark:text-stone-500">
           <Compass className="w-12 h-12 mx-auto mb-3 opacity-50" aria-hidden="true" />

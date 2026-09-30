@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useAudio } from "@/lib/context/AudioContext";
 import { Headphones } from "lucide-react";
+import { PDFViewerPlaceholder } from "@/components/common/PDFViewerPlaceholder";
 import type { PublicBook, PublicLesson } from "@/types/library";
 
 interface BookTabsProps {
@@ -21,16 +22,9 @@ interface BookTabsProps {
 }
 
 export function BookTabs({
-  book,
-  lessons,
-  tabReaderLabel,
-  tabContentsLabel,
-  tabAudioLabel,
-  chapterLabel,
-  tocEmptyLabel,
-  lessonsEmptyLabel,
-  listenLabel,
-  duruusLabel,
+  book, lessons,
+  tabReaderLabel, tabContentsLabel, tabAudioLabel,
+  tocEmptyLabel, lessonsEmptyLabel, listenLabel,
 }: BookTabsProps) {
   const [tab, setTab] = useState<"reader" | "toc" | "lessons">("reader");
   const { playLesson } = useAudio();
@@ -56,23 +50,18 @@ export function BookTabs({
             }`}
           >
             {label}
-            {tab === key && (
-              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-800 dark:bg-emerald-400 rounded-full" />
-            )}
+            {tab === key && <span className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-800 dark:bg-emerald-400 rounded-full" />}
           </button>
         ))}
       </div>
 
-      {/* Tab: Reader */}
+      {/* Tab: PDF Reader */}
       {tab === "reader" && (
-        <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-6 shadow-sm">
-          <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">
-            {/* PDF viewer will be integrated here — placeholder for now */}
-            {book.pdfAvailable
-              ? `${book.title} · ${book.pdfPages ?? "—"}p · ${book.pdfSize ?? ""}`
-              : tocEmptyLabel}
-          </p>
-        </div>
+        <PDFViewerPlaceholder
+          title={book.title}
+          pdfUrl={book.pdfUrl}
+          totalPages={book.pdfPages ?? 1}
+        />
       )}
 
       {/* Tab: Table of Contents */}
@@ -81,29 +70,16 @@ export function BookTabs({
           {book.tableOfContents && book.tableOfContents.length > 0 ? (
             <div className="divide-y divide-stone-200/80 dark:divide-stone-800/80">
               {book.tableOfContents.map((item) => {
-                const lesson = item.lessonId
-                  ? lessons.find((l) => l.id === item.lessonId)
-                  : undefined;
+                const lesson = item.lessonId ? lessons.find((l) => l.id === item.lessonId) : undefined;
                 return (
-                  <div
-                    key={item.chapter}
-                    className="py-3 flex items-center justify-between text-xs"
-                  >
+                  <div key={item.chapter} className="py-3 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-stone-400 w-8">
-                        {String(item.chapter).padStart(2, "0")}
-                      </span>
-                      <p className="font-semibold text-stone-800 dark:text-stone-200">
-                        {item.title}
-                      </p>
+                      <span className="font-mono text-stone-400 w-8">{String(item.chapter).padStart(2, "0")}</span>
+                      <p className="font-semibold text-stone-800 dark:text-stone-200">{item.title}</p>
                     </div>
                     {lesson && (
-                      <button
-                        onClick={() => playLesson(lesson)}
-                        className="px-3 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Headphones className="w-3.5 h-3.5" aria-hidden="true" />
-                        {listenLabel}
+                      <button onClick={() => playLesson(lesson)} className="px-3 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded font-medium transition-colors flex items-center gap-1.5 cursor-pointer">
+                        <Headphones className="w-3.5 h-3.5" aria-hidden="true" />{listenLabel}
                       </button>
                     )}
                   </div>
@@ -111,9 +87,7 @@ export function BookTabs({
               })}
             </div>
           ) : (
-            <p className="text-xs text-stone-500 dark:text-stone-400 text-center py-6">
-              {tocEmptyLabel}
-            </p>
+            <p className="text-xs text-stone-500 dark:text-stone-400 text-center py-6">{tocEmptyLabel}</p>
           )}
         </div>
       )}
@@ -121,40 +95,22 @@ export function BookTabs({
       {/* Tab: Audio Lessons */}
       {tab === "lessons" && (
         <div className="flex flex-col gap-3">
-          {lessons.length > 0 ? (
-            lessons.map((lesson) => (
-              <div
-                key={lesson.id}
-                className="p-4 bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-lg flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-2 text-[11px] text-stone-500 mb-0.5">
-                    <span className="font-mono font-medium">
-                      #{String(lesson.lessonNumber ?? 0).padStart(3, "0")}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span>{formatDuration(lesson.duration)}</span>
-                  </div>
-                  <Link
-                    href={`/duruus/${lesson.slug}`}
-                    className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 hover:text-emerald-800 dark:hover:text-emerald-400"
-                  >
-                    {lesson.title}
-                  </Link>
+          {lessons.length > 0 ? lessons.map((lesson) => (
+            <div key={lesson.id} className="p-4 bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-lg flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-[11px] text-stone-500 mb-0.5">
+                  <span className="font-mono font-medium">#{String(lesson.lessonNumber ?? 0).padStart(3, "0")}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{fmt(lesson.duration)}</span>
                 </div>
-                <button
-                  onClick={() => playLesson(lesson)}
-                  className="px-3 py-1.5 bg-emerald-900 text-amber-100 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-emerald-800 transition-colors"
-                >
-                  <Headphones className="w-3.5 h-3.5" aria-hidden="true" />
-                  {listenLabel}
-                </button>
+                <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 hover:text-emerald-800 dark:hover:text-emerald-400">{lesson.title}</Link>
               </div>
-            ))
-          ) : (
-            <div className="py-12 text-center text-xs text-stone-500 dark:text-stone-400">
-              {lessonsEmptyLabel}
+              <button onClick={() => playLesson(lesson)} className="px-3 py-1.5 bg-emerald-900 text-amber-100 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-emerald-800 transition-colors">
+                <Headphones className="w-3.5 h-3.5" aria-hidden="true" />{listenLabel}
+              </button>
             </div>
+          )) : (
+            <div className="py-12 text-center text-xs text-stone-500 dark:text-stone-400">{lessonsEmptyLabel}</div>
           )}
         </div>
       )}
@@ -162,8 +118,4 @@ export function BookTabs({
   );
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
+function fmt(s: number): string { const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`; }
