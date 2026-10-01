@@ -21,10 +21,12 @@
 import "dotenv/config";
 import { PrismaClient, ContentStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hashPassword } from "../src/lib/auth/password";
+import bcrypt from "bcryptjs";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
+
+async function hashPassword(p: string) { return bcrypt.hash(p, 12); }
 
 async function main() {
   console.log("🌱 Seeding database...");
