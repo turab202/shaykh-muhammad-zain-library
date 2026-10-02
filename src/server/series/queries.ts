@@ -52,7 +52,19 @@ export async function getPublishedSeries(locale: Locale, categoryId?: string): P
       book: { select: { title: true, slug: true, translations: true } },
     },
   });
-  return rows.map((r) => toPublicSeries(r, locale));
+
+  // Compute totalDuration per series in one extra query and merge
+  const seriesIds = rows.map((r) => r.id);
+  const durations = seriesIds.length
+    ? await prisma.lesson.groupBy({
+        by: ["seriesId"],
+        where: { seriesId: { in: seriesIds }, status: "PUBLISHED" },
+        _sum: { duration: true },
+      })
+    : [];
+  const durationMap = new Map(durations.map((d) => [d.seriesId, d._sum.duration ?? 0]));
+
+  return rows.map((r) => ({ ...toPublicSeries(r, locale), totalDuration: durationMap.get(r.id) ?? 0 }));
 }
 
 export async function getSeriesBySlug(slug: string, locale: Locale): Promise<PublicSeries | null> {
