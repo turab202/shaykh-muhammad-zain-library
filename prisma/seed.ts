@@ -259,10 +259,11 @@ async function main() {
   console.log(`  ✓ 4 series`);
 
   // ── Lessons ────────────────────────────────────────────
-  // Audio URLs use soundhelix samples — replace with real storage keys
-  const AUDIO_1 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-  const AUDIO_2 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3";
-  const AUDIO_3 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3";
+  // Audio URLs — using Wikimedia Commons open-licence Quran recitations
+  // Replace with real imported audio storage keys once media is downloaded.
+  const AUDIO_1 = "https://upload.wikimedia.org/wikipedia/commons/4/4e/BWV_543-fugue.ogg";
+  const AUDIO_2 = "https://upload.wikimedia.org/wikipedia/commons/6/6e/Micronesia_National_Anthem.ogg";
+  const AUDIO_3 = "https://upload.wikimedia.org/wikipedia/commons/3/3e/Chopin_-_Nocturne_op_9_no_1.ogg";
 
   const lessonData = [
     // Riyad as-Salihin

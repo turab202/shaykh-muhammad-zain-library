@@ -9,6 +9,18 @@ function resolveJson(json: unknown, locale: Locale): string | undefined {
   return t[locale] ?? t.en ?? undefined;
 }
 
+/** Convert a storageKey to a playable URL.
+ * - Absolute URLs (http/https) → returned as-is (external/seed audio)
+ * - Relative keys (audio/2026/file.mp3) → /api/media/audio/2026/file.mp3
+ * - Empty string → empty string (no audio)
+ */
+function storageKeyToUrl(key: string | undefined | null): string {
+  if (!key) return "";
+  if (key.startsWith("http://") || key.startsWith("https://")) return key;
+  // Local storage key — serve via the media route
+  return `/api/media/${key}`;
+}
+
 type LessonRow = Awaited<ReturnType<typeof prisma.lesson.findMany>>[0] & {
   category?: { name: string; slug: string; translations: unknown } | null;
   series?: { title: string; slug: string; translations: unknown } | null;
@@ -26,7 +38,7 @@ function toPublicLesson(row: LessonRow, locale: Locale): PublicLesson {
     lessonNumber: row.lessonNumber ?? undefined,
     title: resolveJson(row.translations, locale) ?? row.title,
     description: resolveJson(row.descTranslations ?? {}, locale) ?? row.description ?? undefined,
-    audioUrl: audioMedia?.storageKey ?? "",
+    audioUrl: storageKeyToUrl(audioMedia?.storageKey),
     pdfUrl: pdfMedia?.storageKey ?? undefined,
     duration: row.duration ?? 0,
     publishedAt: row.publishedAt?.toISOString().split("T")[0],
