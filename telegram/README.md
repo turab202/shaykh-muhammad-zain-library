@@ -53,7 +53,7 @@ py -m pip install -r requirements.txt
    TELEGRAM_API_ID=your_api_id
    TELEGRAM_API_HASH=your_api_hash
    TELEGRAM_PHONE=+1234567890
-   TELEGRAM_CHANNEL=@ShaykhMuhammadZain_Archive
+   TELEGRAM_CHANNEL=@SheikhMuhammedZain
    ```
 
 3. Make sure the database is running and migrated:
@@ -81,9 +81,6 @@ Connects to the real channel and fetches messages.
 ```bash
 # Fetch the 100 most recent messages
 py -m telegram.importer.importer --live --limit 100
-
-# Resume from where you left off (use the highest messageId already imported)
-py -m telegram.importer.importer --live --limit 500 --min-id 1800
 
 # Dry run (connect but don't write to DB)
 py -m telegram.importer.importer --live --limit 10 --dry-run

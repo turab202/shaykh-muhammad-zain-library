@@ -302,7 +302,18 @@ async def run_live(
     storage = get_storage(provider=os.getenv("STORAGE_PROVIDER", "LOCAL"), base_path=storage_base)
     downloader_client = None
 
-    async with TelegramClient(session_path, api_id, api_hash) as client:
+    client = TelegramClient(
+        session_path,
+        api_id,
+        api_hash,
+        connection_retries=5,
+        timeout=30,
+        request_retries=3,
+    )
+    # DC2 is confirmed reachable — use it to avoid blocked DC3/DC4
+    client.session.set_dc(2, "149.154.167.41", 443)
+
+    async with client:
         await client.start(phone=phone)
         entity = await client.get_entity(channel)
         chat_id = str(entity.id)

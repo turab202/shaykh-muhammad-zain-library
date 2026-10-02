@@ -152,7 +152,7 @@ class TestLinkExtraction:
     """Verify URL extraction from captions."""
 
     def test_telegram_link_extracted(self):
-        caption = "العقيدة الواسطية #5\nhttps://t.me/ShaykhMuhammadZain_Archive/1855"
+        caption = "العقيدة الواسطية #5\nhttps://t.me/SheikhMuhammedZain/1855"
         links = extract_links(caption)
         assert any("t.me" in l for l in links), f"Links: {links}"
 
