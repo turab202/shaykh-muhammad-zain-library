@@ -134,3 +134,59 @@ export async function updateAdminPassword(
   revalidatePath("/en/admin/settings");
   return { success: "Password updated successfully." };
 }
+
+// ── Admin user management ────────────────────────────────
+
+const CreateAdminSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }).trim(),
+  email: z.string().email({ message: "Valid email is required." }).trim(),
+  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string(),
+  role: z.enum(["ADMIN", "EDITOR"]).default("ADMIN"),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+export type CreateAdminState =
+  | { success?: string; error?: string; errors?: Record<string, string[]> }
+  | undefined;
+
+export async function createAdmin(
+  _state: CreateAdminState,
+  formData: FormData
+): Promise<CreateAdminState> {
+  const session = await requireSession();
+  if (session.role !== "ADMIN") return { error: "Only admins can create new admin users." };
+
+  const validated = CreateAdminSchema.safeParse(Object.fromEntries(formData));
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors as Record<string, string[]> };
+  }
+
+  const { name, email, password, role } = validated.data;
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return { error: "An account with this email already exists." };
+
+  const passwordHash = await hashPassword(password);
+  await prisma.user.create({ data: { name, email, passwordHash, role } });
+
+  revalidatePath("/en/admin/settings");
+  revalidatePath("/ar/admin/settings");
+  revalidatePath("/am/admin/settings");
+  return { success: `Admin user "${name}" created successfully.` };
+}
+
+export async function deleteAdminUser(userId: string): Promise<CreateAdminState> {
+  const session = await requireSession();
+  if (session.role !== "ADMIN") return { error: "Only admins can delete users." };
+  if (session.userId === userId) return { error: "You cannot delete your own account." };
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  revalidatePath("/en/admin/settings");
+  revalidatePath("/ar/admin/settings");
+  revalidatePath("/am/admin/settings");
+  return { success: "User deleted." };
+}
