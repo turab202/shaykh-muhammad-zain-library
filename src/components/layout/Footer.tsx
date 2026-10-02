@@ -36,7 +36,7 @@ export function Footer() {
             </p>
             <div className="pt-2">
               <a
-                href="https://t.me/ShaykhMuhammadZain_Archive"
+                href="https://t.me/SheikhMuhammedZain"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-stone-200/70 dark:bg-stone-800/80 hover:bg-stone-300/80 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-medium transition-colors"

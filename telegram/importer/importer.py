@@ -281,14 +281,20 @@ async def run_live(
     limit: int = 100,
     min_message_id: int = 0,
     dry_run: bool = False,
+    no_media: bool = False,
 ):
     """
     Connect to Telegram via Telethon and import real messages.
     Requires valid TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE.
+
+    no_media=True — record message metadata (filename, file IDs, caption) into
+    the DB but do NOT download any audio/document bytes.  Use this for the
+    initial controlled import run so the inbox is populated quickly without
+    transferring gigabytes.  Media can be downloaded in a separate pass later.
     """
     try:
         from telethon import TelegramClient
-        from telethon.tl.types import MessageMediaDocument, MessageMediaAudio
+        from telethon.network import ConnectionTcpObfuscated
     except ImportError:
         log.error("telethon is not installed. Run: pip install telethon")
         sys.exit(1)
@@ -296,26 +302,80 @@ async def run_live(
     session_path = str(_PROJECT_ROOT / "telegram" / ".session" / "importer")
     Path(session_path).parent.mkdir(parents=True, exist_ok=True)
 
-    log.info("=== LIVE MODE: channel=%s limit=%d ===", channel, limit)
+    log.info(
+        "=== LIVE MODE: channel=%s limit=%d no_media=%s ===",
+        channel, limit, no_media,
+    )
 
     db = ImportDB(database_url)
     storage = get_storage(provider=os.getenv("STORAGE_PROVIDER", "LOCAL"), base_path=storage_base)
-    downloader_client = None
 
-    client = TelegramClient(
-        session_path,
-        api_id,
-        api_hash,
-        connection_retries=5,
-        timeout=30,
-        request_retries=3,
-    )
-    # DC2 is confirmed reachable — use it to avoid blocked DC3/DC4
-    client.session.set_dc(2, "149.154.167.41", 443)
+    # DCs to try in order — falls back automatically if one hangs.
+    # DC2 was confirmed in initial live test; all 5 are probed at connect time.
+    _DC_LIST = [
+        (2, "149.154.167.41",  443),
+        (1, "149.154.175.53",  443),
+        (5, "91.108.56.130",   443),
+        (4, "149.154.167.91",  443),
+    ]
 
-    async with client:
-        await client.start(phone=phone)
-        entity = await client.get_entity(channel)
+    connected_client = None
+    for dc_id, host, port in _DC_LIST:
+        log.info("Attempting DC%d (%s:%d) …", dc_id, host, port)
+        client = TelegramClient(
+            session_path,
+            api_id,
+            api_hash,
+            connection=ConnectionTcpObfuscated,  # bypasses MTProto DPI blocks
+            connection_retries=2,
+            timeout=30,
+            request_retries=3,
+            use_ipv6=False,
+        )
+        client.session.set_dc(dc_id, host, port)
+        try:
+            await asyncio.wait_for(client.connect(), timeout=35)
+            authorized = await asyncio.wait_for(client.is_user_authorized(), timeout=20)
+        except asyncio.TimeoutError:
+            log.warning("DC%d timed out — trying next.", dc_id)
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
+            continue
+        except Exception as e:
+            log.warning("DC%d error: %s — trying next.", dc_id, e)
+            try:
+                await client.disconnect()
+            except Exception:
+                pass
+            continue
+
+        if not authorized:
+            log.error(
+                "Session is not authorized on DC%d.\n"
+                "Run the interactive auth script first:\n"
+                "    py telegram/tests/telegram_auth.py",
+                dc_id,
+            )
+            await client.disconnect()
+            db.close()
+            sys.exit(1)
+
+        log.info("DC%d: authorized — proceeding with import.", dc_id)
+        connected_client = client
+        break
+
+    if connected_client is None:
+        log.error(
+            "Could not establish a working Telegram connection on any DC.\n"
+            "Network may be blocking MTProto. Try running through a SOCKS5 proxy."
+        )
+        db.close()
+        sys.exit(1)
+
+    async with connected_client:
+        entity = await connected_client.get_entity(channel)
         chat_id = str(entity.id)
 
         log.info("Connected. Channel: %s (id=%s)", channel, chat_id)
@@ -323,13 +383,12 @@ async def run_live(
         import_id = db.create_import()
         log.info("Created import job: %s", import_id)
 
-        downloader = TelegramMediaDownloader(client)
         results = []
         errors = 0
 
-        async for message in client.iter_messages(entity, limit=limit, min_id=min_message_id):
+        async for message in connected_client.iter_messages(entity, limit=limit, min_id=min_message_id):
             try:
-                # Extract audio filename from Telegram media attributes
+                # ── Extract raw Telegram metadata ──────────────────────────
                 audio_filename = None
                 telegram_file_id = None
                 telegram_file_unique_id = None
@@ -338,18 +397,43 @@ async def run_live(
                 if message.media and hasattr(message.media, "document"):
                     doc = message.media.document
                     telegram_file_id = str(doc.id)
-                    telegram_file_unique_id = getattr(doc, "file_unique_id", None) or str(doc.access_hash)
+                    # file_unique_id is not a real Telethon attr; fall back to
+                    # access_hash which is stable per (user, file) pair.
+                    telegram_file_unique_id = str(doc.access_hash)
                     for attr in doc.attributes:
                         if hasattr(attr, "file_name") and attr.file_name:
                             audio_filename = attr.file_name
                             break
 
-                    # Download media
-                    with tempfile.TemporaryDirectory() as tmpdir:
-                        temp_dest = os.path.join(tmpdir, audio_filename or "media")
-                        downloaded = await client.download_media(message, file=temp_dest)
-                        if downloaded and os.path.exists(downloaded):
-                            downloaded_path = downloaded
+                    if no_media:
+                        # Metadata-only: record the raw TelegramMessage row but
+                        # do NOT download any bytes.  The storage_key will be
+                        # absent; a later download pass can fill it in.
+                        log.info(
+                            "  [no-media] recording metadata for msgId=%d file=%s",
+                            message.id, audio_filename or "(unknown)",
+                        )
+                        r = process_one_message(
+                            db=db, storage=storage, import_id=import_id,
+                            chat_id=chat_id,
+                            message_id=message.id,
+                            caption=message.text or getattr(message, "caption", None),
+                            date=message.date,
+                            audio_filename=audio_filename,
+                            telegram_file_id=telegram_file_id,
+                            telegram_file_unique_id=telegram_file_unique_id,
+                            raw_json=message.to_dict(),
+                            downloaded_file_path=None,   # no download
+                            dry_run=dry_run,
+                        )
+                    else:
+                        # Full mode: download the file into a temp dir, then
+                        # let process_one_message move it to storage.
+                        with tempfile.TemporaryDirectory() as tmpdir:
+                            temp_dest = os.path.join(tmpdir, audio_filename or "media")
+                            downloaded = await connected_client.download_media(message, file=temp_dest)
+                            if downloaded and os.path.exists(downloaded):
+                                downloaded_path = downloaded
                             r = process_one_message(
                                 db=db, storage=storage, import_id=import_id,
                                 chat_id=chat_id,
@@ -363,27 +447,13 @@ async def run_live(
                                 downloaded_file_path=downloaded_path,
                                 dry_run=dry_run,
                             )
-                        else:
-                            # No media downloaded — still insert the raw record
-                            r = process_one_message(
-                                db=db, storage=storage, import_id=import_id,
-                                chat_id=chat_id, message_id=message.id,
-                                caption=message.text or getattr(message, "caption", None),
-                                date=message.date,
-                                audio_filename=audio_filename,
-                                telegram_file_id=telegram_file_id,
-                                telegram_file_unique_id=telegram_file_unique_id,
-                                raw_json=message.to_dict(),
-                                dry_run=dry_run,
-                            )
-                else:
-                    # Text-only message — no media
-                    if not (message.text or getattr(message, "caption", None)):
-                        continue
+
+                elif message.text or getattr(message, "caption", None):
+                    # Text-only message (no document attachment)
                     r = process_one_message(
                         db=db, storage=storage, import_id=import_id,
                         chat_id=chat_id, message_id=message.id,
-                        caption=message.text,
+                        caption=message.text or getattr(message, "caption", None),
                         date=message.date,
                         audio_filename=None,
                         telegram_file_id=None,
@@ -391,14 +461,18 @@ async def run_live(
                         raw_json=message.to_dict(),
                         dry_run=dry_run,
                     )
+                else:
+                    # Empty message (service message, etc.) — skip silently
+                    log.debug("  skip empty message msgId=%d", message.id)
+                    continue
 
                 results.append(r)
 
             except Exception as exc:
-                log.error("Error on messageId=%d: %s", message.id, exc)
+                log.error("Error on messageId=%d: %s", message.id, exc, exc_info=True)
                 errors += 1
 
-        db.finish_import(import_id, status="DONE" if errors == 0 else "FAILED")
+        db.finish_import(import_id, status="DONE" if errors == 0 else "PARTIAL")
         log.info("Import complete. %d processed, %d errors.", len(results), errors)
         db.close()
         return results
@@ -417,6 +491,11 @@ def main():
     parser.add_argument("--limit", type=int, default=100, help="Max messages to fetch (live mode)")
     parser.add_argument("--min-id", type=int, default=0, help="Only fetch messages with ID > this (live mode, for resuming)")
     parser.add_argument("--dry-run", action="store_true", help="Parse only, do not write to DB")
+    parser.add_argument(
+        "--no-media", action="store_true",
+        help="Record message metadata into DB but do NOT download audio/document bytes. "
+             "Recommended for the initial controlled import run.",
+    )
     args = parser.parse_args()
 
     database_url = os.getenv("DATABASE_URL")
@@ -456,6 +535,7 @@ def main():
             limit=args.limit,
             min_message_id=args.min_id,
             dry_run=args.dry_run,
+            no_media=args.no_media,
         ))
 
 

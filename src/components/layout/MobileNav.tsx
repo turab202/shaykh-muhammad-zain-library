@@ -166,7 +166,7 @@ export function MobileNav({
 
           {/* Telegram channel link */}
           <a
-            href="https://t.me/ShaykhMuhammadZain_Archive"
+            href="https://t.me/SheikhMuhammedZain"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"

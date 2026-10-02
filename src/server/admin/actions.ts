@@ -266,11 +266,13 @@ export async function approveTelegramMessage(id: string, formData: FormData) {
     },
   });
 
-  // Create the published Lesson
+  // Create the Lesson as DRAFT — human must explicitly publish from /admin/lessons.
+  // Do NOT auto-publish. This satisfies the requirement that no Telegram import
+  // content is published without an additional deliberate admin action.
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) + "-" + id.slice(0, 6);
   await prisma.lesson.create({
     data: {
-      slug, title, status: "PUBLISHED", publishedAt: new Date(),
+      slug, title, status: "DRAFT", publishedAt: null,
       lessonNumber, description: description ?? undefined,
       categoryId: categoryId || null, seriesId: seriesId || null, bookId: bookId || null,
       telegramSourceId: id,

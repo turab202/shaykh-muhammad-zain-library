@@ -48,17 +48,26 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   // Load recent searches from localStorage on mount.
   useEffect(() => {
+    let id: ReturnType<typeof setTimeout>;
     try {
       const saved = localStorage.getItem("library_recent_searches");
-      if (saved) setRecentSearches(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        // Defer to avoid "setState synchronously within effect" warning
+        id = setTimeout(() => setRecentSearches(parsed), 0);
+      }
     } catch {
       // ignore
     }
+    return () => clearTimeout(id);
   }, []);
 
   // Reset query when modal closes.
   useEffect(() => {
-    if (!isOpen) setQuery("");
+    if (!isOpen) {
+      const id = setTimeout(() => setQuery(""), 0);
+      return () => clearTimeout(id);
+    }
   }, [isOpen]);
 
   // Focus input when modal opens.

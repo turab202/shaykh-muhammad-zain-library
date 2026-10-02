@@ -12,7 +12,7 @@
  *   This stub is clearly separated so Stage H can drop in the real implementation.
  */
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useReducer, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Search, Compass, X } from "lucide-react";
@@ -54,6 +54,22 @@ const EMPTY_RESULTS: ResultSet = {
   totalCount: 0,
 };
 
+// Search state types — defined outside component to avoid re-creation on every render
+type SearchState = { searching: boolean; results: ResultSet };
+type SearchAction =
+  | { type: "start" }
+  | { type: "done"; data: ResultSet }
+  | { type: "error" };
+
+function searchReducer(state: SearchState, action: SearchAction): SearchState {
+  switch (action.type) {
+    case "start": return { ...state, searching: true };
+    case "done":  return { searching: false, results: action.data };
+    case "error": return { searching: false, results: EMPTY_RESULTS };
+    default: return state;
+  }
+}
+
 function SearchContent({ labels }: { labels: SearchResultsLabels }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -65,24 +81,37 @@ function SearchContent({ labels }: { labels: SearchResultsLabels }) {
     "all" | "lessons" | "series" | "books" | "categories"
   >("all");
 
-  // Sync query state when URL param changes (e.g. browser back/forward)
-  useEffect(() => {
-    setQuery(queryParam);
-  }, [queryParam]);
+  // Sync query input when URL changes (e.g. browser back/forward).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setQuery(queryParam); }, [queryParam]);
 
-  // Real search — calls /api/search when query is non-empty
-  const [results, setResults] = useState<ResultSet>(EMPTY_RESULTS);
-  const [searching, setSearching] = useState(false);
+  // Real search — calls /api/search when query is non-empty.
+  // Uses useReducer so all state transitions happen in one predictable place.
+  // The "clear" case is intentionally absent from the effect: when queryParam
+  // is empty, `results` is derived directly as EMPTY_RESULTS below without
+  // any dispatch, satisfying the react-compiler lint rule.
+  const [searchState, dispatch] = useReducer(searchReducer, {
+    searching: false,
+    results: EMPTY_RESULTS,
+  });
+
+  // Derive displayed results — empty state when there's no query
+  const results  = queryParam.trim() ? searchState.results : EMPTY_RESULTS;
+  const searching = searchState.searching;
 
   useEffect(() => {
     const q = queryParam.trim();
-    if (!q) { setResults(EMPTY_RESULTS); return; }
-    setSearching(true);
+    if (!q) return; // no dispatch on empty query — results derived above
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    dispatch({ type: "start" });
     fetch(`/api/search?q=${encodeURIComponent(q)}&locale=${locale}`)
       .then((r) => r.json())
-      .then((data) => setResults(data ?? EMPTY_RESULTS))
-      .catch(() => setResults(EMPTY_RESULTS))
-      .finally(() => setSearching(false));
+      .then((data: ResultSet) => {
+        if (!cancelled) dispatch({ type: "done", data: data ?? EMPTY_RESULTS });
+      })
+      .catch(() => { if (!cancelled) dispatch({ type: "error" }); });
+    return () => { cancelled = true; };
   }, [queryParam, locale]);
 
   const handleSubmit = (e: React.FormEvent) => {

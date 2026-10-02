@@ -163,7 +163,7 @@ export default async function HomePage({ params }: Props) {
             <h3 className="font-serif font-bold text-2xl sm:text-4xl text-amber-100 mb-4 leading-tight">{tHome("missionTitle")}</h3>
             <p className="text-sm text-stone-300 leading-relaxed mb-8">{tHome("missionBody")}</p>
             <div className="flex flex-wrap items-center gap-4 text-xs font-medium">
-              <a href="https://t.me/ShaykhMuhammadZain_Archive" target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-2 shadow-sm transition-colors"><Send className="w-4 h-4" aria-hidden="true" />{tHome("joinTelegram")}</a>
+              <a href="https://t.me/SheikhMuhammedZain" target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-2 shadow-sm transition-colors"><Send className="w-4 h-4" aria-hidden="true" />{tHome("joinTelegram")}</a>
               <Link href="/about" className="px-5 py-3 rounded-lg bg-stone-800/80 hover:bg-stone-800 text-stone-200 border border-stone-700 flex items-center gap-2 transition-colors"><Compass className="w-4 h-4" aria-hidden="true" />{tHome("learnMore")}</Link>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import NextLink from "next/link";
 import { Compass } from "lucide-react";
 
 export default async function NotFound() {
@@ -12,7 +13,7 @@ export default async function NotFound() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <Compass className="w-12 h-12 text-stone-300 mb-4" />
         <h1 className="font-serif font-bold text-2xl text-stone-800 dark:text-stone-200 mb-2">Page not found</h1>
-        <a href="/" className="text-sm text-emerald-700 hover:underline">Back to home</a>
+        <NextLink href="/" className="text-sm text-emerald-700 hover:underline">Back to home</NextLink>
       </div>
     );
   }
