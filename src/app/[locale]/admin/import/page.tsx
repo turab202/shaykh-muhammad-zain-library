@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Send, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
 import { ImportReviewForm } from "./ImportReviewForm";
+import { RunImportButton } from "./RunImportButton";
 
 export default async function AdminImportPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -42,9 +43,15 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
             <strong>Architecture:</strong> Raw Telegram source data is preserved unchanged. 
             The &ldquo;Suggested Metadata&rdquo; fields below are stored separately and never overwrite the original record.
             Human review and approval are mandatory before any content is published.
-            To import messages from Telegram, use the Python/Telethon importer (Phase D) which will populate this inbox.
           </div>
         </div>
+      </div>
+
+      {/* Run importer */}
+      <div className="p-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
+        <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">Pull new messages from @SheikhMuhammedZain</p>
+        <p className="text-xs text-stone-500 dark:text-stone-400">Fetches the latest 50 messages (metadata only — no audio download). New messages appear in the inbox below.</p>
+        <RunImportButton refreshLabel="Pull from Telegram" />
       </div>
 
       {/* Stats */}
