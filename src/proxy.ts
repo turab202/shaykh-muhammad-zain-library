@@ -23,7 +23,10 @@ export async function proxy(request: NextRequest) {
     const session = await decrypt(sessionToken);
 
     if (!session) {
-      const loginUrl = new URL("/login", request.url);
+      // Detect locale from the pathname prefix (e.g. /en/admin → en)
+      const localeMatch = pathname.match(/^\/(en|ar|am)(\/|$)/);
+      const locale = localeMatch ? localeMatch[1] : "en";
+      const loginUrl = new URL(`/${locale}/login`, request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }

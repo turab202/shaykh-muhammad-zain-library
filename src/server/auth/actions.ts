@@ -47,12 +47,15 @@ export async function login(
   }
 
   await createSession(user.id, user.role);
-  redirect("/admin");
+  // Redirect to callbackUrl if present, or default to /en/admin
+  const callbackUrl = formData.get("callbackUrl") as string | null;
+  const locale = formData.get("locale") as string | null ?? "en";
+  redirect(callbackUrl ?? `/${locale}/admin`);
 }
 
 // ─── Logout action ───────────────────────────────────────
 
 export async function logout(): Promise<void> {
   await deleteSession();
-  redirect("/login");
+  redirect("/en/login");
 }
