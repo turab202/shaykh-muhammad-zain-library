@@ -472,7 +472,7 @@ async def run_live(
                 log.error("Error on messageId=%d: %s", message.id, exc, exc_info=True)
                 errors += 1
 
-        db.finish_import(import_id, status="DONE" if errors == 0 else "PARTIAL")
+        db.finish_import(import_id, status="DONE" if errors == 0 else "FAILED")
         log.info("Import complete. %d processed, %d errors.", len(results), errors)
         db.close()
         return results

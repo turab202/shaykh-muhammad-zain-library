@@ -14,7 +14,7 @@ Key guarantees:
 import json
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Optional
 
 import psycopg2
@@ -27,6 +27,31 @@ def _cuid() -> str:
     ts = int(time.time() * 1000)
     rand = secrets.token_urlsafe(16)
     return f"c{ts:x}{rand}"[:25]
+
+
+class _TelegramJsonEncoder(json.JSONEncoder):
+    """
+    JSON encoder that handles types returned by Telethon's message.to_dict():
+      - datetime  → ISO-8601 string
+      - bytes     → hex string (file IDs, access hashes)
+      - any other non-serialisable → repr() string
+    Raw Telegram data is preserved character-for-character; we only convert
+    Python-native types that JSON doesn't support.
+    """
+    def default(self, obj):  # type: ignore[override]
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        if isinstance(obj, bytes):
+            return obj.hex()
+        try:
+            return super().default(obj)
+        except TypeError:
+            return repr(obj)
+
+
+def _dumps_telegram(obj: dict) -> str:
+    """Serialize a Telegram message dict to JSON, handling all native types."""
+    return json.dumps(obj, cls=_TelegramJsonEncoder, ensure_ascii=False)
 
 
 class ImportDB:
@@ -134,8 +159,8 @@ class ImportDB:
                     telegram_file_id,
                     telegram_file_unique_id,
                     json.dumps(links),
-                    json.dumps(raw_json),
-                    json.dumps(suggested_metadata),
+                    _dumps_telegram(raw_json),
+                    _dumps_telegram(suggested_metadata),
                     import_id,
                 ),
             )
@@ -150,7 +175,7 @@ class ImportDB:
         with self.conn.cursor() as cur:
             cur.execute(
                 'UPDATE telegram_messages SET "suggestedMetadata" = %s WHERE id = %s',
-                (json.dumps(suggested_metadata), record_id),
+                (_dumps_telegram(suggested_metadata), record_id),
             )
         self.conn.commit()
 
