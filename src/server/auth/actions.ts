@@ -6,6 +6,7 @@ import { verifyPassword } from "@/lib/auth/password";
 import {
   createSession,
   deleteSession,
+  requireSession,
 } from "@/lib/auth/session";
 
 // ─── Validation schema ───────────────────────────────────
@@ -58,4 +59,78 @@ export async function login(
 export async function logout(): Promise<void> {
   await deleteSession();
   redirect("/en/login");
+}
+
+// ─── Settings action types ───────────────────────────────
+
+import { hashPassword } from "@/lib/auth/password";
+import { revalidatePath } from "next/cache";
+
+export type SettingsFormState =
+  | { success?: string; error?: string }
+  | undefined;
+
+// ─── Update email action ─────────────────────────────────
+
+export async function updateAdminEmail(
+  _state: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  const session = await requireSession();
+
+  const newEmail = formData.get("email");
+  const parsed = z.string().email({ message: "Valid email is required." }).safeParse(newEmail);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid email." };
+  }
+
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { email: parsed.data },
+  });
+
+  revalidatePath("/en/admin/settings");
+  return { success: "Email updated successfully." };
+}
+
+// ─── Update password action ──────────────────────────────
+
+export async function updateAdminPassword(
+  _state: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  const session = await requireSession();
+
+  const currentPassword = formData.get("currentPassword") as string | null;
+  const newPassword = formData.get("newPassword") as string | null;
+  const confirmPassword = formData.get("confirmPassword") as string | null;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: "All password fields are required." };
+  }
+  if (newPassword.length < 8) {
+    return { error: "New password must be at least 8 characters." };
+  }
+  if (newPassword !== confirmPassword) {
+    return { error: "New passwords do not match." };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user) {
+    return { error: "User not found." };
+  }
+
+  const valid = await verifyPassword(currentPassword, user.passwordHash);
+  if (!valid) {
+    return { error: "Current password is incorrect." };
+  }
+
+  const hashed = await hashPassword(newPassword);
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { passwordHash: hashed },
+  });
+
+  revalidatePath("/en/admin/settings");
+  return { success: "Password updated successfully." };
 }

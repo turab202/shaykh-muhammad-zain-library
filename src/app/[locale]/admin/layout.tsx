@@ -3,7 +3,7 @@ import { requireSession } from "@/lib/auth/session";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import {
-  LayoutDashboard, Layers, BookOpen, FileText, Headphones, Upload, LogOut,
+  LayoutDashboard, Layers, BookOpen, FileText, Headphones, Upload, LogOut, Settings,
 } from "lucide-react";
 import { logout } from "@/server/auth/actions";
 
@@ -21,6 +21,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
     { href: "/admin/lessons", label: t("lessons"), icon: FileText },
     { href: "/admin/media", label: t("media"), icon: Headphones },
     { href: "/admin/import", label: t("imports"), icon: Upload },
+    { href: "/admin/settings", label: t("settings"), icon: Settings },
   ];
 
   return (
@@ -45,7 +46,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
           <form action={logout}>
             <button type="submit" className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-400 transition-colors cursor-pointer">
               <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
-              {t("settings")}
+              Sign out
             </button>
           </form>
         </div>
