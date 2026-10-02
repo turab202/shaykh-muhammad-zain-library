@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { createCategory, deleteCategory } from "@/server/admin/actions";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminCategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -57,9 +58,7 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).series}</td>
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).books}</td>
                 <td className="px-4 py-3">
-                  <form action={deleteCategory.bind(null, c.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:underline cursor-pointer" onClick={(e) => { if (!confirm(`Delete ${c.name}?`)) e.preventDefault(); }}>Delete</button>
-                  </form>
+                  <DeleteButton action={deleteCategory.bind(null, c.id)} label="Delete" itemName={c.name} itemType="category" />
                 </td>
               </tr>
             ))}

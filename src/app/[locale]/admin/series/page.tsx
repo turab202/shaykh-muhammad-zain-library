@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { createSeries, deleteSeries } from "@/server/admin/actions";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminSeriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -68,9 +69,7 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
                 <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${s.status === "PUBLISHED" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-stone-100 dark:bg-stone-800 text-stone-500"}`}>{s.status}</span></td>
                 <td className="px-4 py-3 flex items-center gap-2">
                   <Link href={`/series/${s.slug}`} className="text-blue-600 hover:underline">View</Link>
-                  <form action={deleteSeries.bind(null, s.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:underline cursor-pointer" onClick={(e) => { if (!confirm(`Delete "${s.title}"?`)) e.preventDefault(); }}>Del</button>
-                  </form>
+                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Del" itemName={s.title} itemType="series" />
                 </td>
               </tr>
             ))}

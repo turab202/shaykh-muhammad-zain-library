@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/actions";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminLessonsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -65,9 +66,7 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
                     </form>
                   )}
                   <Link href={`/duruus/${l.slug}`} className="text-blue-600 hover:underline">View</Link>
-                  <form action={deleteLesson.bind(null, l.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:underline cursor-pointer" onClick={(e) => { if (!confirm(`Delete "${l.title}"?`)) e.preventDefault(); }}>Del</button>
-                  </form>
+                  <DeleteButton action={deleteLesson.bind(null, l.id)} label="Del" itemName={l.title} itemType="lesson" />
                 </td>
               </tr>
             ))}

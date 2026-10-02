@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { createBook, deleteBook } from "@/server/admin/actions";
+import { DeleteButton } from "@/components/admin/DeleteButton";
 
 export default async function AdminBooksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -61,9 +62,7 @@ export default async function AdminBooksPage({ params }: { params: Promise<{ loc
                 <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${b.status === "PUBLISHED" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-stone-100 dark:bg-stone-800 text-stone-500"}`}>{b.status}</span></td>
                 <td className="px-4 py-3 flex items-center gap-2">
                   <Link href={`/kutub/${b.slug}`} className="text-blue-600 hover:underline">View</Link>
-                  <form action={deleteBook.bind(null, b.id)} className="inline">
-                    <button type="submit" className="text-red-600 hover:underline cursor-pointer" onClick={(e) => { if (!confirm(`Delete "${b.title}"?`)) e.preventDefault(); }}>Del</button>
-                  </form>
+                  <DeleteButton action={deleteBook.bind(null, b.id)} label="Del" itemName={b.title} itemType="book" />
                 </td>
               </tr>
             ))}
