@@ -38,6 +38,13 @@ yarn-error.log*
 .env.production.local
 # .env.example is intentionally committed (no real secrets)
 
+# telegram importer secrets and sessions
+telegram/.env
+telegram/.session/
+telegram/__pycache__/
+telegram/importer/__pycache__/
+telegram/tests/__pycache__/
+
 # vercel
 .vercel
 

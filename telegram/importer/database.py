@@ -1,0 +1,237 @@
+"""
+Database layer for the Telegram importer.
+
+Uses raw psycopg2 (not Prisma/Node) because this is a standalone Python
+process. All SQL matches exactly the schema in prisma/schema.prisma.
+
+Key guarantees:
+  - Raw Telegram fields are NEVER overwritten after initial insert.
+  - suggestedMetadata is stored separately and may be updated.
+  - Duplicate detection uses the (chatId, messageId) unique constraint.
+  - A single Import record tracks each run.
+"""
+
+import json
+import os
+import uuid
+from datetime import datetime, timezone
+from typing import Optional
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+
+def _cuid() -> str:
+    """Generate a simple unique ID compatible with Prisma cuid() style."""
+    import secrets, time
+    ts = int(time.time() * 1000)
+    rand = secrets.token_urlsafe(16)
+    return f"c{ts:x}{rand}"[:25]
+
+
+class ImportDB:
+    def __init__(self, database_url: str):
+        # psycopg2 does not understand Prisma's ?schema=public parameter — strip it
+        clean_url = database_url.split("?")[0] if "?" in database_url else database_url
+        self.conn = psycopg2.connect(clean_url)
+        self.conn.autocommit = False
+
+    def close(self):
+        self.conn.close()
+
+    # ── Import job tracking ───────────────────────────────────────────────────
+
+    def create_import(self, created_by_id: Optional[str] = None) -> str:
+        """Create an Import record for this run. Returns the import ID."""
+        import_id = _cuid()
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO imports (id, source, status, "startedAt", "createdById", "createdAt")
+                VALUES (%s, 'TELEGRAM', 'PROCESSING', NOW(), %s, NOW())
+                """,
+                (import_id, created_by_id),
+            )
+        self.conn.commit()
+        return import_id
+
+    def finish_import(self, import_id: str, status: str = "DONE"):
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """UPDATE imports SET status = %s, "completedAt" = NOW() WHERE id = %s""",
+                (status, import_id),
+            )
+        self.conn.commit()
+
+    def fail_import(self, import_id: str, reason: str = ""):
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """UPDATE imports SET status = 'FAILED', "completedAt" = NOW() WHERE id = %s""",
+                (import_id,),
+            )
+        self.conn.commit()
+
+    # ── TelegramMessage ───────────────────────────────────────────────────────
+
+    def message_exists(self, chat_id: str, message_id: int) -> bool:
+        """Returns True if this (chatId, messageId) pair already exists."""
+        with self.conn.cursor() as cur:
+            cur.execute(
+                'SELECT id FROM telegram_messages WHERE "chatId" = %s AND "messageId" = %s',
+                (chat_id, message_id),
+            )
+            return cur.fetchone() is not None
+
+    def insert_raw_message(
+        self,
+        *,
+        chat_id: str,
+        message_id: int,
+        caption: Optional[str],
+        date: datetime,
+        audio_filename: Optional[str],
+        telegram_file_id: Optional[str],
+        telegram_file_unique_id: Optional[str],
+        links: list[str],
+        raw_json: dict,
+        suggested_metadata: dict,
+        import_id: Optional[str],
+    ) -> str:
+        """
+        Insert a raw TelegramMessage record.
+        Returns the new record's ID.
+        NEVER call this twice for the same (chatId, messageId) — check first.
+
+        The raw fields (caption, audioFilename, telegramFileId, etc.) are set
+        ONCE here and never updated by subsequent processing.
+        """
+        record_id = _cuid()
+        # Ensure date is timezone-aware UTC
+        if date.tzinfo is None:
+            date = date.replace(tzinfo=timezone.utc)
+
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO telegram_messages (
+                    id, "messageId", "chatId", caption, text, date,
+                    "audioFilename", "telegramFileId", "telegramFileUniqueId",
+                    links, "rawJson", "suggestedMetadata", "importId", "createdAt"
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s, %s, NOW()
+                )
+                """,
+                (
+                    record_id,
+                    message_id,
+                    chat_id,
+                    caption,
+                    caption,        # text is an alias for caption
+                    date,
+                    audio_filename,
+                    telegram_file_id,
+                    telegram_file_unique_id,
+                    json.dumps(links),
+                    json.dumps(raw_json),
+                    json.dumps(suggested_metadata),
+                    import_id,
+                ),
+            )
+        self.conn.commit()
+        return record_id
+
+    def update_suggested_metadata(self, record_id: str, suggested_metadata: dict):
+        """
+        Update ONLY the suggestedMetadata field.
+        Raw source fields are untouched.
+        """
+        with self.conn.cursor() as cur:
+            cur.execute(
+                'UPDATE telegram_messages SET "suggestedMetadata" = %s WHERE id = %s',
+                (json.dumps(suggested_metadata), record_id),
+            )
+        self.conn.commit()
+
+    def get_pending_messages(self, limit: int = 100) -> list[dict]:
+        """Return unprocessed TelegramMessage records (processedAt IS NULL)."""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                """
+                SELECT * FROM telegram_messages
+                WHERE "processedAt" IS NULL
+                ORDER BY date ASC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            return [dict(r) for r in cur.fetchall()]
+
+    # ── Media ─────────────────────────────────────────────────────────────────
+
+    def insert_media(
+        self,
+        *,
+        filename: str,
+        mime_type: str,
+        size: int,
+        duration_seconds: Optional[int],
+        media_type: str,        # 'AUDIO' | 'PDF' | 'IMAGE' | 'DOCUMENT'
+        storage_key: str,
+        storage_provider: str = "LOCAL",
+        lesson_id: Optional[str] = None,
+        book_id: Optional[str] = None,
+    ) -> str:
+        media_id = _cuid()
+        with self.conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO media (
+                    id, filename, "mimeType", size, duration,
+                    "mediaType", "storageKey", "storageProvider",
+                    "lessonId", "bookId", "createdAt"
+                ) VALUES (%s, %s, %s, %s, %s, %s::\"MediaType\", %s, %s::\"StorageProvider\", %s, %s, NOW())
+                """,
+                (
+                    media_id, filename, mime_type, size, duration_seconds,
+                    media_type, storage_key, storage_provider,
+                    lesson_id, book_id,
+                ),
+            )
+        self.conn.commit()
+        return media_id
+
+    # ── Lookup helpers ────────────────────────────────────────────────────────
+
+    def find_series_id_by_slug(self, slug: str) -> Optional[str]:
+        with self.conn.cursor() as cur:
+            cur.execute('SELECT id FROM series WHERE slug = %s', (slug,))
+            row = cur.fetchone()
+            return row[0] if row else None
+
+    def find_category_id_by_slug(self, slug: str) -> Optional[str]:
+        with self.conn.cursor() as cur:
+            cur.execute('SELECT id FROM categories WHERE slug = %s', (slug,))
+            row = cur.fetchone()
+            return row[0] if row else None
+
+    def find_book_id_by_slug(self, slug: str) -> Optional[str]:
+        with self.conn.cursor() as cur:
+            cur.execute('SELECT id FROM books WHERE slug = %s', (slug,))
+            row = cur.fetchone()
+            return row[0] if row else None
+
+    def lesson_slug_exists(self, slug: str) -> bool:
+        with self.conn.cursor() as cur:
+            cur.execute('SELECT 1 FROM lessons WHERE slug = %s', (slug,))
+            return cur.fetchone() is not None
+
+    def get_lesson_count_in_series(self, series_id: str) -> int:
+        with self.conn.cursor() as cur:
+            cur.execute(
+                'SELECT COUNT(*) FROM lessons WHERE "seriesId" = %s',
+                (series_id,),
+            )
+            row = cur.fetchone()
+            return row[0] if row else 0
