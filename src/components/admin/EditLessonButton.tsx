@@ -12,6 +12,14 @@ import { updateLesson } from "@/server/admin/actions";
 interface Option { id: string; name: string }
 interface SeriesOption { id: string; title: string }
 interface BookOption { id: string; title: string }
+interface AudioOption {
+  id: string;
+  filename: string;
+  size: number;
+  duration: number | null;
+  lessonId: string | null;
+  lessonTitle: string | null;
+}
 
 interface LessonData {
   id: string;
@@ -27,6 +35,7 @@ interface LessonData {
   categoryId: string | null;
   seriesId: string | null;
   bookId: string | null;
+  audioMediaId: string | null;
 }
 
 interface EditLessonButtonProps {
@@ -34,9 +43,10 @@ interface EditLessonButtonProps {
   categories: Option[];
   seriesList: SeriesOption[];
   books: BookOption[];
+  audioFiles: AudioOption[];
 }
 
-export function EditLessonButton({ lesson, categories, seriesList, books }: EditLessonButtonProps) {
+export function EditLessonButton({ lesson, categories, seriesList, books, audioFiles }: EditLessonButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -162,6 +172,27 @@ export function EditLessonButton({ lesson, categories, seriesList, books }: Edit
                     {books.map((b) => <option key={b.id} value={b.id}>{b.title}</option>)}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="edit-lesson-audioMediaId" className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">Audio file</label>
+                <select id="edit-lesson-audioMediaId" name="audioMediaId" defaultValue={lesson.audioMediaId ?? ""}
+                  className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700">
+                  <option value="">— No audio —</option>
+                  {audioFiles.map((audio) => {
+                    const assignedElsewhere = audio.lessonId && audio.lessonId !== lesson.id;
+                    const size = audio.size >= 1_000_000
+                      ? `${(audio.size / 1_000_000).toFixed(1)} MB`
+                      : `${Math.round(audio.size / 1_000)} KB`;
+                    const owner = assignedElsewhere ? ` · linked to ${audio.lessonTitle}` : "";
+                    return (
+                      <option key={audio.id} value={audio.id} disabled={!!assignedElsewhere}>
+                        {audio.filename} · {size}{owner}
+                      </option>
+                    );
+                  })}
+                </select>
+                <p className="text-[11px] text-stone-500 mt-1">Only unassigned audio and this lesson’s current audio can be selected.</p>
               </div>
 
               <MT name="description" label="English Description" defaultValue={lesson.description ?? ""} />

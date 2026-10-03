@@ -12,18 +12,35 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
   try { await requireSession(); } catch { redirect("/login"); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
-  const [lessons, categories, seriesList, books] = await Promise.all([
+  const [lessons, categories, seriesList, books, audioFiles] = await Promise.all([
     prisma.lesson.findMany({
       orderBy: [{ seriesId: "asc" }, { lessonNumber: "asc" }],
       include: {
         series: { select: { title: true, slug: true } },
         category: { select: { name: true } },
+          media: {
+            where: { mediaType: "AUDIO" },
+            orderBy: { createdAt: "asc" },
+            select: { id: true },
+          },
       },
       take: 100,
     }),
     prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     prisma.series.findMany({ orderBy: { order: "asc" }, select: { id: true, title: true } }),
     prisma.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    prisma.media.findMany({
+      where: { mediaType: "AUDIO" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        filename: true,
+        size: true,
+        duration: true,
+        lessonId: true,
+        lesson: { select: { title: true } },
+      },
+    }),
   ]);
 
   const statusColor: Record<string, string> = {
@@ -87,10 +104,19 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
                       categoryId: l.categoryId ?? null,
                       seriesId: l.seriesId ?? null,
                       bookId: l.bookId ?? null,
+                      audioMediaId: l.media[0]?.id ?? null,
                     }}
                     categories={categories}
                     seriesList={seriesList}
                     books={books}
+                    audioFiles={audioFiles.map((media) => ({
+                      id: media.id,
+                      filename: media.filename,
+                      size: media.size,
+                      duration: media.duration,
+                      lessonId: media.lessonId,
+                      lessonTitle: media.lesson?.title ?? null,
+                    }))}
                   />
                   <DeleteButton action={deleteLesson.bind(null, l.id)} label="Del" itemName={l.title} itemType="lesson" />
                 </td>

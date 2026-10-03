@@ -180,9 +180,26 @@ const LessonSchema = z.object({
   categoryId: z.string().optional(),
   seriesId: z.string().optional(),
   bookId: z.string().optional(),
+  audioMediaId: z.string().optional(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   publishedAt: z.string().optional(),
 });
+
+function revalidateLessonPages() {
+  for (const path of [
+    "/[locale]/admin/lessons",
+    "/[locale]/duruus",
+    "/[locale]/duruus/[slug]",
+    "/[locale]/series",
+    "/[locale]/series/[slug]",
+    "/[locale]/categories",
+    "/[locale]/categories/[slug]",
+    "/[locale]/kutub/[slug]",
+    "/[locale]",
+  ]) {
+    revalidatePath(path, "page");
+  }
+}
 
 export async function createLesson(formData: FormData) {
   await guard();
@@ -201,28 +218,62 @@ export async function createLesson(formData: FormData) {
       publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
     },
   });
-  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidateLessonPages();
 }
 
 export async function updateLesson(id: string, formData: FormData) {
   await guard();
   const data = LessonSchema.parse(Object.fromEntries(formData));
-  await prisma.lesson.update({
-    where: { id },
-    data: {
-      slug: data.slug, title: data.title, status: data.status,
-      lessonNumber: data.lessonNumber,
-      duration: data.duration,
-      translations: { ar: data.arTitle ?? "", am: data.amTitle ?? "" },
-      description: data.description,
-      descTranslations: { ar: data.arDescription ?? "" },
-      categoryId: data.categoryId || null,
-      seriesId: data.seriesId || null,
-      bookId: data.bookId || null,
-      publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-    },
+  const hasAudioSelection = formData.has("audioMediaId");
+  const audioMediaId = data.audioMediaId || null;
+
+  await prisma.$transaction(async (tx) => {
+    if (hasAudioSelection && audioMediaId) {
+      const selectableAudio = await tx.media.findFirst({
+        where: {
+          id: audioMediaId,
+          mediaType: "AUDIO",
+          OR: [{ lessonId: null }, { lessonId: id }],
+        },
+        select: { id: true },
+      });
+      if (!selectableAudio) {
+        throw new Error("This audio file is already assigned to another lesson or is unavailable.");
+      }
+    }
+
+    await tx.lesson.update({
+      where: { id },
+      data: {
+        slug: data.slug, title: data.title, status: data.status,
+        lessonNumber: data.lessonNumber,
+        duration: data.duration,
+        translations: { ar: data.arTitle ?? "", am: data.amTitle ?? "" },
+        description: data.description,
+        descTranslations: { ar: data.arDescription ?? "" },
+        categoryId: data.categoryId || null,
+        seriesId: data.seriesId || null,
+        bookId: data.bookId || null,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+      },
+    });
+
+    if (hasAudioSelection) {
+      await tx.media.updateMany({
+        where: {
+          lessonId: id,
+          mediaType: "AUDIO",
+          ...(audioMediaId ? { id: { not: audioMediaId } } : {}),
+        },
+        data: { lessonId: null },
+      });
+
+      if (audioMediaId) {
+        await tx.media.update({ where: { id: audioMediaId }, data: { lessonId: id } });
+      }
+    }
   });
-  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidateLessonPages();
 }
 
 export async function deleteLesson(id: string) {
@@ -234,13 +285,13 @@ export async function deleteLesson(id: string) {
 export async function publishLesson(id: string) {
   await guard();
   await prisma.lesson.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: new Date() } });
-  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidateLessonPages();
 }
 
 export async function unpublishLesson(id: string) {
   await guard();
   await prisma.lesson.update({ where: { id }, data: { status: "DRAFT" } });
-  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidateLessonPages();
 }
 
 // ── Telegram Import ──────────────────────────────────────
