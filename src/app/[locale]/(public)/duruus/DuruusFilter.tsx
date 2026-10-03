@@ -157,7 +157,7 @@ export function DuruusFilter({
       )}
 
       {/* Filter bar */}
-      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-5 mb-8 shadow-sm">
+      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-5 mb-8 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           {/* Search */}
           <div className="md:col-span-4 relative">
@@ -290,7 +290,7 @@ export function DuruusFilter({
           {groupedLessons.map(({ series, lessons: groupItems }) => (
             <div
               key={series?.id ?? "standalone"}
-              className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-sm"
+              className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-sm"
             >
               {/* Series header */}
               {series && (

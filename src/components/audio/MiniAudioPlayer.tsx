@@ -50,7 +50,7 @@ export function MiniAudioPlayer() {
   return (
     <aside
       aria-label="Audio player dock"
-      className="fixed bottom-0 inset-x-0 z-50 bg-[var(--bg-parchment)] dark:bg-[#111C17] border-t border-stone-300 dark:border-stone-800 shadow-2xl"
+      className="fixed bottom-0 inset-x-0 z-50 bg-[var(--bg-parchment)] dark:bg-[var(--bg-parchment)] border-t border-stone-300 dark:border-stone-800 shadow-2xl"
     >
       {/* Interactive progress bar */}
       <div

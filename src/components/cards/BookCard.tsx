@@ -19,7 +19,7 @@ export function BookCard({ book, duruusLabel, pdfLabel }: BookCardProps) {
   return (
     <Link
       href={`/kutub/${book.slug}`}
-      className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
+      className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
     >
       {/* Cover placeholder */}
       <div className="relative aspect-[4/3] w-full bg-amber-900/10 dark:bg-amber-400/10 flex items-center justify-center overflow-hidden">

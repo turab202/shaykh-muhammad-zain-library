@@ -55,7 +55,7 @@ export function MobileNav({
 
       {/* Drawer — opens from the start edge (left in LTR, right in RTL) */}
       <div
-        className={`fixed inset-y-0 ${isRtl ? "end-0" : "start-0"} w-4/5 max-w-sm bg-[var(--bg-parchment)] dark:bg-[#0C1410] border-e border-stone-200 dark:border-stone-800 p-6 flex flex-col justify-between shadow-2xl`}
+        className={`fixed inset-y-0 ${isRtl ? "end-0" : "start-0"} w-4/5 max-w-sm bg-[var(--bg-parchment)] dark:bg-[var(--bg-parchment)] border-e border-stone-200 dark:border-stone-800 p-6 flex flex-col justify-between shadow-2xl`}
         role="dialog"
         aria-modal="true"
       >

@@ -19,7 +19,7 @@ export function PDFViewerPlaceholder({ title, pdfUrl, totalPages = 1 }: PDFViewe
   const [zoom, setZoom] = useState(100);
 
   return (
-    <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden shadow-sm">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
         <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">

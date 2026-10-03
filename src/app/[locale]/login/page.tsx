@@ -16,7 +16,7 @@ function LoginForm() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-[#08100C]">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-[var(--bg-parchment)]">
       <div className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl shadow border border-stone-200 dark:border-stone-800 p-8">
         {/* Library name */}
         <div className="text-center mb-6">

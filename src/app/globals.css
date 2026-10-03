@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────────────────
    DESIGN TOKENS
@@ -41,21 +42,33 @@
 
   /* ── Dark mode ────────────────────────────────────────── */
   .dark {
-    --bg-parchment: #0C1410;
-    --bg-surface: #111C17;
-    --bg-surface-elevated: #16251F;
+    --bg-parchment: #19211C;
+    --bg-surface: #232B25;
+    --bg-surface-elevated: #2B342E;
 
-    --border-hairline: #1F332A;
-    --border-subtle: #2D473B;
+    --border-hairline: #37423B;
+    --border-subtle: #46534A;
 
-    --text-primary: #F5F5F4;
-    --text-secondary: #D6D3D1;
-    --text-muted: #A8A29E;
+    --text-primary: #F3F5F3;
+    --text-secondary: #D7DDD8;
+    --text-muted: #AEB8B0;
 
-    --emerald-primary: #10B981;
-    --emerald-hover: #34D399;
-    --emerald-light: #064E3B;
-    --volume-slider-track: #52665C;
+    --emerald-primary: #34D399;
+    --emerald-hover: #6EE7B7;
+    --emerald-light: #153F30;
+    --volume-slider-track: #58665D;
+
+    --color-stone-50: #F3F5F3;
+    --color-stone-100: #E6EBE7;
+    --color-stone-200: #D1D8D3;
+    --color-stone-300: #B7C1BA;
+    --color-stone-400: #9BA79F;
+    --color-stone-500: #818E85;
+    --color-stone-600: #68756C;
+    --color-stone-700: #4E5A52;
+    --color-stone-800: #39443D;
+    --color-stone-900: #2B342E;
+    --color-stone-950: #222923;
 
     --gold-accent: #F59E0B;
     --gold-subtle: #D97706;

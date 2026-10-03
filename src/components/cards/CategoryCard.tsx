@@ -59,7 +59,7 @@ export function CategoryCard({ category, arabicName }: CategoryCardProps) {
   return (
     <Link
       href={`/categories/${category.slug}`}
-      className="group flex flex-col justify-between p-5 bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/80 dark:border-stone-800/80 rounded-xl hover:border-emerald-800/40 dark:hover:border-emerald-700/50 hover:shadow-sm transition-all"
+      className="group flex flex-col justify-between p-5 bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-xl hover:border-emerald-800/40 dark:hover:border-emerald-700/50 hover:shadow-sm transition-all"
     >
       <div>
         {/* Icon + arrow row */}

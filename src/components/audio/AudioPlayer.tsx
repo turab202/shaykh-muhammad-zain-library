@@ -76,7 +76,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
   };
 
   return (
-    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-8 shadow-sm">
+    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-8 shadow-sm">
 
       {/* Status bar */}
       <div className="flex items-center justify-between gap-4 mb-6 text-xs text-stone-500 dark:text-stone-400">

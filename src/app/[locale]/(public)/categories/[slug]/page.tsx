@@ -48,7 +48,7 @@ export default async function CategoryDetailPage({ params }: Props) {
       <Breadcrumbs items={[{ label: tNav("categories"), href: "/categories" }, { label: category.name }]} />
 
       {/* Hero */}
-      <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl p-6 sm:p-8 lg:p-10 mb-10 shadow-sm relative overflow-hidden">
+      <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl p-6 sm:p-8 lg:p-10 mb-10 shadow-sm relative overflow-hidden">
         <div className="absolute end-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-emerald-900/5 rounded-full blur-2xl pointer-events-none" aria-hidden="true" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="max-w-3xl">
@@ -95,7 +95,7 @@ export default async function CategoryDetailPage({ params }: Props) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {seriesWithLessons.map(({ series: s, lessons: sLessons }) => (
-              <div key={s.id} className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/80 dark:border-stone-800/80 rounded-2xl overflow-hidden hover:border-emerald-800/50 dark:hover:border-emerald-700/60 hover:shadow-md transition-all">
+              <div key={s.id} className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-2xl overflow-hidden hover:border-emerald-800/50 dark:hover:border-emerald-700/60 hover:shadow-md transition-all">
                 <div className="relative aspect-video bg-emerald-900/10 dark:bg-emerald-400/10 flex items-center justify-center">
                   <Layers className="w-8 h-8 text-emerald-800/20 dark:text-emerald-400/20" aria-hidden="true" />
                   <div className="absolute top-3 start-3 flex flex-wrap gap-1.5">
@@ -149,7 +149,7 @@ export default async function CategoryDetailPage({ params }: Props) {
         </div>
         <div className="space-y-6">
           {seriesWithLessons.map(({ series: s, lessons: sLessons }) => (
-            <div key={s.id} className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/80 dark:border-stone-800/80 rounded-2xl overflow-hidden shadow-sm">
+            <div key={s.id} className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-2xl overflow-hidden shadow-sm">
               <div className="p-5 sm:p-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-emerald-900/10 dark:bg-emerald-400/10 text-emerald-900 dark:text-emerald-300 flex items-center justify-center shrink-0"><Layers className="w-5 h-5" aria-hidden="true" /></div>

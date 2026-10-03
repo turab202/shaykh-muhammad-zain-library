@@ -42,7 +42,7 @@ export default async function HomePage({ params }: Props) {
     <div className="flex flex-col gap-16 lg:gap-24 pb-16">
 
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-stone-200/80 dark:border-stone-800/80 bg-gradient-to-b from-[#F5F1E8]/70 via-[var(--bg-parchment)] to-[var(--bg-parchment)] dark:from-[#08100C] dark:via-[var(--bg-parchment)] dark:to-[var(--bg-parchment)] pt-12 pb-16 lg:pt-20 lg:pb-24">
+      <section className="relative overflow-hidden border-b border-stone-200/80 dark:border-stone-800/80 bg-gradient-to-b from-[#F5F1E8]/70 via-[var(--bg-parchment)] to-[var(--bg-parchment)] dark:from-[var(--bg-parchment)] dark:via-[var(--bg-parchment)] dark:to-[var(--bg-parchment)] pt-12 pb-16 lg:pt-20 lg:pb-24">
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: "radial-gradient(#1B4332 1px, transparent 1px)", backgroundSize: "24px 24px" }} aria-hidden="true" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
@@ -57,7 +57,7 @@ export default async function HomePage({ params }: Props) {
             <p className="text-sm sm:text-base text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-8">{tHero("description")}</p>
             <form action={`/${locale}/search`} method="GET" className="w-full max-w-xl relative flex items-center mb-8 shadow-sm">
               <Search className="w-5 h-5 absolute start-4 text-stone-400 pointer-events-none" aria-hidden="true" />
-              <input type="text" name="q" placeholder={tSearch("placeholder")} aria-label={tSearch("placeholder")} className="w-full ps-12 pe-28 py-3.5 bg-white dark:bg-[#121E18] border border-stone-300 dark:border-stone-700 rounded-xl text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-800 transition-all" />
+              <input type="text" name="q" placeholder={tSearch("placeholder")} aria-label={tSearch("placeholder")} className="w-full ps-12 pe-28 py-3.5 bg-white dark:bg-[var(--bg-surface)] border border-stone-300 dark:border-stone-700 rounded-xl text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-800 transition-all" />
               <button type="submit" className="absolute end-2 px-4 py-2 bg-emerald-900 dark:bg-emerald-700 hover:bg-emerald-800 dark:hover:bg-emerald-600 text-amber-100 text-xs font-semibold rounded-lg transition-colors cursor-pointer">{tSearch("searchButton")}</button>
             </form>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-medium">
@@ -71,7 +71,7 @@ export default async function HomePage({ params }: Props) {
 
       {/* Stats band */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full -mt-8 sm:-mt-12" aria-label="Archive statistics">
-        <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/90 dark:border-stone-800/90 rounded-xl p-6 sm:p-8 shadow-sm">
+        <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-xl p-6 sm:p-8 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-stone-200 dark:divide-stone-800">
             {[
               { value: stats.totalLessons, label: tHome("statsLessons") },

@@ -38,7 +38,7 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
         className={`group flex items-center justify-between p-3.5 sm:p-4 rounded-lg border transition-all ${
           isCurrent
             ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800/80 shadow-sm"
-            : "bg-[var(--bg-surface)] dark:bg-[#111C16] border-stone-200/80 dark:border-stone-800/80 hover:border-stone-300 dark:hover:border-stone-700"
+            : "bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border-stone-200/80 dark:border-stone-800/80 hover:border-stone-300 dark:hover:border-stone-700"
         }`}
       >
         <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -131,7 +131,7 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
       className={`group flex flex-col justify-between p-5 rounded-xl border transition-all ${
         isCurrent
           ? "bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800 shadow-sm"
-          : "bg-[var(--bg-surface)] dark:bg-[#111C16] border-stone-200/80 dark:border-stone-800/80 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm"
+          : "bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border-stone-200/80 dark:border-stone-800/80 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm"
       }`}
     >
       <div>

@@ -21,7 +21,7 @@ export function SeriesCard({ series, duruusLabel }: SeriesCardProps) {
   return (
     <Link
       href={`/series/${series.slug}`}
-      className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
+      className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
     >
       {/* Cover placeholder — replaced by real image once Media is wired */}
       <div className="relative aspect-video w-full bg-emerald-900/10 dark:bg-emerald-400/10 flex items-center justify-center overflow-hidden">

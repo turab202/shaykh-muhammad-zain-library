@@ -38,7 +38,7 @@ export default async function BookDetailPage({ params }: Props) {
       ]} />
 
       {/* Header */}
-      <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-sm mb-8">
+      <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-sm mb-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           <div className="md:col-span-3 relative aspect-[3/4] rounded-xl overflow-hidden bg-amber-900/10 dark:bg-amber-400/10 flex items-center justify-center shadow-sm max-w-xs mx-auto md:mx-0 w-full">
             <BookOpen className="w-12 h-12 text-amber-800/20 dark:text-amber-400/20" aria-hidden="true" />

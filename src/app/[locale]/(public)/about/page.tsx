@@ -42,7 +42,7 @@ export default async function AboutPage({ params }: Props) {
       </section>
 
       {/* Section 2: Telegram Archive */}
-      <section className="mb-12 bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+      <section className="mb-12 bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-sm">
         <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
           <Send className="w-4 h-4" aria-hidden="true" />
           <span>{t("telegramEyebrow")}</span>
@@ -75,7 +75,7 @@ export default async function AboutPage({ params }: Props) {
           ].map(({ Icon, titleKey, bodyKey }) => (
             <div
               key={titleKey}
-              className="p-5 bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl"
+              className="p-5 bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl"
             >
               <Icon className="w-6 h-6 text-emerald-800 dark:text-emerald-400 mb-3" aria-hidden="true" />
               <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 mb-2">

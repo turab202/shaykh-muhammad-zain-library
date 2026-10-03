@@ -40,7 +40,7 @@ export function SeriesFilter({
   return (
     <>
       {/* Filter bar */}
-      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-5 mb-8 shadow-sm">
+      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-5 mb-8 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           <div className="md:col-span-7 relative">
             <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden="true" />

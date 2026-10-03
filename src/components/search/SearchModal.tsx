@@ -137,7 +137,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
       {/* Dialog */}
       <div
-        className="relative w-full max-w-2xl bg-[var(--bg-parchment)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-2xl bg-[var(--bg-parchment)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl shadow-2xl overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-label={t("quick")}

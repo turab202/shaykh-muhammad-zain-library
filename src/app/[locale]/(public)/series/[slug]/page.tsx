@@ -44,7 +44,7 @@ export default async function SeriesDetailPage({ params }: Props) {
       ]} />
 
       {/* Hero */}
-      <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl overflow-hidden shadow-sm mb-10">
+      <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl overflow-hidden shadow-sm mb-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 sm:p-8 items-center">
           <div className="md:col-span-4 relative aspect-[4/3] rounded-xl overflow-hidden bg-emerald-900/10 dark:bg-emerald-400/10 flex items-center justify-center shadow-sm">
             <Layers className="w-12 h-12 text-emerald-800/20 dark:text-emerald-400/20" aria-hidden="true" />
@@ -68,7 +68,7 @@ export default async function SeriesDetailPage({ params }: Props) {
 
       {/* Linked book */}
       {book && (
-        <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 mb-10 shadow-sm">
+        <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 mb-10 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0"><BookOpen className="w-6 h-6" aria-hidden="true" /></div>
@@ -91,7 +91,7 @@ export default async function SeriesDetailPage({ params }: Props) {
             <span className="text-xs text-stone-500">{lessons.length} {tCat("duruusCount")}</span>
           </div>
         </div>
-        <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-y divide-stone-200/70 dark:divide-stone-800/70">
+        <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-y divide-stone-200/70 dark:divide-stone-800/70">
           {lessons.length === 0 ? (
             <p className="p-6 text-sm text-stone-500">{tSeries("noSeriesFound")}</p>
           ) : lessons.map((lesson) => (

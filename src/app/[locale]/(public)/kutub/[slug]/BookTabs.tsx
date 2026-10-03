@@ -66,7 +66,7 @@ export function BookTabs({
 
       {/* Tab: Table of Contents */}
       {tab === "toc" && (
-        <div className="bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-6 shadow-sm">
+        <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 shadow-sm">
           {book.tableOfContents && book.tableOfContents.length > 0 ? (
             <div className="divide-y divide-stone-200/80 dark:divide-stone-800/80">
               {book.tableOfContents.map((item) => {
@@ -96,7 +96,7 @@ export function BookTabs({
       {tab === "lessons" && (
         <div className="flex flex-col gap-3">
           {lessons.length > 0 ? lessons.map((lesson) => (
-            <div key={lesson.id} className="p-4 bg-[var(--bg-surface)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-lg flex items-center justify-between">
+            <div key={lesson.id} className="p-4 bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-lg flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-[11px] text-stone-500 mb-0.5">
                   <span className="font-mono font-medium">#{String(lesson.lessonNumber ?? 0).padStart(3, "0")}</span>

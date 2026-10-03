@@ -31,7 +31,7 @@ export function SeriesPlaylist({
   const { playLesson } = useAudio();
 
   return (
-    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
+    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <div>
           <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100">

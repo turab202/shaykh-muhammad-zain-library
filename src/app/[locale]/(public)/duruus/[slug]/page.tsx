@@ -47,7 +47,7 @@ export default async function LessonDetailPage({ params }: Props) {
       ]} />
 
       {/* Header card */}
-      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl p-6 sm:p-7 mb-8 shadow-sm">
+      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl p-6 sm:p-7 mb-8 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-3">
           {category && <Link href={`/categories/${category.slug}`} className="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-emerald-800 dark:text-emerald-400 font-semibold transition-colors flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" aria-hidden="true" />{category.name}</Link>}
           {category && series && <ChevronRight className={`w-3 h-3 text-stone-400 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" />}
@@ -71,7 +71,7 @@ export default async function LessonDetailPage({ params }: Props) {
         {/* Main column */}
         <div className="lg:col-span-2 flex flex-col gap-8">
           {/* Summary */}
-          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
+          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
             <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 mb-3">{tLesson("summary")}</h3>
             {lesson.description && <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">{lesson.description}</p>}
             {lesson.tags && lesson.tags.length > 0 && (
@@ -83,7 +83,7 @@ export default async function LessonDetailPage({ params }: Props) {
           </div>
 
           {/* Materials */}
-          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
+          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
             <h3 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2"><FileText className="w-4 h-4 text-emerald-800 dark:text-emerald-400" aria-hidden="true" />{tLesson("materials")}</h3>
             <div className="space-y-3">
               <div className="p-3.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-between gap-4">
@@ -114,13 +114,13 @@ export default async function LessonDetailPage({ params }: Props) {
           {/* Prev / Next */}
           <div className="grid grid-cols-2 gap-4">
             {prevLesson ? (
-              <Link href={`/duruus/${prevLesson.slug}`} className="group p-4 bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-300 dark:hover:border-stone-700 transition-colors flex flex-col justify-between">
+              <Link href={`/duruus/${prevLesson.slug}`} className="group p-4 bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-300 dark:hover:border-stone-700 transition-colors flex flex-col justify-between">
                 <span className="text-[11px] font-semibold text-stone-400 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 flex items-center gap-1"><ChevronLeft className={`w-3.5 h-3.5 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" />{tLesson("previous")}</span>
                 <span className="font-serif font-bold text-xs sm:text-sm text-stone-800 dark:text-stone-200 line-clamp-1 mt-2">#{prevLesson.lessonNumber}: {prevLesson.title}</span>
               </Link>
             ) : <div />}
             {nextLesson ? (
-              <Link href={`/duruus/${nextLesson.slug}`} className="group p-4 bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-300 dark:hover:border-stone-700 transition-colors flex flex-col justify-between text-end">
+              <Link href={`/duruus/${nextLesson.slug}`} className="group p-4 bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-300 dark:hover:border-stone-700 transition-colors flex flex-col justify-between text-end">
                 <span className="text-[11px] font-semibold text-stone-400 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 flex items-center justify-end gap-1">{tLesson("next")}<ChevronRight className={`w-3.5 h-3.5 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" /></span>
                 <span className="font-serif font-bold text-xs sm:text-sm text-stone-800 dark:text-stone-200 line-clamp-1 mt-2">#{nextLesson.lessonNumber}: {nextLesson.title}</span>
               </Link>
@@ -131,7 +131,7 @@ export default async function LessonDetailPage({ params }: Props) {
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
           {/* Telegram provenance */}
-          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[#111C16] border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
             <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3"><Send className="w-4 h-4" aria-hidden="true" />{tLesson("telegramSource")}</div>
             <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{tLesson("telegramPost")}</p>
           </div>
