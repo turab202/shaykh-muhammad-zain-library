@@ -4,14 +4,27 @@ import { PrismaPg } from "@prisma/adapter-pg";
 // Prevent multiple PrismaClient instances during hot reload in development.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is not set.");
+/**
+ * Strip query params that pg/PrismaPg don't support
+ * (channel_binding, schema) while keeping sslmode which Neon requires.
+ */
+function cleanConnectionString(raw: string | undefined): string {
+  if (!raw) throw new Error("DATABASE_URL environment variable is not set.");
+  try {
+    const url = new URL(raw);
+    const sslmode = url.searchParams.get("sslmode");
+    url.search = "";
+    if (sslmode) url.searchParams.set("sslmode", sslmode);
+    return url.toString();
+  } catch {
+    // Not a valid URL — strip the ?schema=public suffix used locally
+    return raw.split("?")[0];
   }
+}
 
-  // PrismaPg adapter — pass connectionString directly.
-  // Neon URLs include ?sslmode=require which pg handles correctly.
+function createPrismaClient(): PrismaClient {
+  const connectionString = cleanConnectionString(process.env.DATABASE_URL);
+
   const adapter = new PrismaPg({ connectionString });
 
   return new PrismaClient({
