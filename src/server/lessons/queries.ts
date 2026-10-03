@@ -21,12 +21,31 @@ function storageKeyToUrl(key: string | undefined | null): string {
   return `/api/media/${key}`;
 }
 
+/**
+ * Resolve the audio URL for a lesson.
+ * Priority:
+ *  1. Media record storageKey (local file or external URL)
+ *  2. Telegram message proxy URL (stream from Telegram CDN via bot)
+ *  3. Empty string (no audio available)
+ */
+function resolveAudioUrl(
+  storageKey: string | null | undefined,
+  telegramSourceId: string | null | undefined,
+  telegramMessageId: number | null | undefined
+): string {
+  if (storageKey) return storageKeyToUrl(storageKey);
+  // No local file — proxy from Telegram if we have the message ID
+  if (telegramMessageId) return `/api/audio/${telegramMessageId}`;
+  return "";
+}
+
 type LessonRow = Awaited<ReturnType<typeof prisma.lesson.findMany>>[0] & {
   category?: { name: string; slug: string; translations: unknown } | null;
   series?: { title: string; slug: string; translations: unknown } | null;
   book?: { title: string; slug: string; translations: unknown } | null;
   media?: { storageKey: string; mediaType: string }[];
   tags?: { tag: { slug: string } }[];
+  telegramSource?: { messageId: number } | null;
 };
 
 function toPublicLesson(row: LessonRow, locale: Locale): PublicLesson {
@@ -38,7 +57,11 @@ function toPublicLesson(row: LessonRow, locale: Locale): PublicLesson {
     lessonNumber: row.lessonNumber ?? undefined,
     title: resolveJson(row.translations, locale) ?? row.title,
     description: resolveJson(row.descTranslations ?? {}, locale) ?? row.description ?? undefined,
-    audioUrl: storageKeyToUrl(audioMedia?.storageKey),
+    audioUrl: resolveAudioUrl(
+      audioMedia?.storageKey,
+      row.telegramSourceId,
+      row.telegramSource?.messageId
+    ),
     pdfUrl: pdfMedia?.storageKey ?? undefined,
     duration: row.duration ?? 0,
     publishedAt: row.publishedAt?.toISOString().split("T")[0],
@@ -61,6 +84,7 @@ const INCLUDE = {
   book: { select: { title: true, slug: true, translations: true } },
   media: { select: { storageKey: true, mediaType: true } },
   tags: { include: { tag: { select: { slug: true } } } },
+  telegramSource: { select: { messageId: true } },
 } as const;
 
 export async function getPublishedLessons(locale: Locale, filters?: LessonFilters): Promise<PublicLesson[]> {
