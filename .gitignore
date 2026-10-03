@@ -45,6 +45,9 @@ telegram/__pycache__/
 telegram/importer/__pycache__/
 telegram/tests/__pycache__/
 
+# local audio/media storage — never commit binary files
+/storage/
+
 # vercel
 .vercel
 

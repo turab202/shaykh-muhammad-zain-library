@@ -10,6 +10,8 @@ function createPrismaClient(): PrismaClient {
     throw new Error("DATABASE_URL environment variable is not set.");
   }
 
+  // PrismaPg adapter — pass connectionString directly.
+  // Neon URLs include ?sslmode=require which pg handles correctly.
   const adapter = new PrismaPg({ connectionString });
 
   return new PrismaClient({
