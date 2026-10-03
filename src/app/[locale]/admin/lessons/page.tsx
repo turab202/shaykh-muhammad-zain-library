@@ -5,20 +5,26 @@ import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { EditLessonButton } from "@/components/admin/EditLessonButton";
 
 export default async function AdminLessonsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   try { await requireSession(); } catch { redirect("/login"); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
-  const lessons = await prisma.lesson.findMany({
-    orderBy: [{ seriesId: "asc" }, { lessonNumber: "asc" }],
-    include: {
-      series: { select: { title: true, slug: true } },
-      category: { select: { name: true } },
-    },
-    take: 100,
-  });
+  const [lessons, categories, seriesList, books] = await Promise.all([
+    prisma.lesson.findMany({
+      orderBy: [{ seriesId: "asc" }, { lessonNumber: "asc" }],
+      include: {
+        series: { select: { title: true, slug: true } },
+        category: { select: { name: true } },
+      },
+      take: 100,
+    }),
+    prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.series.findMany({ orderBy: { order: "asc" }, select: { id: true, title: true } }),
+    prisma.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+  ]);
 
   const statusColor: Record<string, string> = {
     PUBLISHED: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
@@ -66,6 +72,26 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
                     </form>
                   )}
                   <Link href={`/duruus/${l.slug}`} className="text-blue-600 hover:underline">View</Link>
+                  <EditLessonButton
+                    lesson={{
+                      id: l.id,
+                      slug: l.slug,
+                      title: l.title,
+                      translations: (l.translations as Record<string, string>) ?? {},
+                      description: l.description ?? null,
+                      descTranslations: (l.descTranslations as Record<string, string>) ?? {},
+                      lessonNumber: l.lessonNumber ?? null,
+                      duration: l.duration ?? null,
+                      status: l.status,
+                      publishedAt: l.publishedAt ? l.publishedAt.toISOString() : null,
+                      categoryId: l.categoryId ?? null,
+                      seriesId: l.seriesId ?? null,
+                      bookId: l.bookId ?? null,
+                    }}
+                    categories={categories}
+                    seriesList={seriesList}
+                    books={books}
+                  />
                   <DeleteButton action={deleteLesson.bind(null, l.id)} label="Del" itemName={l.title} itemType="lesson" />
                 </td>
               </tr>

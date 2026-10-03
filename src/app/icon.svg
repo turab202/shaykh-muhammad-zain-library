@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background: emerald green matching brand -->
+  <rect width="32" height="32" rx="6" fill="#064E3B"/>
+  <!-- Arabic letter ز (Zain) centered, amber/gold color -->
+  <text
+    x="16"
+    y="23"
+    font-family="'Traditional Arabic', 'Amiri', 'Noto Naskh Arabic', 'Geeza Pro', serif"
+    font-size="22"
+    font-weight="bold"
+    fill="#F5E6C8"
+    text-anchor="middle"
+    dominant-baseline="auto"
+  >ز</text>
+</svg>

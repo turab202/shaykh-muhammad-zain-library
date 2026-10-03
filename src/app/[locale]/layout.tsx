@@ -30,6 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       template: `%s — ${t("name")}`,
     },
     description: t("description"),
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+      ],
+      apple: [
+        { url: "/apple-icon.svg", type: "image/svg+xml" },
+      ],
+    },
   };
 }
 

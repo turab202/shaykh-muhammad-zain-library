@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { createBook, deleteBook } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { EditBookButton } from "@/components/admin/EditBookButton";
 
 export default async function AdminBooksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -62,6 +63,21 @@ export default async function AdminBooksPage({ params }: { params: Promise<{ loc
                 <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${b.status === "PUBLISHED" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-stone-100 dark:bg-stone-800 text-stone-500"}`}>{b.status}</span></td>
                 <td className="px-4 py-3 flex items-center gap-2">
                   <Link href={`/kutub/${b.slug}`} className="text-blue-600 hover:underline">View</Link>
+                  <EditBookButton
+                    book={{
+                      id: b.id,
+                      slug: b.slug,
+                      title: b.title,
+                      translations: (b.translations as Record<string, string>) ?? {},
+                      author: b.author ?? null,
+                      authorTranslations: (b.authorTranslations as Record<string, string>) ?? {},
+                      description: b.description ?? null,
+                      descTranslations: (b.descTranslations as Record<string, string>) ?? {},
+                      status: b.status,
+                      categoryId: b.categoryId ?? null,
+                    }}
+                    categories={categories}
+                  />
                   <DeleteButton action={deleteBook.bind(null, b.id)} label="Del" itemName={b.title} itemType="book" />
                 </td>
               </tr>

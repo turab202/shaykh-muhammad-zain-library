@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { createCategory, deleteCategory } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { EditCategoryButton } from "@/components/admin/EditCategoryButton";
 
 export default async function AdminCategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -42,7 +43,7 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
         <table className="w-full text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>
-              {["Slug", "Name", "Lessons", "Series", "Books", "Actions"].map((h) => (
+              {["Slug", "Name", "Lessons", "Series", "Books", "Actions"].map((h: string) => (
                 <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>
               ))}
             </tr>
@@ -57,7 +58,17 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).lessons}</td>
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).series}</td>
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).books}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 flex items-center gap-1">
+                  <EditCategoryButton category={{
+                    id: c.id,
+                    slug: c.slug,
+                    name: c.name,
+                    translations: (c.translations as Record<string, string>) ?? {},
+                    description: c.description ?? null,
+                    descTranslations: (c.descTranslations as Record<string, string>) ?? {},
+                    icon: c.icon ?? null,
+                    colorClass: c.colorClass ?? null,
+                  }} />
                   <DeleteButton action={deleteCategory.bind(null, c.id)} label="Delete" itemName={c.name} itemType="category" />
                 </td>
               </tr>

@@ -197,7 +197,8 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
               value={isMuted ? 0 : volume}
               onChange={(e) => setVol(parseFloat(e.target.value))}
               aria-label={tLesson("volume")}
-              className="w-20 h-1 bg-stone-300 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-emerald-800 dark:accent-emerald-500"
+              className="volume-slider w-20 cursor-pointer"
+              style={{ "--volume-progress": `${(isMuted ? 0 : volume) * 100}%` } as React.CSSProperties}
             />
           </div>
 

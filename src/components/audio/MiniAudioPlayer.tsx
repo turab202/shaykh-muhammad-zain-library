@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useAudio } from "@/lib/context/AudioContext";
@@ -150,7 +151,8 @@ export function MiniAudioPlayer() {
               value={isMuted ? 0 : volume}
               onChange={(e) => setVol(parseFloat(e.target.value))}
               aria-label={tLesson("volume")}
-              className="w-16 h-1 bg-stone-300 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-emerald-800 dark:accent-emerald-500"
+              className="volume-slider w-16 cursor-pointer"
+              style={{ "--volume-progress": `${(isMuted ? 0 : volume) * 100}%` } as CSSProperties}
             />
           </div>
 

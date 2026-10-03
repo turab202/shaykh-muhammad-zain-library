@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- Background: emerald green -->
+  <rect width="180" height="180" rx="36" fill="#064E3B"/>
+  <!-- Subtle inner border for depth -->
+  <rect x="6" y="6" width="168" height="168" rx="30" fill="none" stroke="#0A6B52" stroke-width="2"/>
+  <!-- Arabic letter ز (Zain) -->
+  <text
+    x="90"
+    y="132"
+    font-family="'Traditional Arabic', 'Amiri', 'Noto Naskh Arabic', 'Geeza Pro', serif"
+    font-size="120"
+    font-weight="bold"
+    fill="#F5E6C8"
+    text-anchor="middle"
+    dominant-baseline="auto"
+  >ز</text>
+</svg>

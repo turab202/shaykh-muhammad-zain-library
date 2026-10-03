@@ -27,6 +27,7 @@
     --emerald-primary: #064E3B;
     --emerald-hover: #043729;
     --emerald-light: #ECFDF5;
+    --volume-slider-track: var(--border-subtle);
 
     /* Accent — Gold */
     --gold-accent: #B45309;
@@ -54,6 +55,7 @@
     --emerald-primary: #10B981;
     --emerald-hover: #34D399;
     --emerald-light: #064E3B;
+    --volume-slider-track: #52665C;
 
     --gold-accent: #F59E0B;
     --gold-subtle: #D97706;
@@ -139,4 +141,59 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 113, 108, 0.45);
+}
+
+.volume-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  accent-color: var(--emerald-primary);
+  direction: ltr;
+  height: 18px;
+  margin: 0;
+  background: linear-gradient(
+    to right,
+    var(--emerald-primary) 0 var(--volume-progress),
+    var(--volume-slider-track) var(--volume-progress) 100%
+  );
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 5px;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 5px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.volume-slider::-moz-range-track {
+  height: 5px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -2.5px;
+  border: 1.5px solid var(--bg-surface);
+  border-radius: 50%;
+  background: var(--emerald-primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--bg-surface);
+  border-radius: 50%;
+  background: var(--emerald-primary);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+
+.volume-slider:focus-visible {
+  outline: 2px solid var(--emerald-primary);
+  outline-offset: 3px;
 }
