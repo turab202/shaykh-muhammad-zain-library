@@ -50,6 +50,7 @@ from .media import (
     get_audio_duration_seconds,
     get_file_size,
 )
+from .publisher import auto_publish_message, MIN_CONFIDENCE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,6 +79,7 @@ def process_one_message(
     # Downloaded file (may be None for offline/no-media mode)
     downloaded_file_path: Optional[str] = None,
     dry_run: bool = False,
+    auto_publish: bool = False,      # NEW: publish immediately after insert
 ) -> dict:
     """
     Process one Telegram message through the full pipeline.
@@ -170,6 +172,31 @@ def process_one_message(
         result["media_stored"] = True
         result["storage_key"] = storage_key
         log.info("  ✓ media stored: %s", storage_key)
+
+    # 5. Auto-publish if requested
+    if auto_publish and not dry_run and db_id:
+        storage_key_for_publish = result.get("storage_key")
+        duration = None
+        size = 0
+        mime = "audio/mpeg"
+        if downloaded_file_path and os.path.exists(downloaded_file_path):
+            duration = get_audio_duration_seconds(downloaded_file_path)
+            size = get_file_size(downloaded_file_path)
+            mime = get_mime_type(audio_filename or downloaded_file_path)
+
+        lesson_id = auto_publish_message(
+            db=db,
+            telegram_msg_id=db_id,
+            suggested=suggested.to_dict(),
+            message_date=date,
+            storage_key=storage_key_for_publish,
+            audio_filename=audio_filename,
+            duration_seconds=duration,
+            file_size=size,
+            mime_type=mime,
+        )
+        result["lesson_id"] = lesson_id
+        result["auto_published"] = lesson_id is not None
 
     return result
 
@@ -282,6 +309,7 @@ async def run_live(
     min_message_id: int = 0,
     dry_run: bool = False,
     no_media: bool = False,
+    auto_publish: bool = False,
 ):
     """
     Connect to Telegram via Telethon and import real messages.
@@ -291,6 +319,11 @@ async def run_live(
     the DB but do NOT download any audio/document bytes.  Use this for the
     initial controlled import run so the inbox is populated quickly without
     transferring gigabytes.  Media can be downloaded in a separate pass later.
+
+    auto_publish=True — after inserting each raw TelegramMessage, immediately
+    create a PUBLISHED Lesson if confidence >= MIN_CONFIDENCE. Use this for
+    the one-time bulk archive import. New posts should use the default
+    (auto_publish=False) so they go through the admin inbox for review.
     """
     try:
         from telethon import TelegramClient
@@ -303,8 +336,8 @@ async def run_live(
     Path(session_path).parent.mkdir(parents=True, exist_ok=True)
 
     log.info(
-        "=== LIVE MODE: channel=%s limit=%d no_media=%s ===",
-        channel, limit, no_media,
+        "=== LIVE MODE: channel=%s limit=%d no_media=%s auto_publish=%s ===",
+        channel, limit, no_media, auto_publish,
     )
 
     db = ImportDB(database_url)
@@ -406,9 +439,6 @@ async def run_live(
                             break
 
                     if no_media:
-                        # Metadata-only: record the raw TelegramMessage row but
-                        # do NOT download any bytes.  The storage_key will be
-                        # absent; a later download pass can fill it in.
                         log.info(
                             "  [no-media] recording metadata for msgId=%d file=%s",
                             message.id, audio_filename or "(unknown)",
@@ -423,12 +453,11 @@ async def run_live(
                             telegram_file_id=telegram_file_id,
                             telegram_file_unique_id=telegram_file_unique_id,
                             raw_json=message.to_dict(),
-                            downloaded_file_path=None,   # no download
+                            downloaded_file_path=None,
                             dry_run=dry_run,
+                            auto_publish=auto_publish,
                         )
                     else:
-                        # Full mode: download the file into a temp dir, then
-                        # let process_one_message move it to storage.
                         with tempfile.TemporaryDirectory() as tmpdir:
                             temp_dest = os.path.join(tmpdir, audio_filename or "media")
                             downloaded = await connected_client.download_media(message, file=temp_dest)
@@ -446,10 +475,10 @@ async def run_live(
                                 raw_json=message.to_dict(),
                                 downloaded_file_path=downloaded_path,
                                 dry_run=dry_run,
+                                auto_publish=auto_publish,
                             )
 
                 elif message.text or getattr(message, "caption", None):
-                    # Text-only message (no document attachment)
                     r = process_one_message(
                         db=db, storage=storage, import_id=import_id,
                         chat_id=chat_id, message_id=message.id,
@@ -460,6 +489,7 @@ async def run_live(
                         telegram_file_unique_id=None,
                         raw_json=message.to_dict(),
                         dry_run=dry_run,
+                        auto_publish=auto_publish,
                     )
                 else:
                     # Empty message (service message, etc.) — skip silently
@@ -495,6 +525,14 @@ def main():
         "--no-media", action="store_true",
         help="Record message metadata into DB but do NOT download audio/document bytes. "
              "Recommended for the initial controlled import run.",
+    )
+    parser.add_argument(
+        "--auto-publish", action="store_true",
+        help=(
+            "Immediately create a PUBLISHED Lesson for every message whose "
+            "confidence >= 0.6. Use this for the one-time bulk archive import. "
+            "New posts should go through the inbox (omit this flag)."
+        ),
     )
     args = parser.parse_args()
 
@@ -536,6 +574,7 @@ def main():
             min_message_id=args.min_id,
             dry_run=args.dry_run,
             no_media=args.no_media,
+            auto_publish=args.auto_publish,
         ))
 
 

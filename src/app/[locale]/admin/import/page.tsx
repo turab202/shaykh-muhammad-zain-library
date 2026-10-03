@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Send, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
 import { ImportReviewForm } from "./ImportReviewForm";
 import { RunImportButton } from "./RunImportButton";
+import { PublishAllButton } from "./PublishAllButton";
 
 export default async function AdminImportPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -60,6 +61,20 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
         <Stat icon={<CheckCircle className="w-4 h-4" />} label={t("alreadyOrganized")} value={processed.filter((m) => !(m.suggestedMetadata as Record<string, unknown>)?.rejected).length} color="text-emerald-600 dark:text-emerald-400" />
         <Stat icon={<XCircle className="w-4 h-4" />} label="Rejected" value={processed.filter((m) => (m.suggestedMetadata as Record<string, unknown>)?.rejected).length} color="text-red-600 dark:text-red-400" />
       </div>
+
+      {/* Bulk publish — one-click publish all high-confidence messages */}
+      {pending.length > 0 && (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2">
+          <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
+            ⚡ Bulk Publish — One-Click Archive Import
+          </p>
+          <p className="text-xs text-emerald-800 dark:text-emerald-300">
+            Publishes all {pending.length} pending message(s) with confidence ≥ 60% directly to the public website.
+            Series, categories and books are created automatically. Low-confidence messages remain in the inbox for manual review.
+          </p>
+          <PublishAllButton pendingCount={pending.length} />
+        </div>
+      )}
 
       {/* Pending review */}
       {pending.length === 0 ? (

@@ -294,3 +294,172 @@ export async function rejectTelegramMessage(id: string, reason?: string) {
   });
   revalidatePath("/[locale]/admin/import", "page");
 }
+
+// ── Bulk publish all pending Telegram inbox messages ────────────────────────
+//
+// Runs the Python publisher logic directly from JS: for each pending
+// TelegramMessage that has a series_slug in its suggestedMetadata and
+// confidence >= 0.6, we create a PUBLISHED Lesson, ensure Series/Category
+// exist, and mark the message as processed.
+//
+// This is the "Publish All" one-click action for the bulk import.
+
+export type BulkPublishState =
+  | { published: number; skipped: number; error?: string }
+  | undefined;
+
+/** Series display names used when creating new series records. */
+const SERIES_META: Record<string, { title: string; arTitle: string; amTitle: string; categorySlug: string }> = {
+  "riyad-as-salihin":          { title: "Riyāḍ aṣ-Ṣāliḥīn",          arTitle: "رياض الصالحين",                      amTitle: "ሪያዱ ሷሊሒን",             categorySlug: "hadith"  },
+  "tafsir-al-saadi":           { title: "Tafsīr as-Saʿdī",             arTitle: "تفسير السعدي",                       amTitle: "ተፍሲሩ አስ-ሰዓዲይ",         categorySlug: "tafsir"  },
+  "al-qawl-al-mufid":          { title: "Al-Qawl al-Mufīd",            arTitle: "القول المفيد على كتاب التوحيد",      amTitle: "አል ቀውሉ ሙፊድ",           categorySlug: "aqeedah" },
+  "sunan-al-nasai":            { title: "Sunan an-Nasāʾī",             arTitle: "سنن النسائي",                        amTitle: "ሱነኑ ነሳኢይ",              categorySlug: "hadith"  },
+  "tafsir-ibn-kathir":         { title: "Tafsīr Ibn Kathīr",           arTitle: "تفسير ابن كثير",                     amTitle: "ተፍሲር ኢብን ከሲር",          categorySlug: "tafsir"  },
+  "al-aqeedah-al-wasitiyyah":  { title: "Al-ʿAqīdah Al-Wāsiṭiyyah",   arTitle: "العقيدة الواسطية",                   amTitle: "አልዐቂዳ አልዋሲጢይያ",        categorySlug: "aqeedah" },
+  "al-ajrumiyyah":             { title: "Al-Ājurrūmiyyah",             arTitle: "الآجرومية",                          amTitle: "አልአጅሩሚያ",               categorySlug: "arabic"  },
+  "bulugh-al-maram":           { title: "Bulūgh al-Marām",             arTitle: "بلوغ المرام",                        amTitle: "ቡሉጉ አልምራም",             categorySlug: "hadith"  },
+  "sunan-ibn-majah":           { title: "Sunan Ibn Mājah",             arTitle: "سنن ابن ماجه",                       amTitle: "ሱነኑ ኢብን ማጃህ",           categorySlug: "hadith"  },
+};
+
+async function ensureSeries(seriesSlug: string): Promise<string | null> {
+  const existing = await prisma.series.findUnique({ where: { slug: seriesSlug } });
+  if (existing) return existing.id;
+
+  const meta = SERIES_META[seriesSlug];
+  if (!meta) return null;
+
+  // Ensure category
+  let category = await prisma.category.findUnique({ where: { slug: meta.categorySlug } });
+  if (!category) return null; // categories must be seeded already
+
+  const series = await prisma.series.create({
+    data: {
+      slug: seriesSlug,
+      title: meta.title,
+      translations: { ar: meta.arTitle, am: meta.amTitle },
+      description: "",
+      descTranslations: {},
+      categoryId: category.id,
+      order: 0,
+      status: "PUBLISHED",
+    },
+  });
+  return series.id;
+}
+
+export async function publishAllPending(): Promise<BulkPublishState> {
+  await guard();
+
+  const pending = await prisma.telegramMessage.findMany({
+    where: { processedAt: null, chatId: "1747155048" },
+    orderBy: { date: "asc" },
+  });
+
+  let published = 0;
+  let skipped = 0;
+
+  for (const msg of pending) {
+    const meta = msg.suggestedMetadata as Record<string, unknown>;
+    const confidence = Number(meta?.confidence ?? 0);
+    const seriesSlug = meta?.series_slug as string | undefined;
+    const lessonNumber = meta?.lesson_number as number | undefined;
+    const rawTitle = (meta?.title as string) ?? "";
+
+    // Skip low-confidence or unidentified messages — leave in inbox
+    if (confidence < 0.6 || !seriesSlug) {
+      skipped++;
+      continue;
+    }
+
+    try {
+      const seriesId = await ensureSeries(seriesSlug);
+      if (!seriesId) { skipped++; continue; }
+
+      // Get category from series
+      const series = await prisma.series.findUnique({
+        where: { id: seriesId },
+        select: { categoryId: true },
+      });
+
+      // Build English title
+      const seriesMeta = SERIES_META[seriesSlug];
+      const seriesDisplay = seriesMeta?.title ?? seriesSlug.replace(/-/g, " ");
+      const hasArabic = /[\u0600-\u06FF]/.test(rawTitle);
+      const title = (!rawTitle || hasArabic)
+        ? (lessonNumber ? `${seriesDisplay} — Lesson ${lessonNumber}` : seriesDisplay)
+        : rawTitle;
+
+      const arTitle = hasArabic ? rawTitle : "";
+
+      // Generate unique slug
+      const base = `${seriesSlug}-${String(lessonNumber ?? 0).padStart(4, "0")}-${msg.id.slice(-6)}`;
+      let slug = base;
+      let counter = 0;
+      while (await prisma.lesson.findUnique({ where: { slug } })) {
+        slug = `${base}-${++counter}`;
+      }
+
+      // Resolve storageKey from suggestedMetadata (set by importer when media was downloaded)
+      const storageKey = (meta?.mediaStorageKey as string) ?? null;
+      const audioFilename = msg.audioFilename ?? null;
+
+      // Create PUBLISHED lesson
+      const lesson = await prisma.lesson.create({
+        data: {
+          slug,
+          title,
+          lessonNumber: lessonNumber ?? null,
+          translations: { ar: arTitle },
+          descTranslations: {},
+          categoryId: series?.categoryId ?? null,
+          seriesId,
+          status: "PUBLISHED",
+          publishedAt: msg.date,
+          duration: 0,
+          telegramSourceId: msg.id,
+          playCount: 0,
+        },
+      });
+
+      // Link media if storageKey is present
+      if (storageKey && audioFilename) {
+        await prisma.media.create({
+          data: {
+            filename: audioFilename,
+            mimeType: "audio/mpeg",
+            size: 0,
+            mediaType: "AUDIO",
+            storageKey,
+            storageProvider: "LOCAL",
+            lessonId: lesson.id,
+          },
+        });
+      }
+
+      // Mark as processed
+      await prisma.telegramMessage.update({
+        where: { id: msg.id },
+        data: {
+          processedAt: new Date(),
+          suggestedMetadata: {
+            ...(meta as object),
+            autoPublished: true,
+            lessonId: lesson.id,
+          },
+        },
+      });
+
+      published++;
+    } catch (err) {
+      console.error(`publishAllPending: failed for msg ${msg.id}:`, err);
+      skipped++;
+    }
+  }
+
+  revalidatePath("/[locale]/admin/import", "page");
+  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidatePath("/[locale]/duruus", "page");
+  revalidatePath("/", "page");
+
+  return { published, skipped };
+}
