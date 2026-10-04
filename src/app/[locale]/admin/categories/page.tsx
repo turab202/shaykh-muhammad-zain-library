@@ -8,7 +8,7 @@ import { EditCategoryButton } from "@/components/admin/EditCategoryButton";
 
 export default async function AdminCategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const categories = await prisma.category.findMany({

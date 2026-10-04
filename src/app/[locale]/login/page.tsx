@@ -6,6 +6,9 @@ import { Suspense } from "react";
 import { login } from "@/server/auth/actions";
 import type { LoginFormState } from "@/server/auth/actions";
 
+// Force dynamic so server action hashes are never stale-cached after redeploy
+export const dynamic = "force-dynamic";
+
 function LoginForm() {
   const locale = useLocale();
   const searchParams = useSearchParams();

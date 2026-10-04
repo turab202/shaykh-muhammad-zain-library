@@ -9,7 +9,7 @@ import { EditLessonButton } from "@/components/admin/EditLessonButton";
 
 export default async function AdminLessonsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const [lessons, categories, seriesList, books, audioFiles] = await Promise.all([

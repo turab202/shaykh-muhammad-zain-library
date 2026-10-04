@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 
 export default async function AdminMediaPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const media = await prisma.media.findMany({

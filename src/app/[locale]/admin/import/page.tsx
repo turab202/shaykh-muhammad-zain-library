@@ -9,7 +9,7 @@ import { PublishAllButton } from "./PublishAllButton";
 
 export default async function AdminImportPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const [pending, processed, categories, series] = await Promise.all([

@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+
+// Force dynamic so server action hashes never go stale after redeploy
+export const dynamic = "force-dynamic";
 import {
   LayoutDashboard, Layers, BookOpen, FileText, Headphones, Upload, LogOut, Settings,
 } from "lucide-react";
@@ -9,7 +12,7 @@ import { logout } from "@/server/auth/actions";
 
 export default async function AdminLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
 
   const t = await getTranslations({ locale, namespace: "admin" });
 

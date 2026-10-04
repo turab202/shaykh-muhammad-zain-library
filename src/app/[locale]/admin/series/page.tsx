@@ -9,7 +9,7 @@ import { EditSeriesButton } from "@/components/admin/EditSeriesButton";
 
 export default async function AdminSeriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const [seriesList, categories, books] = await Promise.all([

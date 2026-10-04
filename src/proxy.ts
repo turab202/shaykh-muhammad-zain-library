@@ -26,8 +26,14 @@ export async function proxy(request: NextRequest) {
       // Detect locale from the pathname prefix (e.g. /en/admin → en)
       const localeMatch = pathname.match(/^\/(en|ar|am)(\/|$)/);
       const locale = localeMatch ? localeMatch[1] : "en";
+      const callbackTarget = pathname.startsWith(`/${locale}/`)
+        ? pathname
+        : pathname.startsWith("/admin")
+          ? `/${locale}${pathname}`
+          : `/${locale}/admin`;
+
       const loginUrl = new URL(`/${locale}/login`, request.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
+      loginUrl.searchParams.set("callbackUrl", callbackTarget);
       return NextResponse.redirect(loginUrl);
     }
   }

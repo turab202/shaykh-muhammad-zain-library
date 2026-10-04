@@ -7,7 +7,7 @@ import { Layers, BookOpen, FileText, Headphones, Upload, AlertCircle } from "luc
 
 export default async function AdminDashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const [lessons, series, books, categories, pendingImports] = await Promise.all([

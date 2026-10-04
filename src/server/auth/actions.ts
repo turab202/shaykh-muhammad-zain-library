@@ -16,6 +16,23 @@ const LoginSchema = z.object({
   password: z.string().min(1, { message: "Password is required." }),
 });
 
+function normalizeCallbackUrl(callbackUrl: string | null, locale: string): string {
+  if (!callbackUrl || callbackUrl === "/") {
+    return `/${locale}/admin`;
+  }
+
+  const target = callbackUrl.trim();
+  if (!target.startsWith("/")) {
+    return `/${locale}/admin`;
+  }
+
+  if (/^\/(en|ar|am)(\/|$)/.test(target)) {
+    return target;
+  }
+
+  return `/${locale}${target}`;
+}
+
 export type LoginFormState =
   | { errors?: { email?: string[]; password?: string[] }; message?: string }
   | undefined;
@@ -48,10 +65,13 @@ export async function login(
   }
 
   await createSession(user.id, user.role);
-  // Redirect to callbackUrl if present, or default to /en/admin
-  const callbackUrl = formData.get("callbackUrl") as string | null;
-  const locale = formData.get("locale") as string | null ?? "en";
-  redirect(callbackUrl ?? `/${locale}/admin`);
+  const locale = (formData.get("locale") as string | null) ?? "en";
+  const callbackUrl = normalizeCallbackUrl(
+    formData.get("callbackUrl") as string | null,
+    locale
+  );
+
+  redirect(callbackUrl);
 }
 
 // ─── Logout action ───────────────────────────────────────

@@ -9,7 +9,7 @@ import { EditBookButton } from "@/components/admin/EditBookButton";
 
 export default async function AdminBooksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  try { await requireSession(); } catch { redirect("/login"); }
+  try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const [books, categories] = await Promise.all([
