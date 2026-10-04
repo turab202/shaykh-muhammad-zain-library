@@ -1,24 +1,39 @@
 /**
  * GET /api/audio/[messageId]
  *
- * Streams audio directly from Telegram's CDN for a given Telegram message ID.
+ * Streams audio from Telegram for a given message ID.
  *
- * Strategy (no Bot token required for public channels):
- *   1. If TELEGRAM_BOT_TOKEN is set: use getFile API → CDN URL
- *   2. If not set: redirect to Telegram's public web URL
- *      t.me/SheikhMuhammedZain/{messageId} opens in Telegram web
- *      The browser/player can fetch the file directly.
+ * The stored telegramFileId is an MTProto document ID (not a Bot API file_id).
+ * To get a Bot API file_id we call forwardMessage or use the channel's
+ * message directly via getUpdates / getChatHistory.
  *
- * The telegramFileId stored in the DB is used with the Bot API.
- * For public channels, files are accessible via the bot even without
- * the user being a member.
+ * Strategy:
+ *   1. Use Bot API: POST /getFile with the message from the PUBLIC channel
+ *      via forwarding to a temp chat — but simpler: use copyMessage to a
+ *      dedicated "storage" chat and get the file_id.
+ *   2. Simpler alternative: call /getUpdates is not suitable for old messages.
+ *      Use the channel username + message_id with the Bot API:
+ *      GET https://api.telegram.org/bot{token}/getUpdates does not work for
+ *      channel posts directly.
+ *
+ *   Best approach for public channels without storing bot file_ids:
+ *   - Use the Bot API method: sendAudio / forwardMessage is a write operation.
+ *   - Instead: redirect to Telegram's web preview for the message.
+ *     For PUBLIC channels this gives direct browser audio playback.
+ *
+ *   For full streaming: store the Bot API file_id during import (future).
+ *   For now: proxy via Bot API by fetching the message and extracting file_id.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const CHANNEL_USERNAME = "SheikhMuhammedZain";
+const CHANNEL = "@SheikhMuhammedZain";
+const CHANNEL_ID = "1747155048"; // numeric, used for Bot API
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TG_API = "https://api.telegram.org";
+const TG = "https://api.telegram.org";
+
+// Cache: mtproto_doc_id → bot_api_file_id (in-memory, per deployment)
+const fileIdCache = new Map<string, string>();
 
 export async function GET(
   req: NextRequest,
@@ -26,70 +41,128 @@ export async function GET(
 ) {
   const { messageId } = await params;
   const msgIdNum = parseInt(messageId, 10);
-  if (isNaN(msgIdNum)) {
-    return new NextResponse("Invalid message ID", { status: 400 });
-  }
+  if (isNaN(msgIdNum)) return new NextResponse("Invalid ID", { status: 400 });
 
-  // Look up the TelegramMessage record
+  // Look up the message record
   const msg = await prisma.telegramMessage.findFirst({
-    where: { chatId: "1747155048", messageId: msgIdNum },
+    where: { chatId: CHANNEL_ID, messageId: msgIdNum },
     select: { telegramFileId: true, audioFilename: true },
   });
 
-  if (!msg) {
-    return new NextResponse("Message not found", { status: 404 });
+  if (!msg?.telegramFileId) {
+    // No file info — redirect to Telegram web
+    return NextResponse.redirect(`https://t.me/${CHANNEL.slice(1)}/${msgIdNum}`);
   }
 
-  // ── Strategy 1: Bot API (best — full streaming with Range support) ────────
-  if (BOT_TOKEN && msg.telegramFileId) {
+  if (!BOT_TOKEN) {
+    // No bot token — redirect to Telegram web (user opens in Telegram)
+    return NextResponse.redirect(`https://t.me/${CHANNEL.slice(1)}/${msgIdNum}`);
+  }
+
+  // Check cache first
+  let botFileId = fileIdCache.get(msg.telegramFileId);
+
+  if (!botFileId) {
+    // Use Bot API: getMessages via the channel.
+    // For public channels, the bot can read messages using the channel username.
+    // We call forwardMessage to get a file_id — but this writes to another chat.
+    // Better: use the channel's message_id directly with copyMessage.
+    // But cleanest for READ-ONLY: call the channel post via Bot API getChatHistory.
+
+    // Actually the cleanest approach: forward the message to the bot's own chat
+    // (Telegram allows this), get file_id from result, delete the forwarded message.
+    // The bot's own chat_id = the bot's user ID.
+
     try {
-      const fileRes = await fetch(
-        `${TG_API}/bot${BOT_TOKEN}/getFile?file_id=${msg.telegramFileId}`,
-        { next: { revalidate: 3600 } }
-      );
-      const fileData = await fileRes.json() as {
+      // Step 1: Get bot's own chat_id (me)
+      const meRes = await fetch(`${TG}/bot${BOT_TOKEN}/getMe`);
+      const meData = await meRes.json() as { ok: boolean; result?: { id: number } };
+      if (!meData.ok || !meData.result) throw new Error("getMe failed");
+      const botChatId = meData.result.id;
+
+      // Step 2: Forward the channel message to the bot's own chat
+      const fwdRes = await fetch(`${TG}/bot${BOT_TOKEN}/forwardMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: botChatId,
+          from_chat_id: CHANNEL,
+          message_id: msgIdNum,
+        }),
+      });
+      const fwdData = await fwdRes.json() as {
         ok: boolean;
-        result?: { file_path: string };
+        result?: { message_id: number; document?: { file_id: string }; audio?: { file_id: string } };
       };
 
-      if (fileData.ok && fileData.result?.file_path) {
-        const audioUrl = `${TG_API}/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
-        const range = req.headers.get("range");
-        const fetchHeaders: HeadersInit = range ? { Range: range } : {};
+      if (!fwdData.ok || !fwdData.result) {
+        throw new Error(`forwardMessage failed: ${JSON.stringify(fwdData)}`);
+      }
 
-        const audioRes = await fetch(audioUrl, { headers: fetchHeaders });
+      const fwdMsg = fwdData.result;
+      botFileId = fwdMsg.document?.file_id ?? fwdMsg.audio?.file_id ?? "";
 
-        const mime = msg.audioFilename?.endsWith(".ogg") ? "audio/ogg"
-          : msg.audioFilename?.endsWith(".m4a") ? "audio/mp4"
-          : "audio/mpeg";
+      if (botFileId) {
+        // Cache it so we don't forward again
+        fileIdCache.set(msg.telegramFileId, botFileId);
 
-        const responseHeaders: Record<string, string> = {
-          "Content-Type": mime,
-          "Accept-Ranges": "bytes",
-          "Cache-Control": "public, max-age=3600",
-        };
-        const cl = audioRes.headers.get("Content-Length");
-        const cr = audioRes.headers.get("Content-Range");
-        if (cl) responseHeaders["Content-Length"] = cl;
-        if (cr) responseHeaders["Content-Range"] = cr;
-        if (msg.audioFilename) {
-          responseHeaders["Content-Disposition"] = `inline; filename="${msg.audioFilename}"`;
-        }
-
-        return new NextResponse(audioRes.body, {
-          status: audioRes.status,
-          headers: responseHeaders,
-        });
+        // Delete the forwarded message (cleanup)
+        await fetch(`${TG}/bot${BOT_TOKEN}/deleteMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: botChatId, message_id: fwdMsg.message_id }),
+        }).catch(() => {}); // ignore deletion errors
       }
     } catch (err) {
-      console.error("Bot API audio proxy error:", err);
-      // fall through to redirect strategy
+      console.error("Audio proxy: failed to get bot file_id:", err);
+      // Fall back to Telegram web redirect
+      return NextResponse.redirect(`https://t.me/${CHANNEL.slice(1)}/${msgIdNum}`);
     }
   }
 
-  // ── Strategy 2: Redirect to Telegram web (works for public channels) ──────
-  // The browser opens the Telegram web player for this specific message.
-  // Audio playback works via Telegram's own web interface.
-  const tgWebUrl = `https://t.me/${CHANNEL_USERNAME}/${msgIdNum}`;
-  return NextResponse.redirect(tgWebUrl, { status: 302 });
+  if (!botFileId) {
+    return NextResponse.redirect(`https://t.me/${CHANNEL.slice(1)}/${msgIdNum}`);
+  }
+
+  // Step 3: Get the actual CDN URL via getFile
+  try {
+    const fileRes = await fetch(`${TG}/bot${BOT_TOKEN}/getFile?file_id=${botFileId}`);
+    const fileData = await fileRes.json() as {
+      ok: boolean;
+      result?: { file_path: string; file_size?: number };
+    };
+
+    if (!fileData.ok || !fileData.result?.file_path) {
+      throw new Error("getFile failed");
+    }
+
+    const audioUrl = `${TG}/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
+
+    // Stream with Range support
+    const range = req.headers.get("range");
+    const fetchHeaders: HeadersInit = range ? { Range: range } : {};
+    const audioRes = await fetch(audioUrl, { headers: fetchHeaders });
+
+    const mime = (msg.audioFilename ?? "").endsWith(".ogg") ? "audio/ogg"
+      : (msg.audioFilename ?? "").endsWith(".m4a") ? "audio/mp4"
+      : "audio/mpeg";
+
+    const resHeaders: Record<string, string> = {
+      "Content-Type": mime,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=3600",
+    };
+    const cl = audioRes.headers.get("Content-Length");
+    const cr = audioRes.headers.get("Content-Range");
+    if (cl) resHeaders["Content-Length"] = cl;
+    if (cr) resHeaders["Content-Range"] = cr;
+
+    return new NextResponse(audioRes.body, {
+      status: audioRes.status,
+      headers: resHeaders,
+    });
+  } catch (err) {
+    console.error("Audio proxy: streaming error:", err);
+    return NextResponse.redirect(`https://t.me/${CHANNEL.slice(1)}/${msgIdNum}`);
+  }
 }
