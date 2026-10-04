@@ -1,29 +1,49 @@
-"""Quick Neon DB status check."""
+"""Quick Neon DB status — run anytime to see live data counts.
+
+Usage:
+    py scripts/neon_status.py
+"""
 import os, psycopg2
 
-NEON = "postgresql://neondb_owner:npg_rf3wYTZ7EDVa@ep-damp-haze-b1r8bscu-pooler.c-5.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=disable"
-conn = psycopg2.connect(NEON, connect_timeout=30)
-cur = conn.cursor()
+NEON = (
+    "postgresql://neondb_owner:npg_rf3wYTZ7EDVa"
+    "@ep-damp-haze-b1r8bscu-pooler.c-5.eu-central-1.aws.neon.tech"
+    "/neondb?sslmode=require&channel_binding=disable"
+)
 
-for table, col in [
-    ("lessons",           "status"),
-    ("series",            "status"),
-    ("books",             "status"),
-    ("categories",        None),
-    ("telegram_messages", "processedAt"),
-    ("media",             None),
-]:
-    cur.execute(f'SELECT COUNT(*) FROM {table}')
-    total = cur.fetchone()[0]
-    if col == "status":
-        cur.execute(f"SELECT status, COUNT(*) FROM {table} GROUP BY status")
-        breakdown = ", ".join(f"{r[0]}:{r[1]}" for r in cur.fetchall())
-        print(f"  {table:<22} {total:>5}  ({breakdown})")
-    elif col == "processedAt":
-        cur.execute(f'SELECT COUNT(*) FROM {table} WHERE "processedAt" IS NULL')
-        pending = cur.fetchone()[0]
-        print(f"  {table:<22} {total:>5}  (pending={pending} processed={total-pending})")
-    else:
-        print(f"  {table:<22} {total:>5}")
+print("Connecting to Neon…")
+try:
+    conn = psycopg2.connect(NEON, connect_timeout=20)
+except Exception as e:
+    print(f"  ✗ {e}")
+    raise SystemExit(1)
+
+cur = conn.cursor()
+print("Connected!\n")
+
+rows = [
+    ("lessons (PUBLISHED)", "SELECT COUNT(*) FROM lessons WHERE status='PUBLISHED'"),
+    ("lessons (DRAFT)",     "SELECT COUNT(*) FROM lessons WHERE status='DRAFT'"),
+    ("series",              "SELECT COUNT(*) FROM series WHERE status='PUBLISHED'"),
+    ("books",               "SELECT COUNT(*) FROM books  WHERE status='PUBLISHED'"),
+    ("categories",          "SELECT COUNT(*) FROM categories"),
+    ("telegram_messages",   "SELECT COUNT(*) FROM telegram_messages"),
+    ("  — pending review",  "SELECT COUNT(*) FROM telegram_messages WHERE \"processedAt\" IS NULL"),
+    ("  — processed",       "SELECT COUNT(*) FROM telegram_messages WHERE \"processedAt\" IS NOT NULL"),
+    ("media",               "SELECT COUNT(*) FROM media"),
+]
+
+for label, sql in rows:
+    cur.execute(sql)
+    print(f"  {label:<28} {cur.fetchone()[0]:>6}")
+
+print()
+cur.execute("SELECT slug, title FROM series WHERE status='PUBLISHED' ORDER BY \"order\"")
+series = cur.fetchall()
+if series:
+    print("Published series:")
+    for s in series:
+        print(f"  • {s[0]:<35} {s[1]}")
 
 conn.close()
+print(f"\n► Live site: https://shaykh-muhammad-zain-library.vercel.app/en")
