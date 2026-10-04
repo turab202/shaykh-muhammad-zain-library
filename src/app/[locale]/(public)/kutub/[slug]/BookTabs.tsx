@@ -1,125 +1,73 @@
 "use client";
 
-import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useAudio } from "@/lib/context/AudioContext";
-import { Headphones } from "lucide-react";
-import { PDFViewerPlaceholder } from "@/components/common/PDFViewerPlaceholder";
-import type { PublicBook, PublicLesson } from "@/types/library";
+import { Headphones, Clock } from "lucide-react";
+import type { PublicLesson } from "@/types/library";
 
-interface BookTabsProps {
-  book: PublicBook;
+interface Props {
   lessons: PublicLesson[];
-  tabReaderLabel: string;
-  tabContentsLabel: string;
-  tabAudioLabel: string;
-  chapterLabel: string;
-  tocEmptyLabel: string;
-  lessonsEmptyLabel: string;
-  keyChaptersLabel: string;
   listenLabel: string;
-  duruusLabel: string;
+  lessonsEmptyLabel: string;
 }
 
-export function BookTabs({
-  book, lessons,
-  tabReaderLabel, tabContentsLabel, tabAudioLabel,
-  tocEmptyLabel, lessonsEmptyLabel, listenLabel,
-}: BookTabsProps) {
-  // Default to audio tab when no PDF is available (most common case)
-  const [tab, setTab] = useState<"reader" | "toc" | "lessons">(
-    book.pdfAvailable ? "reader" : "lessons"
-  );
+export function BookLessons({ lessons, listenLabel, lessonsEmptyLabel }: Props) {
   const { playLesson } = useAudio();
 
-  const tabs = [
-    // Only show PDF reader tab if a PDF is actually available
-    ...(book.pdfAvailable ? [{ key: "reader" as const, label: tabReaderLabel }] : []),
-    { key: "toc" as const, label: tabContentsLabel },
-    { key: "lessons" as const, label: tabAudioLabel },
-  ];
+  if (lessons.length === 0) {
+    return (
+      <div className="py-16 text-center border border-dashed border-stone-300 dark:border-stone-700 rounded-xl">
+        <Headphones className="w-10 h-10 mx-auto text-stone-300 mb-3" aria-hidden="true" />
+        <p className="text-sm text-stone-500 dark:text-stone-400">{lessonsEmptyLabel}</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Tab bar */}
-      <div className="border-b border-stone-200 dark:border-stone-800 mb-6 flex items-center gap-6 text-sm font-medium overflow-x-auto">
-        {tabs.map(({ key, label }) => (
+    <div className="space-y-2">
+      {lessons.map((lesson) => (
+        <div
+          key={lesson.id}
+          className="flex items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl hover:border-stone-300 dark:hover:border-stone-700 transition-colors"
+        >
+          {/* Number + title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="shrink-0 w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-[11px] font-mono font-bold text-emerald-800 dark:text-emerald-400">
+              {String(lesson.lessonNumber ?? 0).padStart(3, "0")}
+            </span>
+            <div className="min-w-0">
+              <Link
+                href={`/duruus/${lesson.slug}`}
+                className="text-sm font-medium text-stone-900 dark:text-stone-100 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1"
+              >
+                {lesson.title}
+              </Link>
+              {lesson.duration > 0 && (
+                <p className="flex items-center gap-1 text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
+                  <Clock className="w-3 h-3" aria-hidden="true" />
+                  {fmt(lesson.duration)}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Play button */}
           <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`pb-3 relative whitespace-nowrap transition-colors cursor-pointer ${
-              tab === key
-                ? "text-emerald-900 dark:text-emerald-300 font-semibold"
-                : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"
-            }`}
+            type="button"
+            onClick={() => playLesson(lesson)}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-900 dark:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors cursor-pointer"
+            aria-label={`${listenLabel}: ${lesson.title}`}
           >
-            {label}
-            {tab === key && <span className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-800 dark:bg-emerald-400 rounded-full" />}
+            <Headphones className="w-3.5 h-3.5" aria-hidden="true" />
+            {listenLabel}
           </button>
-        ))}
-      </div>
-
-      {/* Tab: PDF Reader — only shown when PDF is available */}
-      {tab === "reader" && book.pdfAvailable && (
-        <PDFViewerPlaceholder
-          title={book.title}
-          pdfUrl={book.pdfUrl}
-          totalPages={book.pdfPages ?? 1}
-        />
-      )}
-
-      {/* Tab: Table of Contents */}
-      {tab === "toc" && (
-        <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 shadow-sm">
-          {book.tableOfContents && book.tableOfContents.length > 0 ? (
-            <div className="divide-y divide-stone-200/80 dark:divide-stone-800/80">
-              {book.tableOfContents.map((item) => {
-                const lesson = item.lessonId ? lessons.find((l) => l.id === item.lessonId) : undefined;
-                return (
-                  <div key={item.chapter} className="py-3 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-stone-400 w-8">{String(item.chapter).padStart(2, "0")}</span>
-                      <p className="font-semibold text-stone-800 dark:text-stone-200">{item.title}</p>
-                    </div>
-                    {lesson && (
-                      <button onClick={() => playLesson(lesson)} className="px-3 py-1 bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded font-medium transition-colors flex items-center gap-1.5 cursor-pointer">
-                        <Headphones className="w-3.5 h-3.5" aria-hidden="true" />{listenLabel}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-xs text-stone-500 dark:text-stone-400 text-center py-6">{tocEmptyLabel}</p>
-          )}
         </div>
-      )}
-
-      {/* Tab: Audio Lessons */}
-      {tab === "lessons" && (
-        <div className="flex flex-col gap-3">
-          {lessons.length > 0 ? lessons.map((lesson) => (
-            <div key={lesson.id} className="p-4 bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-lg flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-[11px] text-stone-500 mb-0.5">
-                  <span className="font-mono font-medium">#{String(lesson.lessonNumber ?? 0).padStart(3, "0")}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{fmt(lesson.duration)}</span>
-                </div>
-                <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 hover:text-emerald-800 dark:hover:text-emerald-400">{lesson.title}</Link>
-              </div>
-              <button onClick={() => playLesson(lesson)} className="px-3 py-1.5 bg-emerald-900 text-amber-100 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-emerald-800 transition-colors">
-                <Headphones className="w-3.5 h-3.5" aria-hidden="true" />{listenLabel}
-              </button>
-            </div>
-          )) : (
-            <div className="py-12 text-center text-xs text-stone-500 dark:text-stone-400">{lessonsEmptyLabel}</div>
-          )}
-        </div>
-      )}
-    </>
+      ))}
+    </div>
   );
 }
 
-function fmt(s: number): string { const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`; }
+function fmt(s: number): string {
+  const m = Math.floor(s / 60);
+  return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+}
