@@ -370,10 +370,6 @@ const SERIES_META: Record<string, { title: string; arTitle: string; amTitle: str
   "al-ajrumiyyah":             { title: "Al-Ājurrūmiyyah",             arTitle: "الآجرومية",                          amTitle: "አልአጅሩሚያ",               categorySlug: "arabic"  },
   "bulugh-al-maram":           { title: "Bulūgh al-Marām",             arTitle: "بلوغ المرام",                        amTitle: "ቡሉጉ አልምራም",             categorySlug: "hadith"  },
   "sunan-ibn-majah":           { title: "Sunan Ibn Mājah",             arTitle: "سنن ابن ماجه",                       amTitle: "ሱነኑ ኢብን ማጃህ",           categorySlug: "hadith"  },
-  "matn-abi-shujaa":           { title: "Matn Abī Shujāʿ",             arTitle: "متن أبي شجاع",                       amTitle: "ማተን አቢ ሹጃዕ",             categorySlug: "fiqh"    },
-  "al-arbaeen-al-nawawiyyah":  { title: "Al-Arbaʿīn an-Nawawiyyah",    arTitle: "الأربعين النووية",                   amTitle: "አልአርባኢን",                categorySlug: "hadith"  },
-  "hilyat-talib-al-ilm":       { title: "Ḥilyat Ṭālib al-ʿIlm",        arTitle: "حلية طالب العلم",                    amTitle: "ሒልያ ጣሊቡ ኤልም",           categorySlug: "adab"    },
-  "al-usool-al-thalatha":      { title: "Al-Uṣūl al-Thalāthah",         arTitle: "الأصول الثلاثة",                     amTitle: "አልኡሱሉ ሰሰላሰ",            categorySlug: "aqeedah" },
 };
 
 async function ensureSeries(seriesSlug: string): Promise<string | null> {
@@ -433,7 +429,7 @@ export async function publishAllPending(): Promise<BulkPublishState> {
       // Get category from series
       const series = await prisma.series.findUnique({
         where: { id: seriesId },
-        select: { categoryId: true, bookId: true },
+        select: { categoryId: true },
       });
 
       // Build English title
@@ -467,7 +463,6 @@ export async function publishAllPending(): Promise<BulkPublishState> {
           translations: { ar: arTitle },
           descTranslations: {},
           categoryId: series?.categoryId ?? null,
-          bookId: series?.bookId ?? null,
           seriesId,
           status: "PUBLISHED",
           publishedAt: msg.date,

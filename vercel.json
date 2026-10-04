@@ -2,5 +2,10 @@
   "buildCommand": "prisma generate && prisma migrate deploy && next build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "functions": {
+    "src/app/api/audio/[messageId]/route.ts": {
+      "maxDuration": 30
+    }
+  }
 }
