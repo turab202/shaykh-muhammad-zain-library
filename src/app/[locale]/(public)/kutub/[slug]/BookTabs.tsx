@@ -26,11 +26,15 @@ export function BookTabs({
   tabReaderLabel, tabContentsLabel, tabAudioLabel,
   tocEmptyLabel, lessonsEmptyLabel, listenLabel,
 }: BookTabsProps) {
-  const [tab, setTab] = useState<"reader" | "toc" | "lessons">("reader");
+  // Default to audio tab when no PDF is available (most common case)
+  const [tab, setTab] = useState<"reader" | "toc" | "lessons">(
+    book.pdfAvailable ? "reader" : "lessons"
+  );
   const { playLesson } = useAudio();
 
   const tabs = [
-    { key: "reader" as const, label: tabReaderLabel },
+    // Only show PDF reader tab if a PDF is actually available
+    ...(book.pdfAvailable ? [{ key: "reader" as const, label: tabReaderLabel }] : []),
     { key: "toc" as const, label: tabContentsLabel },
     { key: "lessons" as const, label: tabAudioLabel },
   ];
@@ -55,8 +59,8 @@ export function BookTabs({
         ))}
       </div>
 
-      {/* Tab: PDF Reader */}
-      {tab === "reader" && (
+      {/* Tab: PDF Reader — only shown when PDF is available */}
+      {tab === "reader" && book.pdfAvailable && (
         <PDFViewerPlaceholder
           title={book.title}
           pdfUrl={book.pdfUrl}
