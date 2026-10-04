@@ -487,12 +487,15 @@ def auto_publish_message(
         log.info("  ⏭  skip auto-publish (unknown series '%s')", series_slug)
         return None
 
-    # Fetch category from series
+    # Fetch category AND book from series
     category_id: Optional[str] = None
+    book_id: Optional[str] = None
     with db.conn.cursor() as cur:
-        cur.execute('SELECT "categoryId" FROM series WHERE id = %s', (series_id,))
+        cur.execute('SELECT "categoryId", "bookId" FROM series WHERE id = %s', (series_id,))
         row = cur.fetchone()
-        category_id = row[0] if row else None
+        if row:
+            category_id = row[0]
+            book_id = row[1]
 
     # Build clean English title
     bootstrap = SERIES_BOOTSTRAP.get(series_slug, {})
@@ -524,14 +527,14 @@ def auto_publish_message(
             INSERT INTO lessons (
                 id, slug, "lessonNumber", title, translations,
                 description, "descTranslations",
-                "categoryId", "seriesId",
+                "categoryId", "seriesId", "bookId",
                 status, "publishedAt", duration,
                 "telegramSourceId", "playCount",
                 "createdAt", "updatedAt"
             ) VALUES (
                 %s,%s,%s,%s,%s::jsonb,
                 NULL,'{}',
-                %s,%s,
+                %s,%s,%s,
                 'PUBLISHED',%s,%s,
                 %s,0,
                 NOW(),NOW()
@@ -539,7 +542,7 @@ def auto_publish_message(
             """,
             (
                 lesson_id, lesson_slug, lesson_number, title, translations,
-                category_id, series_id,
+                category_id, series_id, book_id,
                 published_at, duration_seconds,
                 telegram_msg_id,
             ),

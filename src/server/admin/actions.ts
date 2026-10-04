@@ -433,7 +433,7 @@ export async function publishAllPending(): Promise<BulkPublishState> {
       // Get category from series
       const series = await prisma.series.findUnique({
         where: { id: seriesId },
-        select: { categoryId: true },
+        select: { categoryId: true, bookId: true },
       });
 
       // Build English title
@@ -467,6 +467,7 @@ export async function publishAllPending(): Promise<BulkPublishState> {
           translations: { ar: arTitle },
           descTranslations: {},
           categoryId: series?.categoryId ?? null,
+          bookId: series?.bookId ?? null,
           seriesId,
           status: "PUBLISHED",
           publishedAt: msg.date,
