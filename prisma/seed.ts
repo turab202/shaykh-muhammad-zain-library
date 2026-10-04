@@ -49,7 +49,7 @@ async function main() {
 
   // ── Categories ────────────────────────────────────────
   const categoryData = [
-    { slug: "hadith",     name: "Hadith Sciences",       ar: "علوم الحديث",    am: "የሐዲስ ሳይንስ",        icon: "BookOpen",  colorClass: "bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300",   desc: "Study of the sayings and traditions of the Prophet ﷺ",         descAr: "دراسة أحاديث النبي ﷺ وسننه" },
+    { slug: "hadith",     name: "Hadith",                ar: "الحديث",         am: "ሐዲስ",                icon: "BookOpen",  colorClass: "bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300",   desc: "Study of the sayings of the Prophet ﷺ",                       descAr: "دراسة أحاديث النبي ﷺ" },
     { slug: "tafsir",     name: "Tafsir",                ar: "التفسير",        am: "ተፍሲር",              icon: "Scroll",    colorClass: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300", desc: "Quranic exegesis and commentary",                              descAr: "تفسير القرآن الكريم وبيان معانيه" },
     { slug: "aqeedah",    name: "Aqeedah",               ar: "العقيدة",        am: "ዐቂዳ",               icon: "Shield",    colorClass: "bg-blue-50 text-blue-800 dark:bg-blue-950/30 dark:text-blue-300",     desc: "Islamic creed and theology",                                   descAr: "أصول العقيدة الإسلامية" },
     { slug: "fiqh",       name: "Fiqh",                  ar: "الفقه",          am: "ፊቅህ",               icon: "Scale",     colorClass: "bg-purple-50 text-purple-800 dark:bg-purple-950/30 dark:text-purple-300", desc: "Islamic jurisprudence and law",                                descAr: "الفقه الإسلامي وأحكامه" },
@@ -64,6 +64,7 @@ async function main() {
     const cat = await prisma.category.upsert({
       where: { slug: c.slug },
       update: {
+        ...(c.slug === "hadith" ? { name: c.name } : {}),
         icon: c.icon,
         colorClass: c.colorClass,
         description: c.desc,

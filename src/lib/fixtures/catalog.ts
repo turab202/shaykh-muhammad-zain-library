@@ -37,7 +37,7 @@ export const CATALOG_BOOKS: PublicBook[] = [
     description:
       "A comprehensive hadith collection organised around themes of piety and righteous conduct, widely studied across the Islamic world.",
     categoryId: "hadith",
-    categoryName: "Hadith Sciences",
+    categoryName: "Hadith",
     seriesId: "series-riyad-as-salihin",
     seriesTitle: "Riyāḍ aṣ-Ṣāliḥīn",
     lessonCount: 42,
