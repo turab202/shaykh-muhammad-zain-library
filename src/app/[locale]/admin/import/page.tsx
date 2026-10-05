@@ -56,7 +56,7 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <Stat icon={<Clock className="w-4 h-4" />} label={t("needsReview")} value={pending.length} color="text-amber-600 dark:text-amber-400" />
         <Stat icon={<CheckCircle className="w-4 h-4" />} label={t("alreadyOrganized")} value={processed.filter((m) => !(m.suggestedMetadata as Record<string, unknown>)?.rejected).length} color="text-emerald-600 dark:text-emerald-400" />
         <Stat icon={<XCircle className="w-4 h-4" />} label="Rejected" value={processed.filter((m) => (m.suggestedMetadata as Record<string, unknown>)?.rejected).length} color="text-red-600 dark:text-red-400" />

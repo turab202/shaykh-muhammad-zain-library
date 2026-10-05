@@ -33,7 +33,7 @@ export default async function AdminMediaPage({ params }: { params: Promise<{ loc
       <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("media")}</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: "Audio files", value: totalAudio },
           { label: "PDF files", value: totalPdf },

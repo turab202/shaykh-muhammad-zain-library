@@ -50,21 +50,21 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-stone-200 dark:border-stone-800 bg-[var(--bg-parchment)]/95 backdrop-blur-md transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
 
           {/* ── Brand Wordmark ── */}
           <Link
             href="/"
-            className="group flex items-center gap-3 shrink-0 focus-visible:outline-none"
+            className="group flex items-center gap-2 sm:gap-3 shrink-0 focus-visible:outline-none"
           >
-            <div className="w-9 h-9 rounded-sm bg-emerald-900 dark:bg-emerald-800 flex items-center justify-center text-amber-100 font-serif text-lg font-bold shadow-sm">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-sm bg-emerald-900 dark:bg-emerald-800 flex items-center justify-center text-amber-100 font-serif text-lg font-bold shadow-sm">
               ز
             </div>
-            <div className="flex flex-col">
-              <span className="font-serif text-lg font-bold tracking-tight text-stone-900 dark:text-stone-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 transition-colors">
+            <div className="min-w-0 flex flex-col">
+              <span className="font-serif text-base sm:text-lg font-bold tracking-tight text-stone-900 dark:text-stone-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-400 transition-colors">
                 {isRtl ? "مكتبة الشيخ محمد زين" : "محمد زين"}
               </span>
-              <span className="text-[11px] font-medium text-stone-500 dark:text-stone-400 tracking-wide uppercase">
+              <span className="hidden sm:block text-[11px] font-medium text-stone-500 dark:text-stone-400 tracking-wide uppercase">
                 {isRtl ? "أرشيف العلوم الشرعية" : "Shaykh Muhammad Zain"}
               </span>
             </div>
@@ -96,14 +96,14 @@ export function Header() {
           </nav>
 
           {/* ── Utility Actions ── */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
 
             {/* Quick Search */}
             <button
               onClick={() => setIsSearchOpen(true)}
               aria-label={tSearch("quick")}
               aria-haspopup="dialog"
-              className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800/80 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-md border border-stone-200/80 dark:border-stone-700/60 transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1.5 md:px-2.5 text-xs text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800/80 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-md border border-stone-200/80 dark:border-stone-700/60 transition-colors cursor-pointer"
             >
               <Search className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden md:inline">

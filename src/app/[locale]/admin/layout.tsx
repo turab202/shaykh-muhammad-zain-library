@@ -28,9 +28,9 @@ export default async function AdminLayout({ children, params }: { children: Reac
   ];
 
   return (
-    <div className="min-h-screen flex bg-stone-50 dark:bg-stone-950">
+    <div className="min-h-screen flex flex-col md:flex-row bg-stone-50 dark:bg-stone-950">
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 bg-white dark:bg-stone-900 border-e border-stone-200 dark:border-stone-800 flex flex-col">
+      <aside className="hidden md:flex w-56 shrink-0 bg-white dark:bg-stone-900 border-e border-stone-200 dark:border-stone-800 flex-col">
         <div className="p-4 border-b border-stone-200 dark:border-stone-800">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-7 h-7 rounded-sm bg-emerald-900 flex items-center justify-center text-amber-100 font-serif font-bold text-sm">ز</div>
@@ -57,11 +57,25 @@ export default async function AdminLayout({ children, params }: { children: Reac
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-6 py-3 flex items-center justify-between">
-          <span className="text-sm font-semibold text-stone-700 dark:text-stone-200">مكتبة الشيخ محمد زين — {t("dashboard")}</span>
-          <Link href="/" className="text-xs text-emerald-700 dark:text-emerald-400 hover:underline">← Public site</Link>
+        <header className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-3 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <span className="min-w-0 truncate text-xs sm:text-sm font-semibold text-stone-700 dark:text-stone-200">مكتبة الشيخ محمد زين — {t("dashboard")}</span>
+          <Link href="/" className="shrink-0 whitespace-nowrap text-xs text-emerald-700 dark:text-emerald-400 hover:underline">← Public site</Link>
         </header>
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <nav aria-label="Admin navigation" className="md:hidden flex gap-1 px-3 py-2 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 overflow-x-auto">
+          {navItems.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href as Parameters<typeof Link>[0]["href"]} className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">
+              <Icon className="w-4 h-4" aria-hidden="true" />
+              {label}
+            </Link>
+          ))}
+          <form action={logout} className="shrink-0">
+            <button type="submit" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-400">
+              <LogOut className="w-4 h-4" aria-hidden="true" />
+              Sign out
+            </button>
+          </form>
+        </nav>
+        <main className="flex-1 min-w-0 p-4 sm:p-6 overflow-auto">{children}</main>
       </div>
     </div>
   );
