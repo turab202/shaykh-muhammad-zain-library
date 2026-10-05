@@ -73,6 +73,21 @@ KNOWN_SERIES: dict[str, str] = {
     "ajrumiyyah": "al-ajrumiyyah",
     "arbaeen": "al-arbaeen-al-nawawiyyah",
     "bulugh": "bulugh-al-maram",
+    # New series from channel content analysis
+    "وصايا لقمان": "wasaya-luqman",
+    "وصايا_لقمان": "wasaya-luqman",
+    "لقمان الحكيم": "wasaya-luqman",
+    "لقمان_الحكيم": "wasaya-luqman",
+    "ضلال جماعة الأحباش": "dalal-al-ahbash",
+    "ضلال_جماعة_الأحباش": "dalal-al-ahbash",
+    "الأحباش": "dalal-al-ahbash",
+    "ረመዷናዊ ምክሮች": "ramadan-tips",
+    "ሱነኑ ኢብን ማጃህ": "sunan-ibn-majah",
+    "شرح_مقدمة_التفسير": "muqaddimah-al-tafsir",
+    "مقدمة التفسير": "muqaddimah-al-tafsir",
+    "مقدمة_التفسير": "muqaddimah-al-tafsir",
+    "مصطلح الحديث": "mustalah-al-hadith",
+    "مصطلح_الحديث": "mustalah-al-hadith",
 }
 
 KNOWN_CATEGORIES: dict[str, str] = {

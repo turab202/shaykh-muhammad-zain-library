@@ -370,6 +370,11 @@ const SERIES_META: Record<string, { title: string; arTitle: string; amTitle: str
   "al-ajrumiyyah":             { title: "Al-Ājurrūmiyyah",             arTitle: "الآجرومية",                          amTitle: "አልአጅሩሚያ",               categorySlug: "arabic"  },
   "bulugh-al-maram":           { title: "Bulūgh al-Marām",             arTitle: "بلوغ المرام",                        amTitle: "ቡሉጉ አልምራም",             categorySlug: "hadith"  },
   "sunan-ibn-majah":           { title: "Sunan Ibn Mājah",             arTitle: "سنن ابن ماجه",                       amTitle: "ሱነኑ ኢብን ማጃህ",           categorySlug: "hadith"  },
+  "wasaya-luqman":             { title: "Waṣāyā Luqmān al-Ḥakīm",       arTitle: "وصايا لقمان الحكيم",                 amTitle: "ዋሷያ ሉቅማን",               categorySlug: "tafsir"  },
+  "dalal-al-ahbash":           { title: "Ḍalāl Jamāʿat al-Aḥbāsh",      arTitle: "ضلال جماعة الأحباش",                 amTitle: "ዶላሉ አልአሕባሽ",            categorySlug: "aqeedah" },
+  "ramadan-tips":              { title: "Ramaḍān Tips",                   arTitle: "نصائح رمضانية",                      amTitle: "ረመዷናዊ ምክሮች",            categorySlug: "adab"    },
+  "muqaddimah-al-tafsir":      { title: "Muqaddimah fī Uṣūl al-Tafsīr", arTitle: "مقدمة في أصول التفسير",              amTitle: "ሙቀዲማ ፊ ኡሱሊ",            categorySlug: "tafsir"  },
+  "mustalah-al-hadith":        { title: "Muṣṭalaḥ al-Ḥadīth",            arTitle: "مصطلح الحديث",                       amTitle: "ሙስጠለሑ አልሓዲስ",           categorySlug: "hadith"  },
 };
 
 async function ensureSeries(seriesSlug: string): Promise<string | null> {
