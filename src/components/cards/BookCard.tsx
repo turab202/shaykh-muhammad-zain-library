@@ -1,82 +1,65 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
-import { BookOpen, FileText } from "lucide-react";
+import { BookOpen, Headphones } from "lucide-react";
 import type { PublicBook } from "@/types/library";
 
 interface BookCardProps {
   book: PublicBook;
-  /** Pre-resolved label for "duruus" */
   duruusLabel: string;
-  /** Pre-resolved "PDF Available" label */
   pdfLabel?: string;
 }
 
-/**
- * Book card — pure presentational Server Component.
- * Accepts pre-resolved strings; no LanguageContext or i18n hooks.
- */
-export function BookCard({ book, duruusLabel, pdfLabel }: BookCardProps) {
+export function BookCard({ book, duruusLabel }: BookCardProps) {
   return (
     <Link
       href={`/kutub/${book.slug}`}
-      className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
+      className="group flex flex-col bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all"
     >
-      {/* Cover placeholder */}
-      <div className="relative aspect-[4/3] w-full bg-amber-900/10 dark:bg-amber-400/10 flex items-center justify-center overflow-hidden">
+      {/* Top accent bar */}
+      <div className="h-1 bg-gradient-to-r from-emerald-800/40 to-amber-700/40 group-hover:from-emerald-800 group-hover:to-amber-700 transition-all" />
+
+      {/* Cover area */}
+      <div className="relative h-32 w-full bg-gradient-to-br from-emerald-900/8 to-amber-900/8 dark:from-emerald-400/8 dark:to-amber-400/8 flex items-center justify-center border-b border-stone-100 dark:border-stone-800">
         <BookOpen
-          className="w-10 h-10 text-amber-800/30 dark:text-amber-400/30 group-hover:scale-105 transition-transform duration-300"
+          className="w-12 h-12 text-emerald-800/25 dark:text-emerald-400/25 group-hover:text-emerald-800/40 dark:group-hover:text-emerald-400/40 group-hover:scale-105 transition-all duration-300"
           aria-hidden="true"
         />
-        {/* Overlay: category + page count */}
-        <div className="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-[11px] font-medium">
-          {book.categoryName && (
-            <span className="bg-white/80 dark:bg-stone-900/80 text-stone-700 dark:text-stone-300 px-2 py-0.5 rounded">
+        {/* Category badge */}
+        {book.categoryName && (
+          <div className="absolute bottom-2 start-3">
+            <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 bg-white/80 dark:bg-stone-900/80 px-2 py-0.5 rounded uppercase tracking-wide">
               {book.categoryName}
-            </span>
-          )}
-          {book.pdfPages && (
-            <span className="flex items-center gap-1 bg-white/80 dark:bg-stone-900/80 text-stone-600 dark:text-stone-400 px-2 py-0.5 rounded">
-              <FileText className="w-3 h-3" aria-hidden="true" />
-              {book.pdfPages}p
-            </span>
-          )}
-        </div>
-        {/* PDF available badge */}
-        {book.pdfAvailable && pdfLabel && (
-          <div className="absolute top-2.5 start-2.5">
-            <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded">
-              {pdfLabel}
             </span>
           </div>
         )}
       </div>
 
-      {/* Details */}
-      <div className="p-5 flex flex-col justify-between flex-1">
-        <div>
-          <h3 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-1.5">
-            {book.title}
-          </h3>
+      {/* Info */}
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-serif font-bold text-sm sm:text-base text-stone-900 dark:text-stone-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-1">
+          {book.title}
+        </h3>
 
-          {book.author && (
-            <p className="text-xs text-stone-500 dark:text-stone-400 italic line-clamp-1 mb-2">
-              {book.author}
-            </p>
-          )}
+        {book.author && (
+          <p className="text-[11px] text-stone-400 dark:text-stone-500 italic line-clamp-1 mb-2">
+            {book.author}
+          </p>
+        )}
 
-          {book.description && (
-            <p className="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed mb-4">
-              {book.description}
-            </p>
-          )}
-        </div>
+        {book.description && (
+          <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-2 leading-relaxed mb-3 flex-1">
+            {book.description}
+          </p>
+        )}
 
         {/* Footer */}
-        <div className="pt-3 border-t border-stone-200/60 dark:border-stone-800/60 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
-          <span>
-            {book.lessonCount ?? 0} {duruusLabel}
+        <div className="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-800/60 mt-auto">
+          <span className="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400">
+            <Headphones className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+            <strong className="text-stone-700 dark:text-stone-300">{book.lessonCount ?? 0}</strong>
+            {" "}{duruusLabel}
           </span>
-          <span className="text-emerald-800 dark:text-emerald-400 font-medium group-hover:underline">
+          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
             →
           </span>
         </div>

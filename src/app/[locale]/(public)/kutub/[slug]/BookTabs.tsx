@@ -54,12 +54,20 @@ export function BookLessons({ lessons, listenLabel, lessonsEmptyLabel }: Props) 
           {/* Play button */}
           <button
             type="button"
-            onClick={() => playLesson(lesson)}
+            onClick={() => {
+              // If audio is a Telegram proxy, open in new tab instead of inline player
+              if ((lesson.audioUrl ?? "").startsWith("/api/audio/")) {
+                const msgId = lesson.audioUrl.split("/").pop();
+                window.open(`https://t.me/SheikhMuhammedZain/${msgId}`, "_blank", "noopener");
+              } else {
+                playLesson(lesson);
+              }
+            }}
             className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-emerald-900 dark:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors cursor-pointer"
             aria-label={`${listenLabel}: ${lesson.title}`}
           >
             <Headphones className="w-3.5 h-3.5" aria-hidden="true" />
-            {listenLabel}
+            {(lesson.audioUrl ?? "").startsWith("/api/audio/") ? "Telegram" : listenLabel}
           </button>
         </div>
       ))}

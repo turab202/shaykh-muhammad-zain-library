@@ -208,6 +208,23 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setDuration(lesson.duration);
     setIsMiniPlayerOpen(true);
 
+    // If there is no real audio URL (empty or proxy that redirects to Telegram),
+    // open the Telegram message directly in a new tab so the user can listen.
+    // This happens when audio files haven't been downloaded to storage yet.
+    const audioUrl = lesson.audioUrl ?? "";
+    const isTelegramProxy = audioUrl.startsWith("/api/audio/");
+    const hasRealAudio = audioUrl.length > 0 && !isTelegramProxy;
+
+    if (isTelegramProxy && !hasRealAudio) {
+      // Extract messageId from /api/audio/{messageId} and open t.me
+      const msgId = audioUrl.split("/").pop();
+      if (msgId) {
+        window.open(`https://t.me/SheikhMuhammedZain/${msgId}`, "_blank", "noopener");
+      }
+      setIsPlaying(false);
+      return;
+    }
+
     // Restore saved progress if available.
     try {
       const saved = localStorage.getItem(`progress_${lesson.id}`);

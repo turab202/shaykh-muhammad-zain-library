@@ -1,24 +1,21 @@
 /**
  * GET /api/audio/[messageId]
  *
- * Serves audio for a Telegram message.
+ * Audio serving with multiple strategies:
+ * 1. Local/R2 storage key → serve via /api/media
+ * 2. Bot API file_id (if pre-stored) → stream from Telegram CDN
+ * 3. Immediate redirect to t.me (always works, opens in Telegram)
  *
- * Priority:
- *  1. Local file (storageKey in suggestedMetadata) → /api/media/...
- *  2. Bot API CDN stream (if file_id cached from previous call)
- *  3. Redirect to t.me/CHANNEL/messageId (opens in Telegram)
- *
- * Note: The bot API approach requires file_ids to be pre-stored.
- * Run the importer with --store-bot-ids to populate them.
- * Until then, audio falls back to opening in the Telegram app.
+ * Strategy 3 is the current active fallback until audio files
+ * are downloaded and stored in R2/local storage.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const CHANNEL   = "SheikhMuhammedZain";
-const CHAT_ID   = "1747155048";
+const CHANNEL = "SheikhMuhammedZain";
+const CHAT_ID = "1747155048";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? "";
-const TG        = "https://api.telegram.org";
+const TG = "https://api.telegram.org";
 
 export async function GET(
   req: NextRequest,
@@ -26,22 +23,23 @@ export async function GET(
 ) {
   const { messageId } = await params;
   const msgIdNum = parseInt(messageId, 10);
-  const telegramWebUrl = `https://t.me/${CHANNEL}/${messageId}`;
+  const telegramUrl = `https://t.me/${CHANNEL}/${messageId}`;
 
   if (isNaN(msgIdNum)) return new NextResponse("Bad request", { status: 400 });
 
-  // Look up the lesson's telegram message
   const msg = await prisma.telegramMessage.findFirst({
     where: { chatId: CHAT_ID, messageId: msgIdNum },
     select: { suggestedMetadata: true, audioFilename: true },
-  });
+  }).catch(() => null);
 
-  if (!msg) return NextResponse.redirect(telegramWebUrl);
+  if (!msg) {
+    return NextResponse.redirect(telegramUrl);
+  }
 
-  const meta = msg.suggestedMetadata as Record<string, unknown> | null;
+  const meta = (msg.suggestedMetadata ?? {}) as Record<string, unknown>;
 
-  // 1. Local storage file
-  const storageKey = meta?.mediaStorageKey as string | undefined;
+  // Strategy 1: local/R2 storage key
+  const storageKey = meta.mediaStorageKey as string | undefined;
   if (storageKey) {
     const url = storageKey.startsWith("http")
       ? storageKey
@@ -49,23 +47,29 @@ export async function GET(
     return NextResponse.redirect(url);
   }
 
-  // 2. Bot API file_id (pre-stored from import)
-  const botFileId = meta?.botFileId as string | undefined;
+  // Strategy 2: pre-stored Bot API file_id (fast, no forward needed)
+  const botFileId = meta.botFileId as string | undefined;
   if (botFileId && BOT_TOKEN) {
     try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
       const gf = await fetch(
         `${TG}/bot${BOT_TOKEN}/getFile?file_id=${encodeURIComponent(botFileId)}`,
-        { signal: AbortSignal.timeout(8000) }
+        { signal: ctrl.signal }
       );
+      clearTimeout(timer);
       const gfData = await gf.json() as { ok: boolean; result?: { file_path: string } };
 
       if (gfData.ok && gfData.result?.file_path) {
         const audioUrl = `${TG}/file/bot${BOT_TOKEN}/${gfData.result.file_path}`;
         const range = req.headers.get("range");
+        const ctrl2 = new AbortController();
+        const timer2 = setTimeout(() => ctrl2.abort(), 25000);
         const upstream = await fetch(audioUrl, {
           headers: range ? { Range: range } : {},
-          signal: AbortSignal.timeout(30000),
+          signal: ctrl2.signal,
         });
+        clearTimeout(timer2);
 
         const headers: Record<string, string> = {
           "Content-Type": upstream.headers.get("Content-Type") ?? "audio/mpeg",
@@ -79,9 +83,11 @@ export async function GET(
 
         return new NextResponse(upstream.body, { status: upstream.status, headers });
       }
-    } catch { /* fall through */ }
+    } catch {
+      // fall through to redirect
+    }
   }
 
-  // 3. Fallback: open in Telegram app/web
-  return NextResponse.redirect(telegramWebUrl);
+  // Strategy 3: redirect to Telegram (always works)
+  return NextResponse.redirect(telegramUrl);
 }

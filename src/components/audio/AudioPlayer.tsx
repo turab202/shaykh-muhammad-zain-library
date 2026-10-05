@@ -55,6 +55,10 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
   const activeDuration = isActive && duration > 0 ? duration : lesson.duration;
   const percent = activeDuration > 0 ? (activeTime / activeDuration) * 100 : 0;
 
+  // Detect if audio is a Telegram proxy (not yet downloaded to storage)
+  const isTelegramProxy = (lesson.audioUrl ?? "").startsWith("/api/audio/");
+  const msgId = isTelegramProxy ? lesson.audioUrl.split("/").pop() : null;
+
   const handlePlayToggle = () => {
     if (!isActive) playLesson(lesson);
     else togglePlay();
@@ -77,6 +81,26 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
 
   return (
     <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-8 shadow-sm">
+
+      {/* Telegram fallback banner — shown when audio not yet in storage */}
+      {isTelegramProxy && (
+        <div className="mb-5 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">Audio available on Telegram</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+              This lesson&apos;s audio file has not been downloaded to the server yet. Click to listen directly on Telegram.
+            </p>
+          </div>
+          <a
+            href={`https://t.me/SheikhMuhammedZain/${msgId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-amber-700 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold transition-colors"
+          >
+            Open in Telegram →
+          </a>
+        </div>
+      )}
 
       {/* Status bar */}
       <div className="flex items-center justify-between gap-4 mb-6 text-xs text-stone-500 dark:text-stone-400">

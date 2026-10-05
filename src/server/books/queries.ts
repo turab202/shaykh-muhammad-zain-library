@@ -33,11 +33,13 @@ function toPublicBook(
     tableOfContents: unknown;
     _count?: { lessons: number };
     category?: { name: string; slug: string; translations: unknown } | null;
-    media?: { storageKey: string; mediaType: string }[];
+    media?: { storageKey: string; mediaType: string; filename: string | null; size: number }[];
   },
   locale: Locale
 ): PublicBook {
   const pdfMedia = row.media?.find((m) => m.mediaType === "PDF");
+  const pdfSizeKB = pdfMedia?.size ? Math.round(pdfMedia.size / 1024) : undefined;
+  const pdfSizeMB = pdfSizeKB && pdfSizeKB > 1024 ? `${(pdfSizeKB / 1024).toFixed(1)} MB` : pdfSizeKB ? `${pdfSizeKB} KB` : undefined;
   return {
     id: row.id,
     slug: row.slug,
@@ -48,7 +50,8 @@ function toPublicBook(
     categoryName: row.category ? (resolveJson(row.category.translations, locale) ?? row.category.name) : undefined,
     lessonCount: row._count?.lessons,
     pdfAvailable: !!pdfMedia,
-    pdfUrl: pdfMedia?.storageKey,
+    pdfUrl: pdfMedia?.storageKey ? `/api/media/${pdfMedia.storageKey}` : undefined,
+    pdfSize: pdfSizeMB,
     tableOfContents: parseToc(row.tableOfContents, locale),
   };
 }
@@ -60,7 +63,7 @@ export async function getPublishedBooks(locale: Locale, categoryId?: string): Pr
     include: {
       _count: { select: { lessons: true } },
       category: { select: { name: true, slug: true, translations: true } },
-      media: { select: { storageKey: true, mediaType: true } },
+      media: { select: { storageKey: true, mediaType: true, filename: true, size: true } },
     },
   });
   return rows.map((r) => toPublicBook(r, locale));
@@ -72,7 +75,7 @@ export async function getBookBySlug(slug: string, locale: Locale): Promise<Publi
     include: {
       _count: { select: { lessons: true } },
       category: { select: { name: true, slug: true, translations: true } },
-      media: { select: { storageKey: true, mediaType: true } },
+      media: { select: { storageKey: true, mediaType: true, filename: true, size: true } },
     },
   });
   if (!row) return null;
