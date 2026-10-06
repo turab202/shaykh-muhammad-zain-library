@@ -41,12 +41,12 @@ if stale.exists():
     stale.unlink()
     print(f"Deleted stale session file.")
 
-# DCs to try — obfuscated transport confirmed working
+# DCs to try — DC5 confirmed working for this network, try it first
 DCS = [
-    (2, "149.154.167.41",  443),
-    (1, "149.154.175.53",  443),
     (5, "91.108.56.130",   443),
+    (2, "149.154.167.41",  443),
     (4, "149.154.167.91",  443),
+    (1, "149.154.175.53",  443),
 ]
 
 

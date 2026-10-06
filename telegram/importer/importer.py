@@ -343,13 +343,13 @@ async def run_live(
     db = ImportDB(database_url)
     storage = get_storage(provider=os.getenv("STORAGE_PROVIDER", "LOCAL"), base_path=storage_base)
 
-    # DCs to try in order — falls back automatically if one hangs.
-    # DC2 was confirmed in initial live test; all 5 are probed at connect time.
+    # DCs to try in order — DC5 first since auth was established there,
+    # then DC4 which previously worked, then others as fallback.
     _DC_LIST = [
-        (2, "149.154.167.41",  443),
-        (1, "149.154.175.53",  443),
         (5, "91.108.56.130",   443),
         (4, "149.154.167.91",  443),
+        (2, "149.154.167.41",  443),
+        (1, "149.154.175.53",  443),
     ]
 
     connected_client = None
@@ -360,15 +360,15 @@ async def run_live(
             api_id,
             api_hash,
             connection=ConnectionTcpObfuscated,  # bypasses MTProto DPI blocks
-            connection_retries=2,
-            timeout=30,
-            request_retries=3,
+            connection_retries=5,
+            timeout=60,
+            request_retries=5,
             use_ipv6=False,
         )
         client.session.set_dc(dc_id, host, port)
         try:
-            await asyncio.wait_for(client.connect(), timeout=35)
-            authorized = await asyncio.wait_for(client.is_user_authorized(), timeout=20)
+            await asyncio.wait_for(client.connect(), timeout=60)
+            authorized = await asyncio.wait_for(client.is_user_authorized(), timeout=30)
         except asyncio.TimeoutError:
             log.warning("DC%d timed out — trying next.", dc_id)
             try:

@@ -56,18 +56,49 @@ def _dumps_telegram(obj: dict) -> str:
 
 class ImportDB:
     def __init__(self, database_url: str):
+        # Store original URL for reconnection
+        self._db_url = database_url
         # psycopg2 does not understand Prisma's ?schema=public or channel_binding
         # Strip unsupported params, keep sslmode
         if "?" in database_url:
             base = database_url.split("?")[0]
             params = database_url.split("?")[1]
-            # Keep only sslmode param
             kept = "&".join(p for p in params.split("&") if p.startswith("sslmode"))
             clean_url = base + ("?" + kept if kept else "")
         else:
             clean_url = database_url
+        self._clean_url = clean_url
         self.conn = psycopg2.connect(clean_url)
         self.conn.autocommit = False
+
+    def _reconnect(self):
+        """Reconnect to the DB — called when connection drops during long audio downloads."""
+        try:
+            self.conn.close()
+        except Exception:
+            pass
+        self.conn = psycopg2.connect(self._clean_url)
+        self.conn.autocommit = False
+        clean_url = base + ("?" + kept if kept else "")
+        self.conn = psycopg2.connect(clean_url)
+        self.conn.autocommit = False
+
+    def _execute_with_retry(self, fn, max_retries=3):
+        """Execute a DB operation, reconnecting on SSL/connection errors."""
+        for attempt in range(max_retries):
+            try:
+                return fn()
+            except (psycopg2.OperationalError, psycopg2.InterfaceError) as e:
+                if attempt < max_retries - 1:
+                    import logging, time
+                    logging.getLogger(__name__).warning(
+                        "DB connection error (attempt %d/%d): %s — reconnecting...",
+                        attempt + 1, max_retries, e
+                    )
+                    time.sleep(2 ** attempt)  # exponential backoff
+                    self._reconnect()
+                else:
+                    raise
 
     def close(self):
         self.conn.close()
@@ -108,12 +139,14 @@ class ImportDB:
 
     def message_exists(self, chat_id: str, message_id: int) -> bool:
         """Returns True if this (chatId, messageId) pair already exists."""
-        with self.conn.cursor() as cur:
-            cur.execute(
-                'SELECT id FROM telegram_messages WHERE "chatId" = %s AND "messageId" = %s',
-                (chat_id, message_id),
-            )
-            return cur.fetchone() is not None
+        def _do():
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    'SELECT id FROM telegram_messages WHERE "chatId" = %s AND "messageId" = %s',
+                    (chat_id, message_id),
+                )
+                return cur.fetchone() is not None
+        return self._execute_with_retry(_do)
 
     def insert_raw_message(
         self,
