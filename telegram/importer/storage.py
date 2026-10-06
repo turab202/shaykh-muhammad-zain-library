@@ -2,12 +2,14 @@
 Storage abstraction for downloaded Telegram media.
 
 Supports:
-  - LOCAL:  saves files under LOCAL_STORAGE_PATH (default: ./storage/)
-  - R2:     uploads to Cloudflare R2 (S3-compatible)
+  - LOCAL: saves files under LOCAL_STORAGE_PATH (default: ./storage/)
+  - R2:    uploads to Cloudflare R2 (S3-compatible)
+  - B2:    uploads to Backblaze B2 (S3-compatible)
 
 The storage key is saved in Media.storageKey.
 For LOCAL: relative path  → served via /api/media/{key}
-For R2:    full HTTPS URL → served directly from CDN
+For R2/B2: full HTTPS URL → served directly from CDN (public)
+           or b2://bucket/key → signed URL via Next.js API (private)
 """
 
 import os
@@ -35,6 +37,18 @@ def _media_subdir(mime_type: str) -> str:
     return "document"
 
 
+def _object_key(original_filename: str, mime_type: str,
+                message_date: Optional[datetime] = None) -> str:
+    year = (message_date or datetime.utcnow()).year
+    subdir = _media_subdir(mime_type)
+    safe = _safe_filename(original_filename)
+    h = hashlib.md5(original_filename.encode()).hexdigest()[:8]
+    stem, ext = os.path.splitext(safe)
+    return f"{subdir}/{year}/{stem}_{h}{ext}"
+
+
+# ── Local ─────────────────────────────────────────────────────────────────────
+
 class LocalStorage:
     def __init__(self, base_path: str):
         self.base = Path(base_path)
@@ -42,17 +56,11 @@ class LocalStorage:
 
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
-        year = (message_date or datetime.utcnow()).year
-        subdir = _media_subdir(mime_type)
-        safe_name = _safe_filename(original_filename)
-        file_hash = hashlib.md5(original_filename.encode()).hexdigest()[:8]
-        stem, ext = os.path.splitext(safe_name)
-        unique_name = f"{stem}_{file_hash}{ext}"
-        dest_dir = self.base / subdir / str(year)
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest_path = dest_dir / unique_name
-        shutil.move(source_path, dest_path)
-        return f"{subdir}/{year}/{unique_name}"
+        key = _object_key(original_filename, mime_type, message_date)
+        dest = self.base / key
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(source_path, dest)
+        return key  # relative key → served via /api/media/{key}
 
     def url_for(self, storage_key: str) -> str:
         return str(self.base / storage_key)
@@ -61,71 +69,65 @@ class LocalStorage:
         return (self.base / storage_key).exists()
 
 
-class R2Storage:
-    """
-    Cloudflare R2 storage (S3-compatible).
-    Files are uploaded to R2 and the public CDN URL is returned as the storage key.
-    """
+# ── S3-compatible (R2 / B2) ───────────────────────────────────────────────────
+
+class S3Storage:
+    """Generic S3-compatible storage (Cloudflare R2 or Backblaze B2)."""
 
     def __init__(
         self,
-        account_id: str,
+        endpoint_url: str,
         access_key_id: str,
         secret_access_key: str,
         bucket_name: str,
-        public_url: str,  # e.g. https://pub-xxxx.r2.dev  OR custom domain
+        public_url: str = "",  # CDN/public URL prefix — leave empty for private
     ):
         self.bucket = bucket_name
         self.public_url = public_url.rstrip("/")
-        self._account_id = account_id
-        self._endpoint = f"https://{account_id}.r2.cloudflarestorage.com"
+        self._endpoint_url = endpoint_url
 
         try:
             import boto3
             self._s3 = boto3.client(
                 "s3",
-                endpoint_url=self._endpoint,
+                endpoint_url=endpoint_url,
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key,
                 region_name="auto",
             )
         except ImportError:
-            raise ImportError(
-                "boto3 is required for R2 storage. Install it with:\n"
-                "  pip install boto3"
-            )
-
-    def _object_key(self, original_filename: str, mime_type: str,
-                    message_date: Optional[datetime] = None) -> str:
-        year = (message_date or datetime.utcnow()).year
-        subdir = _media_subdir(mime_type)
-        safe = _safe_filename(original_filename)
-        h = hashlib.md5(original_filename.encode()).hexdigest()[:8]
-        stem, ext = os.path.splitext(safe)
-        return f"{subdir}/{year}/{stem}_{h}{ext}"
+            raise ImportError("boto3 is required for cloud storage. Run: pip install boto3")
 
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
-        key = self._object_key(original_filename, mime_type, message_date)
+        key = _object_key(original_filename, mime_type, message_date)
         with open(source_path, "rb") as f:
             self._s3.put_object(
                 Bucket=self.bucket,
                 Key=key,
                 Body=f,
                 ContentType=mime_type,
-                CacheControl="public, max-age=31536000",  # 1 year
+                CacheControl="public, max-age=31536000",
             )
-        # Return the public CDN URL — this is what goes in Media.storageKey
-        public_cdn_url = f"{self.public_url}/{key}"
-        return public_cdn_url
+        if self.public_url:
+            # Public bucket → return full CDN URL
+            return f"{self.public_url}/{key}"
+        # Private bucket → return internal reference; Next.js signs on demand
+        return f"s3://{self.bucket}/{key}"
 
-    def url_for(self, storage_key: str) -> str:
-        # storage_key IS already the full URL for R2
-        return storage_key
+    def get_presigned_url(self, storage_key: str, expires: int = 3600) -> str:
+        """Generate a time-limited download URL for private bucket access."""
+        if storage_key.startswith("http"):
+            return storage_key
+        key = storage_key.split("/", 3)[-1]  # strip s3://bucket/
+        return self._s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self.bucket, "Key": key},
+            ExpiresIn=expires,
+        )
 
     def exists(self, storage_key: str) -> bool:
-        # Extract object key from full URL
-        key = storage_key.replace(f"{self.public_url}/", "")
+        key = storage_key.split("/", 3)[-1] if storage_key.startswith("s3://") else storage_key
         try:
             self._s3.head_object(Bucket=self.bucket, Key=key)
             return True
@@ -133,32 +135,31 @@ class R2Storage:
             return False
 
 
+# ── Factory ───────────────────────────────────────────────────────────────────
+
 def get_storage(provider: str = "LOCAL", base_path: str = "./storage"):
-    """Factory — returns the appropriate storage backend from env vars."""
-    provider = provider.upper()
+    """Return the configured storage backend."""
+    p = (provider or "LOCAL").upper()
 
-    if provider == "R2":
-        account_id        = os.environ.get("R2_ACCOUNT_ID", "")
-        access_key_id     = os.environ.get("R2_ACCESS_KEY_ID", "")
-        secret_access_key = os.environ.get("R2_SECRET_ACCESS_KEY", "")
-        bucket_name       = os.environ.get("R2_BUCKET_NAME", "")
-        public_url        = os.environ.get("R2_PUBLIC_URL", "")
+    if p == "R2":
+        return S3Storage(
+            endpoint_url      = f"https://{os.environ.get('R2_ACCOUNT_ID','')}.r2.cloudflarestorage.com",
+            access_key_id     = os.environ.get("R2_ACCESS_KEY_ID", ""),
+            secret_access_key = os.environ.get("R2_SECRET_ACCESS_KEY", ""),
+            bucket_name       = os.environ.get("R2_BUCKET_NAME", ""),
+            public_url        = os.environ.get("R2_PUBLIC_URL", ""),
+        )
 
-        missing = [k for k, v in {
-            "R2_ACCOUNT_ID": account_id,
-            "R2_ACCESS_KEY_ID": access_key_id,
-            "R2_SECRET_ACCESS_KEY": secret_access_key,
-            "R2_BUCKET_NAME": bucket_name,
-            "R2_PUBLIC_URL": public_url,
-        }.items() if not v]
+    if p == "B2":
+        endpoint = os.environ.get("B2_ENDPOINT", "")
+        if endpoint and not endpoint.startswith("http"):
+            endpoint = f"https://{endpoint}"
+        return S3Storage(
+            endpoint_url      = endpoint,
+            access_key_id     = os.environ.get("B2_APPLICATION_KEY_ID", ""),
+            secret_access_key = os.environ.get("B2_APPLICATION_KEY", ""),
+            bucket_name       = os.environ.get("B2_BUCKET_NAME", ""),
+            public_url        = os.environ.get("B2_PUBLIC_URL", ""),  # empty for private
+        )
 
-        if missing:
-            raise ValueError(
-                f"Missing R2 environment variables: {', '.join(missing)}\n"
-                "Add them to your .env file."
-            )
-
-        return R2Storage(account_id, access_key_id, secret_access_key, bucket_name, public_url)
-
-    # Default: LOCAL
     return LocalStorage(base_path)
