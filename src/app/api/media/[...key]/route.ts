@@ -1,10 +1,10 @@
 /**
- * /api/media/[...key] — serves media files from local storage or B2.
+ * /api/media/[...key] — serves media files from local storage or Backblaze B2.
  *
- * storageKey formats:
- *   audio/2026/file.mp3        → local file (dev)
- *   s3://zain-library/audio/…  → B2 private bucket (generates pre-signed URL)
- *   https://…                  → absolute URL (redirect directly)
+ * URL patterns:
+ *   /api/media/audio/2026/file.mp3     → local file
+ *   /api/media/b2/audio/2026/file.mp3  → B2 private bucket (pre-signed URL)
+ *   /api/media/https://...             → absolute URL (redirect)
  */
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -27,13 +27,11 @@ const MIME: Record<string, string> = {
   ".webp": "image/webp",
 };
 
-// Lazy-init B2 client (only when needed)
-let _b2Client: import("@aws-sdk/client-s3").S3Client | null = null;
+async function getB2PresignedUrl(objectKey: string): Promise<string> {
+  const { S3Client, GetObjectCommand } = await import("@aws-sdk/client-s3");
+  const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
 
-async function getB2Client() {
-  if (_b2Client) return _b2Client;
-  const { S3Client } = await import("@aws-sdk/client-s3");
-  _b2Client = new S3Client({
+  const client = new S3Client({
     endpoint: `https://${process.env.B2_ENDPOINT}`,
     region: "auto",
     credentials: {
@@ -41,17 +39,12 @@ async function getB2Client() {
       secretAccessKey: process.env.B2_APPLICATION_KEY     ?? "",
     },
   });
-  return _b2Client;
-}
 
-async function b2PresignedUrl(objectKey: string): Promise<string> {
-  const { getSignedUrl }   = await import("@aws-sdk/s3-request-presigner");
-  const { GetObjectCommand } = await import("@aws-sdk/client-s3");
-  const client = await getB2Client();
   const cmd = new GetObjectCommand({
     Bucket: process.env.B2_BUCKET_NAME ?? "",
     Key:    objectKey,
   });
+
   return getSignedUrl(client, cmd, { expiresIn: 3600 });
 }
 
@@ -62,17 +55,17 @@ export async function GET(
   const { key } = await params;
   const storageKey = key.join("/");
 
-  // ── Absolute URL (external / CDN) ────────────────────────────────────────
+  // ── Absolute URL redirect ─────────────────────────────────────────────────
   if (storageKey.startsWith("http://") || storageKey.startsWith("https://")) {
     return NextResponse.redirect(storageKey);
   }
 
-  // ── B2 private bucket (s3://bucket/key) ──────────────────────────────────
-  if (storageKey.startsWith("s3://")) {
-    const parts    = storageKey.replace("s3://", "").split("/");
-    const objectKey = parts.slice(1).join("/");
+  // ── B2 private bucket ─────────────────────────────────────────────────────
+  if (storageKey.startsWith("b2/")) {
+    const objectKey = storageKey.slice(3); // remove "b2/" prefix
     try {
-      const url = await b2PresignedUrl(objectKey);
+      const url = await getB2PresignedUrl(objectKey);
+      // Redirect to the pre-signed URL — browser fetches audio directly from B2
       return NextResponse.redirect(url);
     } catch (e) {
       console.error("B2 presign error:", e);
@@ -98,7 +91,6 @@ export async function GET(
     const [startStr, endStr] = range.replace(/bytes=/, "").split("-");
     const start = parseInt(startStr, 10);
     const end   = endStr ? parseInt(endStr, 10) : stat.size - 1;
-    const chunkSize = end - start + 1;
     const stream = fs.createReadStream(resolved, { start, end });
     return new NextResponse(stream as unknown as ReadableStream, {
       status: 206,
@@ -106,7 +98,7 @@ export async function GET(
         "Content-Type":   mime,
         "Content-Range":  `bytes ${start}-${end}/${stat.size}`,
         "Accept-Ranges":  "bytes",
-        "Content-Length": String(chunkSize),
+        "Content-Length": String(end - start + 1),
       },
     });
   }
