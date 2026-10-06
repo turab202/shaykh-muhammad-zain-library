@@ -311,20 +311,7 @@ async def run_live(
     no_media: bool = False,
     auto_publish: bool = False,
 ):
-    """
-    Connect to Telegram via Telethon and import real messages.
-    Requires valid TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE.
-
-    no_media=True — record message metadata (filename, file IDs, caption) into
-    the DB but do NOT download any audio/document bytes.  Use this for the
-    initial controlled import run so the inbox is populated quickly without
-    transferring gigabytes.  Media can be downloaded in a separate pass later.
-
-    auto_publish=True — after inserting each raw TelegramMessage, immediately
-    create a PUBLISHED Lesson if confidence >= MIN_CONFIDENCE. Use this for
-    the one-time bulk archive import. New posts should use the default
-    (auto_publish=False) so they go through the admin inbox for review.
-    """
+    """Connect to Telegram via Telethon and import real messages."""
     try:
         from telethon import TelegramClient
         from telethon.network import ConnectionTcpObfuscated
@@ -343,72 +330,39 @@ async def run_live(
     db = ImportDB(database_url)
     storage = get_storage(provider=os.getenv("STORAGE_PROVIDER", "LOCAL"), base_path=storage_base)
 
-    # DCs to try in order — DC5 first since auth was established there,
-    # then DC4 which previously worked, then others as fallback.
-    _DC_LIST = [
-        (5, "91.108.56.130",   443),
-        (4, "149.154.167.91",  443),
-        (2, "149.154.167.41",  443),
-        (1, "149.154.175.53",  443),
-    ]
+    # Use a single client with client.start() — this properly handles session
+    # persistence and re-authentication if needed, without DC key conflicts.
+    client = TelegramClient(
+        session_path,
+        api_id,
+        api_hash,
+        connection=ConnectionTcpObfuscated,
+        connection_retries=5,
+        timeout=60,
+        request_retries=5,
+        use_ipv6=False,
+    )
 
-    connected_client = None
-    for dc_id, host, port in _DC_LIST:
-        log.info("Attempting DC%d (%s:%d) …", dc_id, host, port)
-        client = TelegramClient(
-            session_path,
-            api_id,
-            api_hash,
-            connection=ConnectionTcpObfuscated,  # bypasses MTProto DPI blocks
-            connection_retries=5,
-            timeout=60,
-            request_retries=5,
-            use_ipv6=False,
-        )
-        client.session.set_dc(dc_id, host, port)
-        try:
-            await asyncio.wait_for(client.connect(), timeout=60)
-            authorized = await asyncio.wait_for(client.is_user_authorized(), timeout=30)
-        except asyncio.TimeoutError:
-            log.warning("DC%d timed out — trying next.", dc_id)
-            try:
-                await client.disconnect()
-            except Exception:
-                pass
-            continue
-        except Exception as e:
-            log.warning("DC%d error: %s — trying next.", dc_id, e)
-            try:
-                await client.disconnect()
-            except Exception:
-                pass
-            continue
-
-        if not authorized:
-            log.error(
-                "Session is not authorized on DC%d.\n"
-                "Run the interactive auth script first:\n"
-                "    py telegram/tests/telegram_auth.py",
-                dc_id,
-            )
-            await client.disconnect()
-            db.close()
-            sys.exit(1)
-
-        log.info("DC%d: authorized — proceeding with import.", dc_id)
-        connected_client = client
-        break
-
-    if connected_client is None:
-        log.error(
-            "Could not establish a working Telegram connection on any DC.\n"
-            "Network may be blocking MTProto. Try running through a SOCKS5 proxy."
-        )
+    log.info("Connecting to Telegram (using saved session)...")
+    try:
+        await client.start(phone=lambda: phone)
+    except Exception as e:
+        log.error("Failed to connect: %s", e)
+        log.error("Run: py telegram/tests/telegram_auth.py  to re-authenticate")
         db.close()
         sys.exit(1)
 
-    async with connected_client:
-        entity = await connected_client.get_entity(channel)
+    if not await client.is_user_authorized():
+        log.error("Not authorized. Run: py telegram/tests/telegram_auth.py")
+        await client.disconnect()
+        db.close()
+        sys.exit(1)
+
+    me = await client.get_me()
+    log.info("Authorized as: %s (id=%s)", getattr(me, "first_name", "?"), me.id)
+
+    async with client:
+        entity = await client.get_entity(channel)
         chat_id = str(entity.id)
 
         log.info("Connected. Channel: %s (id=%s)", channel, chat_id)
@@ -419,7 +373,7 @@ async def run_live(
         results = []
         errors = 0
 
-        async for message in connected_client.iter_messages(entity, limit=limit, min_id=min_message_id):
+        async for message in client.iter_messages(entity, limit=limit, min_id=min_message_id):
             try:
                 # ── Extract raw Telegram metadata ──────────────────────────
                 audio_filename = None
@@ -460,7 +414,7 @@ async def run_live(
                     else:
                         with tempfile.TemporaryDirectory() as tmpdir:
                             temp_dest = os.path.join(tmpdir, audio_filename or "media")
-                            downloaded = await connected_client.download_media(message, file=temp_dest)
+                            downloaded = await client.download_media(message, file=temp_dest)
                             if downloaded and os.path.exists(downloaded):
                                 downloaded_path = downloaded
                             r = process_one_message(
