@@ -344,13 +344,33 @@ async def run_live(
     )
 
     log.info("Connecting to Telegram (using saved session)...")
-    try:
-        await client.start(phone=lambda: phone)
-    except Exception as e:
-        log.error("Failed to connect: %s", e)
-        log.error("Run: py telegram/tests/telegram_auth.py  to re-authenticate")
-        db.close()
-        sys.exit(1)
+
+    async def _get_code():
+        """Called by Telethon when a fresh auth code is needed."""
+        return input("Enter the Telegram login code sent to your phone: ").strip()
+
+    # Try connecting; if session key is rejected, delete it and retry fresh
+    for attempt in range(2):
+        try:
+            await client.start(phone=phone, code_callback=_get_code)
+            break
+        except Exception as e:
+            err_str = str(e)
+            if attempt == 0 and ("AuthKeyNotFound" in err_str or "authorization key" in err_str.lower()):
+                log.warning("Stale session key — creating fresh session...")
+                session_file = Path(session_path + ".session")
+                if session_file.exists():
+                    session_file.unlink()
+                client = TelegramClient(
+                    session_path, api_id, api_hash,
+                    connection=ConnectionTcpObfuscated,
+                    connection_retries=5, timeout=60, use_ipv6=False,
+                )
+                continue
+            log.error("Failed to connect: %s", e)
+            log.error("Run: py telegram/tests/telegram_auth.py  to re-authenticate")
+            db.close()
+            sys.exit(1)
 
     if not await client.is_user_authorized():
         log.error("Not authorized. Run: py telegram/tests/telegram_auth.py")
