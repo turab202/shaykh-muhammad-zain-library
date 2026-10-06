@@ -56,8 +56,16 @@ def _dumps_telegram(obj: dict) -> str:
 
 class ImportDB:
     def __init__(self, database_url: str):
-        # psycopg2 does not understand Prisma's ?schema=public parameter — strip it
-        clean_url = database_url.split("?")[0] if "?" in database_url else database_url
+        # psycopg2 does not understand Prisma's ?schema=public or channel_binding
+        # Strip unsupported params, keep sslmode
+        if "?" in database_url:
+            base = database_url.split("?")[0]
+            params = database_url.split("?")[1]
+            # Keep only sslmode param
+            kept = "&".join(p for p in params.split("&") if p.startswith("sslmode"))
+            clean_url = base + ("?" + kept if kept else "")
+        else:
+            clean_url = database_url
         self.conn = psycopg2.connect(clean_url)
         self.conn.autocommit = False
 
