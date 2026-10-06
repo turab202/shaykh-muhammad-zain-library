@@ -77,8 +77,26 @@ class ImportDB:
             self.conn.close()
         except Exception:
             pass
-        self.conn = psycopg2.connect(self._clean_url)
+        import time
+        for wait in [1, 2, 4, 8, 16]:
+            try:
+                self.conn = psycopg2.connect(self._clean_url, connect_timeout=30)
+                self.conn.autocommit = False
+                return
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("DB reconnect failed (retry in %ds): %s", wait, e)
+                time.sleep(wait)
+        # Final attempt — raise if all retries exhausted
+        self.conn = psycopg2.connect(self._clean_url, connect_timeout=60)
         self.conn.autocommit = False
+
+    def _ping(self):
+        """Ensure the connection is alive — reconnect if needed."""
+        try:
+            self.conn.cursor().execute("SELECT 1")
+        except Exception:
+            self._reconnect()
         clean_url = base + ("?" + kept if kept else "")
         self.conn = psycopg2.connect(clean_url)
         self.conn.autocommit = False
@@ -107,6 +125,7 @@ class ImportDB:
 
     def create_import(self, created_by_id: Optional[str] = None) -> str:
         """Create an Import record for this run. Returns the import ID."""
+        self._ping()
         import_id = _cuid()
         with self.conn.cursor() as cur:
             cur.execute(
@@ -120,6 +139,7 @@ class ImportDB:
         return import_id
 
     def finish_import(self, import_id: str, status: str = "DONE"):
+        self._ping()
         with self.conn.cursor() as cur:
             cur.execute(
                 """UPDATE imports SET status = %s, "completedAt" = NOW() WHERE id = %s""",
@@ -139,6 +159,7 @@ class ImportDB:
 
     def message_exists(self, chat_id: str, message_id: int) -> bool:
         """Returns True if this (chatId, messageId) pair already exists."""
+        self._ping()
         def _do():
             with self.conn.cursor() as cur:
                 cur.execute(
