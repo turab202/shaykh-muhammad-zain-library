@@ -50,7 +50,8 @@ export const config = {
      * - _next/image (image optimisation)
      * - favicon.ico, sitemap.xml, robots.txt
      * - Files in /public with an extension
+     * - /api/* routes (must NOT be locale-prefixed)
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|.*\\.[a-z]{2,4}$).*)",
+    "/((?!api/|_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|.*\\.[a-z]{2,4}$).*)",
   ],
 };
