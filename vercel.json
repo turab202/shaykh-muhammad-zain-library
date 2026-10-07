@@ -6,6 +6,9 @@
   "functions": {
     "src/app/api/audio/[messageId]/route.ts": {
       "maxDuration": 30
+    },
+    "src/app/api/media/[...key]/route.ts": {
+      "maxDuration": 15
     }
   }
 }
