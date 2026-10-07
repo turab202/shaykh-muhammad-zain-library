@@ -31,13 +31,20 @@ async function getB2PresignedUrl(objectKey: string): Promise<string> {
   const { S3Client, GetObjectCommand } = await import("@aws-sdk/client-s3");
   const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
 
+  // B2 region must match the endpoint hostname, e.g. "us-east-005" for
+  // s3.us-east-005.backblazeb2.com — extract it from the endpoint env var.
+  const endpoint = process.env.B2_ENDPOINT ?? "s3.us-east-005.backblazeb2.com";
+  // endpoint is like "s3.us-east-005.backblazeb2.com" → region = "us-east-005"
+  const region = endpoint.split(".")[1] ?? "us-east-005";
+
   const client = new S3Client({
-    endpoint: `https://${process.env.B2_ENDPOINT}`,
-    region: "auto",
+    endpoint: `https://${endpoint}`,
+    region,
     credentials: {
       accessKeyId:     process.env.B2_APPLICATION_KEY_ID ?? "",
       secretAccessKey: process.env.B2_APPLICATION_KEY     ?? "",
     },
+    forcePathStyle: true, // B2 requires path-style access
   });
 
   const cmd = new GetObjectCommand({
@@ -66,10 +73,15 @@ export async function GET(
     try {
       const url = await getB2PresignedUrl(objectKey);
       // Redirect to the pre-signed URL — browser fetches audio directly from B2
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(url, 302);
     } catch (e) {
-      console.error("B2 presign error:", e);
-      return new NextResponse("Storage error", { status: 502 });
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[B2] presign error for key:", objectKey, "—", msg);
+      // Return diagnostic info (non-secret) so Vercel logs are useful
+      return new NextResponse(
+        JSON.stringify({ error: "B2 presign failed", detail: msg, key: objectKey }),
+        { status: 502, headers: { "Content-Type": "application/json" } }
+      );
     }
   }
 
