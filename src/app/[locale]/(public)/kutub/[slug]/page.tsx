@@ -9,6 +9,7 @@ import { getLessonsByBook } from "@/server/lessons/queries";
 import type { Locale } from "@/types/i18n";
 import { BookOpen, Layers, Headphones, User, Tag, Clock, ChevronRight } from "lucide-react";
 import { BookLessons } from "./BookTabs";
+import { PdfViewer } from "@/components/books/PdfViewer";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -100,7 +101,7 @@ export default async function BookDetailPage({ params }: Props) {
                 )}
               </div>
 
-              {/* Go to series button + PDF download */}
+              {/* Go to series button */}
               <div className="flex flex-wrap gap-2">
                 {series && (
                   <Link href={`/series/${series.slug}`}
@@ -112,13 +113,11 @@ export default async function BookDetailPage({ params }: Props) {
                 )}
                 {book.pdfUrl && (
                   <a
-                    href={book.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-800 dark:border-emerald-700 text-emerald-800 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+                    href="#pdf-viewer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-amber-700 dark:border-amber-700 text-amber-800 dark:text-amber-400 text-xs font-semibold hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                   >
-                    <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-                    {tBook("pdfAvailable")}{book.pdfSize ? ` (${book.pdfSize})` : ""}
+                    <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                    {tBook("pdfAvailable")}{book.pdfSize ? ` · ${book.pdfSize}` : ""}
                   </a>
                 )}
               </div>
@@ -138,6 +137,15 @@ export default async function BookDetailPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* ── PDF Viewer ───────────────────────────────────────────── */}
+      {book.pdfUrl && (
+        <PdfViewer
+          pdfUrl={book.pdfUrl}
+          title={book.title}
+          pdfSize={book.pdfSize}
+        />
+      )}
 
       {/* ── Lessons ─────────────────────────────────────────────── */}
       <div>
