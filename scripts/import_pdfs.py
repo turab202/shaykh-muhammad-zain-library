@@ -144,10 +144,21 @@ async def main():
     from telethon import TelegramClient
     from telethon.network import ConnectionTcpObfuscated
 
-    api_id   = int(os.environ["TELEGRAM_API_ID"])
-    api_hash = os.environ["TELEGRAM_API_HASH"]
-    phone    = os.environ["TELEGRAM_PHONE"]
-    channel  = os.environ["TELEGRAM_CHANNEL"]
+    api_id_str = os.environ.get("TELEGRAM_API_ID", "").strip()
+    api_hash   = os.environ.get("TELEGRAM_API_HASH", "").strip()
+    phone      = os.environ.get("TELEGRAM_PHONE", "").strip()
+    channel    = os.environ.get("TELEGRAM_CHANNEL", "").strip()
+
+    if not api_id_str:
+        print("ERROR: TELEGRAM_API_ID is not set or empty.")
+        print("On GitHub Actions: check Settings → Secrets → TELEGRAM_API_ID")
+        print("Locally: ensure .env has TELEGRAM_API_ID=32561083")
+        return
+    if not api_hash or not phone or not channel:
+        print(f"ERROR: Missing Telegram env vars. api_hash={bool(api_hash)} phone={bool(phone)} channel={bool(channel)}")
+        return
+
+    api_id = int(api_id_str)
 
     session_path = str(ROOT / "telegram" / ".session" / "importer")
     Path(session_path).parent.mkdir(parents=True, exist_ok=True)
