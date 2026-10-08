@@ -133,9 +133,12 @@ def main():
             if not args.no_media:
                 print("\nLinking B2 files...")
                 run(linker)
+                # Fix any wrong Content-Types
+                run([py, str(ROOT / "scripts" / "fix_b2_content_types.py")])
             # Move cursor backward by batch size
             cursor = max(0, cursor - args.batch)
-            time.sleep(2)
+            # Wait to let Telethon fully release the SQLite session lock
+            time.sleep(8)
         else:
             consecutive_failures += 1
             kill_stale_session()

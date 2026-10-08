@@ -444,25 +444,48 @@ async def run_live(
                             log.info("  ↷ skip (already has B2 audio): msgId=%d", message.id)
                             results.append({"message_id": message.id, "skipped": True, "skip_reason": "already_has_media"})
                             continue
-                        with tempfile.TemporaryDirectory() as tmpdir:
-                            temp_dest = os.path.join(tmpdir, audio_filename or "media")
-                            downloaded = await client.download_media(message, file=temp_dest)
-                            if downloaded and os.path.exists(downloaded):
-                                downloaded_path = downloaded
-                            r = process_one_message(
-                                db=db, storage=storage, import_id=import_id,
-                                chat_id=chat_id,
-                                message_id=message.id,
-                                caption=message.text or getattr(message, "caption", None),
-                                date=message.date,
-                                audio_filename=audio_filename,
-                                telegram_file_id=telegram_file_id,
-                                telegram_file_unique_id=telegram_file_unique_id,
-                                raw_json=message.to_dict(),
-                                downloaded_file_path=downloaded_path,
-                                dry_run=dry_run,
-                                auto_publish=auto_publish,
-                            )
+
+                        # Download to a stable local path (not temp) so we can
+                        # retry the B2 upload if the connection drops mid-upload.
+                        import time as _time
+                        local_audio_dir = _PROJECT_ROOT / "storage" / "audio" / str(message.date.year)
+                        local_audio_dir.mkdir(parents=True, exist_ok=True)
+                        local_dest = str(local_audio_dir / (audio_filename or f"msg_{message.id}.mp3"))
+
+                        log.info("  ↓ Downloading msgId=%d to %s", message.id, local_dest)
+                        downloaded = await client.download_media(message, file=local_dest)
+                        if downloaded and os.path.exists(downloaded):
+                            downloaded_path = downloaded
+                            log.info("  ✓ Downloaded: %s (%d KB)",
+                                     os.path.basename(downloaded),
+                                     os.path.getsize(downloaded) // 1024)
+                        else:
+                            log.warning("  ✗ Download produced no file for msgId=%d", message.id)
+
+                        r = process_one_message(
+                            db=db, storage=storage, import_id=import_id,
+                            chat_id=chat_id,
+                            message_id=message.id,
+                            caption=message.text or getattr(message, "caption", None),
+                            date=message.date,
+                            audio_filename=audio_filename,
+                            telegram_file_id=telegram_file_id,
+                            telegram_file_unique_id=telegram_file_unique_id,
+                            raw_json=message.to_dict(),
+                            downloaded_file_path=downloaded_path,
+                            dry_run=dry_run,
+                            auto_publish=auto_publish,
+                        )
+                        # If upload succeeded, remove local file to save disk space
+                        if r.get("media_stored") and downloaded_path and os.path.exists(downloaded_path):
+                            try:
+                                os.remove(downloaded_path)
+                                log.info("  ✓ Removed local file after B2 upload")
+                            except Exception:
+                                pass
+                        elif downloaded_path and os.path.exists(downloaded_path):
+                            log.warning("  ⚠ B2 upload may have failed — keeping local file: %s",
+                                        downloaded_path)
 
                 elif message.text or getattr(message, "caption", None):
                     r = process_one_message(
