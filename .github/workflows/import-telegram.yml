@@ -1,0 +1,114 @@
+name: Import from Telegram
+
+on:
+  # Run automatically every day at 3am UTC
+  schedule:
+    - cron: "0 3 * * *"
+  # Also allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: "Audio files per batch (default 3)"
+        default: "3"
+        required: false
+      no_media:
+        description: "Metadata only? (true = fast, no audio download)"
+        default: "false"
+        required: false
+      start_id:
+        description: "Start from message ID (0 = auto)"
+        default: "0"
+        required: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300   # 5 hours max
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r telegram/requirements.txt
+
+      - name: Restore Telegram session
+        env:
+          SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
+        run: |
+          mkdir -p telegram/.session
+          if [ -n "$SESSION_BASE64" ]; then
+            echo "$SESSION_BASE64" | base64 -d > telegram/.session/importer.session
+            echo "Session restored from secret"
+          else
+            echo "No session secret found — first run requires local auth"
+          fi
+
+      - name: Run metadata import (no-media, fast)
+        if: ${{ github.event.inputs.no_media == 'true' || github.event_name == 'schedule' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+          STORAGE_PROVIDER: B2
+        run: |
+          START_ID=${{ github.event.inputs.start_id || '0' }}
+          BATCH=${{ github.event.inputs.batch || '3' }}
+          python scripts/import_loop.py --no-media --batch 50
+
+      - name: Run audio import
+        if: ${{ github.event.inputs.no_media != 'true' && github.event_name != 'schedule' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+          STORAGE_PROVIDER: B2
+        run: |
+          BATCH=${{ github.event.inputs.batch || '3' }}
+          python scripts/import_loop.py --batch $BATCH
+
+      - name: Run PDF import
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+          STORAGE_PROVIDER: B2
+        run: python scripts/import_pdfs.py
+
+      - name: Save Telegram session back
+        if: always()
+        env:
+          SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
+        run: |
+          if [ -f telegram/.session/importer.session ]; then
+            NEW_SESSION=$(base64 -w 0 telegram/.session/importer.session)
+            echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 secret with this value if it changed"
+            # Actual update requires gh CLI with appropriate permissions
+          fi

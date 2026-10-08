@@ -49,10 +49,34 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
       </div>
 
       {/* Run importer */}
-      <div className="p-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl space-y-2">
-        <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">Pull new messages from @SheikhMuhammedZain</p>
-        <p className="text-xs text-stone-500 dark:text-stone-400">Fetches the latest 50 messages (metadata only — no audio download). New messages appear in the inbox below.</p>
-        <RunImportButton refreshLabel="Pull from Telegram" />
+      <div className="p-4 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">Pull new messages from @SheikhMuhammedZain</p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">Fetches the latest 50 messages (metadata only — no audio download). New messages appear in the inbox below.</p>
+        </div>
+
+        {/* Local dev button */}
+        <RunImportButton refreshLabel="Pull from Telegram (local dev only)" />
+
+        {/* GitHub Actions link for production */}
+        <div className="pt-2 border-t border-stone-200 dark:border-stone-700">
+          <p className="text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1.5">
+            🚀 To import on the live site — use GitHub Actions:
+          </p>
+          <a
+            href="https://github.com/turab202/shaykh-muhammad-zain-library/actions/workflows/import-telegram.yml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-stone-800 dark:bg-stone-700 text-white text-xs font-medium rounded-lg hover:bg-stone-700 dark:hover:bg-stone-600 transition-colors"
+          >
+            <Send className="w-3.5 h-3.5" aria-hidden="true" />
+            Open GitHub Actions → Run workflow
+          </a>
+          <p className="text-[11px] text-stone-400 mt-1.5">
+            Choose &quot;Metadata only&quot; for a fast scan, or leave it off to download audio files.
+            PDFs are always imported automatically.
+          </p>
+        </div>
       </div>
 
       {/* Stats */}
