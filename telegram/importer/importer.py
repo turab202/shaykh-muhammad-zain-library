@@ -307,6 +307,7 @@ async def run_live(
     storage_base: str,
     limit: int = 100,
     min_message_id: int = 0,
+    max_message_id: int = 0,
     dry_run: bool = False,
     no_media: bool = False,
     auto_publish: bool = False,
@@ -393,7 +394,12 @@ async def run_live(
         results = []
         errors = 0
 
-        async for message in client.iter_messages(entity, limit=limit, min_id=min_message_id):
+        async for message in client.iter_messages(
+            entity,
+            limit=limit,
+            min_id=min_message_id,
+            max_id=max_message_id if max_message_id > 0 else None,
+        ):
             try:
                 # ── Extract raw Telegram metadata ──────────────────────────
                 audio_filename = None
@@ -493,7 +499,8 @@ def main():
     mode.add_argument("--live", action="store_true", help="Connect to live Telegram channel")
 
     parser.add_argument("--limit", type=int, default=100, help="Max messages to fetch (live mode)")
-    parser.add_argument("--min-id", type=int, default=0, help="Only fetch messages with ID > this (live mode, for resuming)")
+    parser.add_argument("--min-id", type=int, default=0, help="Only fetch messages with ID > this")
+    parser.add_argument("--max-id", type=int, default=0, help="Only fetch messages with ID < this (paginate backwards)")
     parser.add_argument("--dry-run", action="store_true", help="Parse only, do not write to DB")
     parser.add_argument(
         "--no-media", action="store_true",
@@ -546,6 +553,7 @@ def main():
             storage_base=storage_base,
             limit=args.limit,
             min_message_id=args.min_id,
+            max_message_id=args.max_id,
             dry_run=args.dry_run,
             no_media=args.no_media,
             auto_publish=args.auto_publish,
