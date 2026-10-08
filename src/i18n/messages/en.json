@@ -343,7 +343,8 @@
     "lightMode": "Light Mode",
     "languageSelect": "Language",
     "minutes": "min",
-    "hours": "hrs"
+    "hours": "hrs",
+    "close": "Close"
   },
 
   "auth": {

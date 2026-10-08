@@ -99,14 +99,29 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setIsPlaying(false);
     };
 
+    const onError = (e: Event) => {
+      const audio = e.target as HTMLAudioElement;
+      const err = audio.error;
+      console.error("[AudioContext] <audio> error:", {
+        code: err?.code,
+        message: err?.message,
+        // MediaError codes: 1=ABORTED 2=NETWORK 3=DECODE 4=SRC_NOT_SUPPORTED
+        meaning: ["", "ABORTED", "NETWORK_ERROR", "DECODE_ERROR", "SRC_NOT_SUPPORTED"][err?.code ?? 0],
+        src: audio.src?.slice(0, 120),
+      });
+      setIsPlaying(false);
+    };
+
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("error", onError);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
       audio.pause();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,12 +259,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         audioRef.current.src = lesson.audioUrl;
         audioRef.current.playbackRate = playbackRate;
       }
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {
-        // Fallback: simulate playback if streaming is blocked.
-        setIsPlaying(true);
-      });
-    } else {
-      setIsPlaying(true);
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          // Audio failed to play — do NOT start the fake timer.
+          // Log the real error so we can see it in DevTools console.
+          console.error("[AudioContext] play() failed:", err);
+          setIsPlaying(false);
+        });
     }
   };
 

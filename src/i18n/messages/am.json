@@ -343,7 +343,8 @@
     "lightMode": "ብርሃን ገጽታ",
     "languageSelect": "ቋንቋ",
     "minutes": "ደቂቃ",
-    "hours": "ሰዓት"
+    "hours": "ሰዓት",
+    "close": "ዝጋ"
   },
 
   "auth": {

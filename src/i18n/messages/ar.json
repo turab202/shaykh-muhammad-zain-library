@@ -343,7 +343,8 @@
     "lightMode": "الوضع النهاري",
     "languageSelect": "اللغة",
     "minutes": "دقيقة",
-    "hours": "ساعة"
+    "hours": "ساعة",
+    "close": "إغلاق"
   },
 
   "auth": {
