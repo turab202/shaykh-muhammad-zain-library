@@ -6,6 +6,7 @@ import React, {
   useState,
   useRef,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import type { PublicLesson } from "@/types/library";
@@ -35,10 +36,6 @@ interface AudioContextValue {
   closeMiniPlayer: () => void;
 }
 
-// ─────────────────────────────────────────────────────────
-// Context
-// ─────────────────────────────────────────────────────────
-
 const AudioContext = createContext<AudioContextValue | undefined>(undefined);
 
 // ─────────────────────────────────────────────────────────
@@ -47,21 +44,25 @@ const AudioContext = createContext<AudioContextValue | undefined>(undefined);
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const [currentLesson, setCurrentLesson] = useState<PublicLesson | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isPlaying, setIsPlaying]         = useState(false);
+  const [currentTime, setCurrentTime]     = useState(0);
+  const [duration, setDuration]           = useState(0);
+  const [playbackRate, setPlaybackRate]   = useState(1);
+  const [volume, setVolume]               = useState(1);
+  const [isMuted, setIsMuted]             = useState(false);
   const [isMiniPlayerOpen, setIsMiniPlayerOpen] = useState(false);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  // Synthetic fallback timer — used when the audio element cannot stream
-  // (e.g. in sandboxed or offline environments). Simulates playback progress
-  // so the UI remains functional even without a live audio URL.
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Single audio element — created once, never recreated.
+  const audioRef         = useRef<HTMLAudioElement | null>(null);
+  // Ref mirrors so event-handler closures don't go stale.
+  const currentLessonRef = useRef<PublicLesson | null>(null);
+  const isPlayingRef     = useRef(false);
 
-  // ── Initialise HTML5 Audio element ───────────────────────
+  // Keep refs in sync with state.
+  useEffect(() => { currentLessonRef.current = currentLesson; }, [currentLesson]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  // ── Create the Audio element exactly once ─────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -69,258 +70,230 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     audioRef.current = audio;
 
     const onTimeUpdate = () => {
-      if (!audioRef.current) return;
-      setCurrentTime(audioRef.current.currentTime);
-      // Persist progress so the user can resume later.
-      if (currentLesson) {
+      const t = audio.currentTime;
+      setCurrentTime(t);
+      const lesson = currentLessonRef.current;
+      if (lesson) {
         try {
-          localStorage.setItem(
-            `progress_${currentLesson.id}`,
-            JSON.stringify({
-              lessonId: currentLesson.id,
-              currentTime: audioRef.current.currentTime,
-              duration: audioRef.current.duration || currentLesson.duration,
-              lastPlayed: new Date().toISOString(),
-            })
-          );
-        } catch {
-          // ignore — localStorage may be unavailable
-        }
+          localStorage.setItem(`progress_${lesson.id}`, JSON.stringify({
+            lessonId: lesson.id,
+            currentTime: t,
+            duration: isNaN(audio.duration) ? lesson.duration : audio.duration,
+            lastPlayed: new Date().toISOString(),
+          }));
+        } catch { /* ignore */ }
       }
     };
 
     const onLoadedMetadata = () => {
-      if (!audioRef.current) return;
-      const d = audioRef.current.duration;
+      const d = audio.duration;
       if (!isNaN(d) && d > 0) setDuration(d);
     };
 
-    const onEnded = () => {
-      setIsPlaying(false);
-    };
+    const onEnded = () => setIsPlaying(false);
 
-    const onError = (e: Event) => {
-      const audio = e.target as HTMLAudioElement;
+    const onError = () => {
       const err = audio.error;
       console.error("[AudioContext] <audio> error:", {
         code: err?.code,
         message: err?.message,
-        // MediaError codes: 1=ABORTED 2=NETWORK 3=DECODE 4=SRC_NOT_SUPPORTED
         meaning: ["", "ABORTED", "NETWORK_ERROR", "DECODE_ERROR", "SRC_NOT_SUPPORTED"][err?.code ?? 0],
         src: audio.src?.slice(0, 120),
       });
       setIsPlaying(false);
     };
 
-    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("timeupdate",     onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEnded);
-    audio.addEventListener("error", onError);
+    audio.addEventListener("ended",          onEnded);
+    audio.addEventListener("error",          onError);
 
     return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("timeupdate",     onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("error", onError);
+      audio.removeEventListener("ended",          onEnded);
+      audio.removeEventListener("error",          onError);
       audio.pause();
+      audio.src = "";
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentLesson]);
+  }, []); // ← empty: runs once on mount, never torn down mid-playback
 
-  // ── Synthetic fallback timer ─────────────────────────────
-  // Kicks in when the HTML5 element has no valid duration.
-  useEffect(() => {
-    const audioBroken =
-      !audioRef.current ||
-      isNaN(audioRef.current.duration) ||
-      audioRef.current.duration === 0;
-
-    if (isPlaying && audioBroken) {
-      timerRef.current = setInterval(() => {
-        setCurrentTime((prev) => {
-          const target = duration || (currentLesson?.duration ?? 1800);
-          if (prev >= target) {
-            setIsPlaying(false);
-            return 0;
-          }
-          return prev + 1;
-        });
-      }, 1000 / playbackRate);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [isPlaying, duration, currentLesson, playbackRate]);
-
-  // ── Keyboard shortcuts ───────────────────────────────────
-  // Space = play/pause, ArrowLeft/Right = skip ±10 s.
-  // Guards against triggering while the user types in an input.
+  // ── Keyboard shortcuts ────────────────────────────────────
   const actionsRef = useRef({ togglePlay: () => {}, skip: (_: number) => {}, hasLesson: false });
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       const tag = (document.activeElement?.tagName ?? "").toLowerCase();
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        document.activeElement?.getAttribute("contenteditable") === "true"
-      ) return;
-
+      if (tag === "input" || tag === "textarea" ||
+          document.activeElement?.getAttribute("contenteditable") === "true") return;
       if (!actionsRef.current.hasLesson) return;
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        actionsRef.current.togglePlay();
-      } else if (e.code === "ArrowLeft") {
-        e.preventDefault();
-        actionsRef.current.skip(-10);
-      } else if (e.code === "ArrowRight") {
-        e.preventDefault();
-        actionsRef.current.skip(10);
-      }
+      if (e.code === "Space")      { e.preventDefault(); actionsRef.current.togglePlay(); }
+      else if (e.code === "ArrowLeft")  { e.preventDefault(); actionsRef.current.skip(-10); }
+      else if (e.code === "ArrowRight") { e.preventDefault(); actionsRef.current.skip(10);  }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Playback operations ──────────────────────────────────
+  // ── Playback operations ───────────────────────────────────
 
-  const pause = () => {
+  const pause = useCallback(() => {
     setIsPlaying(false);
     audioRef.current?.pause();
-  };
+  }, []);
 
-  const resume = () => {
-    setIsPlaying(true);
-    audioRef.current?.play().catch(() => {});
-  };
+  const resume = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !audio.src) return;
+    // Guard: only call play() if not already playing
+    if (!audio.paused) { setIsPlaying(true); return; }
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch((err: Error) => {
+        if (err.name === "AbortError") return; // interrupted by rapid pause — safe to ignore
+        console.error("[AudioContext] resume play() failed:", err);
+        setIsPlaying(false);
+      });
+  }, []);
 
-  const togglePlay = () => {
-    if (!currentLesson) return;
-    if (isPlaying) pause(); else resume();
-  };
+  const togglePlay = useCallback(() => {
+    if (!currentLessonRef.current) return;
+    if (isPlayingRef.current) pause(); else resume();
+  }, [pause, resume]);
 
-  const seek = (seconds: number) => {
-    const max = duration || currentLesson?.duration || 0;
+  const seek = useCallback((seconds: number) => {
+    const audio = audioRef.current;
+    const max = (audio && !isNaN(audio.duration) && audio.duration > 0)
+      ? audio.duration
+      : (currentLessonRef.current?.duration ?? 0);
     const clamped = Math.max(0, Math.min(seconds, max));
     setCurrentTime(clamped);
-    if (audioRef.current) {
-      try { audioRef.current.currentTime = clamped; } catch { /* ignore */ }
+    if (audio) {
+      try { audio.currentTime = clamped; } catch { /* ignore */ }
     }
-  };
+  }, []);
 
-  const skip = (seconds: number) => seek(currentTime + seconds);
+  const skip = useCallback((s: number) => {
+    seek((audioRef.current?.currentTime ?? 0) + s);
+  }, [seek]);
 
-  const playLesson = (lesson: PublicLesson) => {
-    setCurrentLesson(lesson);
-    setDuration(lesson.duration);
-    setIsMiniPlayerOpen(true);
+  const playLesson = useCallback((lesson: PublicLesson) => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    // If there is no real audio URL (empty or proxy that redirects to Telegram),
-    // open the Telegram message directly in a new tab so the user can listen.
-    // This happens when audio files haven't been downloaded to storage yet.
     const audioUrl = lesson.audioUrl ?? "";
     const isTelegramProxy = audioUrl.startsWith("/api/audio/");
-    const hasRealAudio = audioUrl.length > 0 && !isTelegramProxy;
 
-    if (isTelegramProxy && !hasRealAudio) {
-      // Extract messageId from /api/audio/{messageId} and open t.me
-      const msgId = audioUrl.split("/").pop();
-      if (msgId) {
-        window.open(`https://t.me/SheikhMuhammedZain/${msgId}`, "_blank", "noopener");
-      }
+    // No real audio — open Telegram in new tab.
+    if (!audioUrl || isTelegramProxy) {
+      setCurrentLesson(lesson);
+      setIsMiniPlayerOpen(true);
       setIsPlaying(false);
+      if (isTelegramProxy) {
+        const msgId = audioUrl.split("/").pop();
+        if (msgId) window.open(`https://t.me/SheikhMuhammedZain/${msgId}`, "_blank", "noopener");
+      }
       return;
     }
 
-    // Restore saved progress if available.
+    // Restore saved progress.
+    let resumeTime = 0;
     try {
       const saved = localStorage.getItem(`progress_${lesson.id}`);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        const resume = parsed.currentTime ?? 0;
-        setCurrentTime(resume < lesson.duration - 10 ? resume : 0);
-      } else {
-        setCurrentTime(0);
+        const p = JSON.parse(saved) as { currentTime?: number };
+        const t = p.currentTime ?? 0;
+        resumeTime = t < (lesson.duration - 10) ? t : 0;
       }
-    } catch {
-      setCurrentTime(0);
+    } catch { /* ignore */ }
+
+    // Update state FIRST, then set src + play.
+    setCurrentLesson(lesson);
+    setDuration(lesson.duration);
+    setCurrentTime(resumeTime);
+    setIsMiniPlayerOpen(true);
+
+    // Only change src if the lesson actually changed.
+    if (audio.src !== audioUrl) {
+      // Pause any current playback cleanly before swapping src.
+      if (!audio.paused) audio.pause();
+      audio.src         = audioUrl;
+      audio.currentTime = 0;
+      audio.playbackRate = playbackRate;
     }
 
-    if (audioRef.current) {
-      if (audioRef.current.src !== lesson.audioUrl) {
-        audioRef.current.src = lesson.audioUrl;
-        audioRef.current.playbackRate = playbackRate;
-      }
-      audioRef.current.play()
+    if (resumeTime > 0) {
+      try { audio.currentTime = resumeTime; } catch { /* ignore */ }
+    }
+
+    // Use a small timeout to let React flush state before calling play(),
+    // avoiding the AbortError from simultaneous set-src + play.
+    setTimeout(() => {
+      audio.play()
         .then(() => setIsPlaying(true))
-        .catch((err) => {
-          // Audio failed to play — do NOT start the fake timer.
-          // Log the real error so we can see it in DevTools console.
-          console.error("[AudioContext] play() failed:", err);
+        .catch((err: Error) => {
+          if (err.name === "AbortError") return; // race condition — safe to ignore
+          console.error("[AudioContext] playLesson play() failed:", err);
           setIsPlaying(false);
         });
-    }
-  };
+    }, 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playbackRate]);
 
-  // Keep actionsRef current to avoid stale closures in the keyboard handler.
+  // Keep actionsRef fresh for the keyboard handler.
   useEffect(() => {
-    actionsRef.current = { togglePlay, skip, hasLesson: currentLesson !== null };
+    actionsRef.current = { togglePlay, skip, hasLesson: currentLessonRef.current !== null };
   });
 
-  const setRate = (rate: number) => {
+  const setRate = useCallback((rate: number) => {
     setPlaybackRate(rate);
     if (audioRef.current) audioRef.current.playbackRate = rate;
-  };
+  }, []);
 
-  const setVol = (v: number) => {
+  const setVol = useCallback((v: number) => {
     const clamped = Math.max(0, Math.min(1, v));
     setVolume(clamped);
-    if (audioRef.current) audioRef.current.volume = clamped;
-    if (clamped > 0 && isMuted) setIsMuted(false);
-  };
+    setIsMuted(false);
+    if (audioRef.current) {
+      audioRef.current.volume = clamped;
+      audioRef.current.muted  = false;
+    }
+  }, []);
 
-  const toggleMute = () => {
-    const next = !isMuted;
-    setIsMuted(next);
-    if (audioRef.current) audioRef.current.muted = next;
-  };
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      if (audioRef.current) audioRef.current.muted = next;
+      return next;
+    });
+  }, []);
 
-  const closeMiniPlayer = () => {
+  const closeMiniPlayer = useCallback(() => {
     pause();
     setIsMiniPlayerOpen(false);
-  };
+  }, [pause]);
 
   return (
-    <AudioContext.Provider
-      value={{
-        currentLesson,
-        isPlaying,
-        currentTime,
-        duration: duration || currentLesson?.duration || 0,
-        playbackRate,
-        volume,
-        isMuted,
-        isMiniPlayerOpen,
-        playLesson,
-        togglePlay,
-        pause,
-        resume,
-        seek,
-        skip,
-        setRate,
-        setVol,
-        toggleMute,
-        closeMiniPlayer,
-      }}
-    >
+    <AudioContext.Provider value={{
+      currentLesson,
+      isPlaying,
+      currentTime,
+      duration: duration || currentLesson?.duration || 0,
+      playbackRate,
+      volume,
+      isMuted,
+      isMiniPlayerOpen,
+      playLesson,
+      togglePlay,
+      pause,
+      resume,
+      seek,
+      skip,
+      setRate,
+      setVol,
+      toggleMute,
+      closeMiniPlayer,
+    }}>
       {children}
     </AudioContext.Provider>
   );
