@@ -68,7 +68,14 @@ export function SeriesPlaylist({
                 <span className="font-mono text-[11px] opacity-80 shrink-0">
                   #{String(lesson.lessonNumber ?? 0).padStart(2, "0")}
                 </span>
-                <span className="truncate">{lesson.title}</span>
+                <span className="min-w-0">
+                  <span className="truncate block">{lesson.title}</span>
+                  {lesson.description && (
+                    <span className="truncate block text-[10px] opacity-70 font-normal" dir="rtl">
+                      {lesson.description}
+                    </span>
+                  )}
+                </span>
               </Link>
 
               <div className="flex items-center gap-1 shrink-0">
