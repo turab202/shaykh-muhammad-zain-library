@@ -75,9 +75,12 @@ def main():
     print("Press Ctrl+C to stop.\n")
 
     while total_imported < args.max:
-        # Auto-detect min_id from DB so we don't re-import already-seen messages
+        # For --no-media runs, always start from 0 and let duplicate-check skip seen messages.
+        # For media runs, use the max seen ID to avoid re-downloading files.
         if args.min_id:
             min_id = args.min_id
+        elif args.no_media:
+            min_id = 0  # duplicate check handles already-seen messages cheaply
         else:
             try:
                 min_id = get_max_message_id()
@@ -96,7 +99,8 @@ def main():
             consecutive_failures = 0
             total_imported += args.batch
             print(f"\n✓ Batch done. Linking B2 files...")
-            run(linker)
+            if not args.no_media:
+                run(linker)
             # Small pause between batches to avoid hammering connections
             print("Waiting 5s before next batch...")
             time.sleep(5)

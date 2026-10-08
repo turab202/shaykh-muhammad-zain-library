@@ -32,7 +32,10 @@ for b2_key, size in b2_files.items():
 
     # Match by audioFilename similarity (the hash changes the name slightly)
     # The original filename has the lesson number at the start
-    lesson_num = filename.split("_")[0].strip() if "_" in filename else None
+    # Handle both "230_" and "038 -" style prefixes
+    import re
+    num_match = re.match(r'^(\d+)', filename)
+    lesson_num = num_match.group(1) if num_match else None
 
     cur.execute("""
         SELECT tm.id, tm."messageId", tm."audioFilename", l.id as lesson_id
