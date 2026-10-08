@@ -6,7 +6,7 @@ import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { isRtlLocale } from "@/types/i18n";
 import type { Locale } from "@/types/i18n";
-import { ExternalLink, Send } from "lucide-react";
+import { Send } from "lucide-react";
 
 export function Footer() {
   const tNav = useTranslations("nav");
@@ -240,11 +240,9 @@ export function Footer() {
             href="https://zahra-mustefa.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex flex-wrap items-center justify-center gap-x-1.5 font-semibold text-stone-700 dark:text-stone-200 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            className="font-semibold text-stone-700 dark:text-stone-200 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
           >
             <span>Zahra Mustefa</span>
-            <span className="font-normal text-stone-500 dark:text-stone-400">(zahra-mustefa.vercel.app)</span>
-            <ExternalLink className="h-3 w-3 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
           </a>
         </div>
       </div>
