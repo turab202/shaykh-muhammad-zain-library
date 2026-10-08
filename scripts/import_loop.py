@@ -1,36 +1,22 @@
 """
-Resilient import loop — pages backwards through the Telegram channel
-downloading all unprocessed messages in small batches.
+Resilient import loop — pages backwards through the Telegram channel.
 
 How it works:
-- Telegram channel has messages with IDs 1..~3400 (newest = 3334)
-- We page backwards: start at max_id=3400, each batch fetches `batch`
-  messages OLDER than the current cursor, updating cursor to the oldest
-  message seen in that batch.
-- The importer's duplicate-check skips already-seen messages cheaply.
-- Stops when cursor reaches 0 (all messages scanned).
+- Starts at the highest message ID in the channel (~3334)
+- Each batch fetches `batch` messages OLDER than the current cursor
+- cursor moves backward by `batch` each time
+- Skips duplicates, so already-processed messages cost only a DB lookup
+- Stops when cursor reaches 0
 
 Usage:
-    py scripts/import_loop.py               # audio download, batch of 5
-    py scripts/import_loop.py --batch 10
-    py scripts/import_loop.py --no-media    # metadata only, fast
-    py scripts/import_loop.py --start-id 3400  # override start point
+    py scripts/import_loop.py --no-media --batch 20   # metadata only (fast)
+    py scripts/import_loop.py --batch 3               # download audio (slow)
+    py scripts/import_loop.py --start-id 1500         # resume from ID 1500
 """
-import argparse, subprocess, sys, time, re
+import argparse, subprocess, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-
-def run_importer(py, extra_args: list) -> tuple[int, list[int]]:
-    """
-    Run the importer, capture output, extract message IDs processed.
-    Returns (exit_code, list_of_processed_message_ids).
-    """
-    cmd = [py, "-m", "telegram.importer.importer", "--live"] + extra_args
-    print(f"\n$ {' '.join(str(c) for c in cmd)}")
-    import subprocess as sp
-    result = sp.run(cmd, cwd=str(ROOT), capture_output=False)
-    return result.returncode, []
 
 def kill_stale_session():
     session = ROOT / "telegram" / ".session" / "importer"
@@ -40,33 +26,21 @@ def kill_stale_session():
             p.unlink()
             print(f"  Removed lock: {p.name}")
 
-def get_min_unprocessed_id() -> int:
-    """
-    Return the smallest telegram message ID that has no linked lesson yet.
-    This is where we should start downloading from.
-    Returns 0 if all messages are processed.
-    """
+def get_max_channel_message_id() -> int:
+    """Get highest messageId from telegram_messages table."""
     try:
         sys.path.insert(0, str(ROOT / "scripts"))
         from _neon import connect
         conn = connect(retries=3)
         cur = conn.cursor()
-        # Messages that exist in telegram_messages but have no lesson attached
-        cur.execute("""
-            SELECT MAX(ts."messageId")
-            FROM telegram_messages ts
-            LEFT JOIN lessons l ON l."telegramSourceId" = ts.id
-            LEFT JOIN media m   ON m."lessonId" = l.id AND m."mediaType" = 'AUDIO'
-            WHERE l.id IS NULL
-               OR (l.id IS NOT NULL AND m.id IS NULL)
-        """)
+        cur.execute('SELECT MAX("messageId") FROM telegram_messages')
         r = cur.fetchone()
         cur.close()
         conn.close()
-        return r[0] or 0
+        return (r[0] or 0) + 1  # +1 so we include the max message itself
     except Exception as e:
-        print(f"  DB check failed: {e}")
-        return 0
+        print(f"  DB error getting max ID: {e}")
+        return 3335  # fallback: known channel max
 
 def get_stats() -> str:
     try:
@@ -75,49 +49,54 @@ def get_stats() -> str:
         conn = connect(retries=2)
         cur = conn.cursor()
         cur.execute('SELECT COUNT(*) FROM telegram_messages')
-        total = cur.fetchone()[0]
+        msgs = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM lessons WHERE status='PUBLISHED'")
+        pub = cur.fetchone()[0]
         cur.execute("""
-            SELECT COUNT(DISTINCT l.id)
-            FROM lessons l
-            JOIN media m ON m."lessonId" = l.id AND m."mediaType" = 'AUDIO'
-            WHERE l.status = 'PUBLISHED'
+            SELECT COUNT(DISTINCT l.id) FROM lessons l
+            JOIN media m ON m."lessonId"=l.id AND m."mediaType"='AUDIO'
+            WHERE l.status='PUBLISHED'
         """)
-        with_audio = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM lessons WHERE status = 'PUBLISHED'")
-        published = cur.fetchone()[0]
+        audio = cur.fetchone()[0]
         cur.close()
         conn.close()
-        return f"messages={total}, published={published}, with_B2_audio={with_audio}"
+        return f"messages={msgs} | published={pub} | with_audio={audio}"
     except Exception as e:
-        return f"(db error: {e})"
+        return f"(db: {e})"
+
+def run(cmd: list) -> int:
+    print(f"\n$ {' '.join(str(c) for c in cmd)}")
+    return subprocess.run(cmd, cwd=str(ROOT)).returncode
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch",    type=int, default=5,
-                        help="Messages per Telegram fetch (default 5)")
+    parser.add_argument("--batch",    type=int, default=20,
+                        help="Messages per fetch (default 20)")
     parser.add_argument("--no-media", action="store_true",
-                        help="Record metadata only, skip audio download")
+                        help="Metadata only, no audio download")
     parser.add_argument("--start-id", type=int, default=0,
-                        help="Start from this message ID (0 = auto-detect from DB)")
+                        help="Start cursor (0 = auto from DB)")
     args = parser.parse_args()
 
     py = sys.executable
     linker = [py, str(ROOT / "scripts" / "link_b2_audio.py")]
 
-    mode = "metadata-only (no download)" if args.no_media else "audio download"
-    print(f"Import loop | mode={mode} | batch={args.batch}")
-    print("Pages backwards through channel, skipping already-processed messages.")
+    mode = "no-media (metadata only)" if args.no_media else "AUDIO DOWNLOAD"
+    print(f"\nImport loop | mode={mode} | batch={args.batch}")
+    print("Pages backwards: newest → oldest message")
     print("Press Ctrl+C to stop.\n")
 
     kill_stale_session()
-    print(f"Current DB state: {get_stats()}\n")
 
-    # Determine starting cursor
+    # Cursor = next message ID to fetch below
+    # Use start-id override or auto-detect from DB
     if args.start_id > 0:
         cursor = args.start_id
     else:
-        # Start just above the highest existing message
-        cursor = 3500  # slightly above the known max of ~3334
+        cursor = get_max_channel_message_id()
+
+    print(f"Starting cursor: {cursor}")
+    print(f"Current state  : {get_stats()}\n")
 
     consecutive_failures = 0
     max_failures = 5
@@ -125,36 +104,31 @@ def main():
 
     while cursor > 0:
         batch_num += 1
-        importer_args = [
+
+        base_cmd = [
+            py, "-m", "telegram.importer.importer",
+            "--live",
             "--limit", str(args.batch),
             "--max-id", str(cursor),
             "--auto-publish",
         ]
         if args.no_media:
-            importer_args.append("--no-media")
+            base_cmd.append("--no-media")
 
         print(f"\n{'='*55}")
-        print(f"Batch {batch_num} | cursor (max_id)={cursor} | {get_stats()}")
+        print(f"Batch {batch_num} | cursor={cursor} | {get_stats()}")
         print(f"{'='*55}")
 
-        rc, _ = run_importer(py, importer_args)
+        rc = run(base_cmd)
 
         if rc == 0:
             consecutive_failures = 0
-
             if not args.no_media:
                 print("\nLinking B2 files...")
-                subprocess.run([py, str(ROOT / "scripts" / "link_b2_audio.py")],
-                               cwd=str(ROOT))
-
-            # Move cursor backwards by batch size
-            # (Telegram returns messages newest-first, so cursor = oldest seen - 1)
-            # We advance by batch to walk backwards through the channel
+                run(linker)
+            # Move cursor backward by batch size
             cursor = max(0, cursor - args.batch)
-
-            # Small pause to avoid rate limiting
-            time.sleep(3)
-
+            time.sleep(2)
         else:
             consecutive_failures += 1
             kill_stale_session()
@@ -165,10 +139,9 @@ def main():
                 break
             time.sleep(wait)
 
-    print(f"\nFinished! Final state: {get_stats()}")
+    print(f"\nDone! Final: {get_stats()}")
     if not args.no_media:
-        print("Running final B2 link pass...")
-        subprocess.run([py, str(ROOT / "scripts" / "link_b2_audio.py")], cwd=str(ROOT))
+        run(linker)
 
 if __name__ == "__main__":
     main()
