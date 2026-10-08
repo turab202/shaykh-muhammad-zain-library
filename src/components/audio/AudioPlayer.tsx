@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAudio } from "@/lib/context/AudioContext";
+import { Link } from "@/i18n/navigation";
 import {
   Play,
   Pause,
@@ -13,11 +14,15 @@ import {
   Download,
   Share2,
   Check,
+  BookOpen,
 } from "lucide-react";
 import type { PublicLesson } from "@/types/library";
 
 interface AudioPlayerProps {
   lesson: PublicLesson;
+  /** If the lesson belongs to a book that has a PDF, pass the book slug here */
+  bookSlug?: string;
+  bookPdfUrl?: string;
 }
 
 const SPEEDS = [0.75, 1.0, 1.25, 1.5, 2.0] as const;
@@ -27,7 +32,7 @@ const SPEEDS = [0.75, 1.0, 1.25, 1.5, 2.0] as const;
  * Wires directly to AudioContext — no LearningContext dependency
  * (bookmarks/completed are deferred to a later phase).
  */
-export function AudioPlayer({ lesson }: AudioPlayerProps) {
+export function AudioPlayer({ lesson, bookSlug, bookPdfUrl }: AudioPlayerProps) {
   const {
     currentLesson,
     isPlaying,
@@ -160,12 +165,12 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
 
         {/* Speed selector */}
-        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800/80 p-1 rounded-lg border border-stone-200 dark:border-stone-700/60">
+        <div className="flex w-full items-center gap-1 bg-stone-100 dark:bg-stone-800/80 p-1 rounded-lg border border-stone-200 dark:border-stone-700/60 sm:w-auto">
           {SPEEDS.map((rate) => (
             <button
               key={rate}
               onClick={() => setRate(rate)}
-              className={`px-2 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+              className={`min-h-11 flex-1 px-1.5 py-2 text-center text-xs font-medium rounded-md transition-colors cursor-pointer sm:min-h-0 sm:flex-none sm:px-2 sm:py-1 ${
                 playbackRate === rate
                   ? "bg-white dark:bg-stone-700 text-emerald-900 dark:text-emerald-300 font-semibold shadow-sm"
                   : "text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200"
@@ -267,6 +272,31 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
             <Download className="w-4 h-4" aria-hidden="true" />
             <span className="hidden md:inline">{tActions("downloadAudio")}</span>
           </a>
+
+          {/* Open PDF Kitab — follow along while listening */}
+          {(bookPdfUrl || bookSlug) && (
+            bookPdfUrl ? (
+              <a
+                href={bookPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open PDF to follow along"
+                className="p-2 rounded-md border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors flex items-center gap-1 text-xs font-medium"
+              >
+                <BookOpen className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden md:inline">Kitab</span>
+              </a>
+            ) : (
+              <Link
+                href={`/kutub/${bookSlug}`}
+                title="Open the book"
+                className="p-2 rounded-md border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors flex items-center gap-1 text-xs font-medium"
+              >
+                <BookOpen className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden md:inline">Kitab</span>
+              </Link>
+            )
+          )}
         </div>
       </div>
 

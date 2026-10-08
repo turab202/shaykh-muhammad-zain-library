@@ -71,7 +71,13 @@ export default async function LessonDetailPage({ params }: Props) {
       </div>
 
       {/* Audio player */}
-      <div className="mb-10"><AudioPlayer lesson={lesson} /></div>
+      <div className="mb-10">
+        <AudioPlayer
+          lesson={lesson}
+          bookSlug={book?.slug}
+          bookPdfUrl={book?.pdfUrl}
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main column */}

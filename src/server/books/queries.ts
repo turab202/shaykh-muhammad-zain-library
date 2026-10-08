@@ -64,6 +64,7 @@ function toPublicBook(
     pdfAvailable: !!pdfMedia,
     pdfUrl: storageKeyToUrl(pdfMedia?.storageKey),
     pdfSize: pdfSizeMB,
+    coverImageUrl: storageKeyToUrl(row.coverImageKey) ?? undefined,
     tableOfContents: parseToc(row.tableOfContents, locale),
   };
 }
