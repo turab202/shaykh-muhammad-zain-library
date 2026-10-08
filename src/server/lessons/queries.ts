@@ -11,17 +11,15 @@ function resolveJson(json: unknown, locale: Locale): string | undefined {
 
 /** Convert a storageKey to a playable URL.
  * - Absolute URLs (http/https) → returned as-is
- * - s3://bucket/key → /api/media/key (Next.js generates pre-signed B2 URL)
- * - Relative keys (audio/2026/file.mp3) → /api/media/audio/2026/file.mp3
- * - Empty string → empty string
+ * - s3://bucket/key → /api/media/presign?key=... (client fetches pre-signed URL, sets on audio.src)
+ * - Relative keys → /api/media/key (local file)
  */
 function storageKeyToUrl(key: string | undefined | null): string {
   if (!key) return "";
   if (key.startsWith("http://") || key.startsWith("https://")) return key;
-  // B2 private bucket key — strip the s3://bucket/ prefix
   if (key.startsWith("s3://")) {
-    const objectKey = key.split("/").slice(3).join("/"); // remove s3://bucket/
-    return `/api/media/b2/${objectKey}`;
+    const objectKey = key.split("/").slice(3).join("/"); // strip s3://bucket/
+    return `/api/media/presign?key=${encodeURIComponent(objectKey)}`;
   }
   return `/api/media/${key}`;
 }

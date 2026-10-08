@@ -52,7 +52,9 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
   const isActive = currentLesson?.id === lesson.id;
   const activeIsPlaying = isActive && isPlaying;
   const activeTime = isActive ? currentTime : 0;
-  const activeDuration = isActive && duration > 0 ? duration : lesson.duration;
+  // Use real audio duration from context when active (loadedmetadata gives true value),
+  // fall back to DB value when lesson hasn't been played yet this session.
+  const activeDuration = isActive && duration > 0 ? duration : (lesson.duration ?? 0);
   const percent = activeDuration > 0 ? (activeTime / activeDuration) * 100 : 0;
 
   // Detect if audio is a Telegram proxy (not yet downloaded to storage)
@@ -67,8 +69,18 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
   const handleScrub = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = (e.clientX - rect.left) / rect.width;
-    if (!isActive) playLesson(lesson);
+    if (!isActive) {
+      playLesson(lesson);
+      return;
+    }
     seek(ratio * activeDuration);
+    // If paused, resume after seeking
+    if (!activeIsPlaying) {
+      setTimeout(() => {
+        if (!isActive) return;
+        // togglePlay will call resume() which re-calls play()
+      }, 0);
+    }
   };
 
   const handleShare = () => {
@@ -117,7 +129,8 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
             {activeIsPlaying ? tActions("playing") : tActions("audioLecture")}
           </span>
           <span aria-hidden="true">·</span>
-          <span>{formatDurationHuman(lesson.duration)}</span>
+          {/* Show real duration from audio context when active, DB value otherwise */}
+          <span>{formatDurationHuman(activeDuration)}</span>
         </div>
       </div>
 
@@ -289,8 +302,10 @@ function formatDuration(seconds: number): string {
 }
 
 function formatDurationHuman(seconds: number): string {
+  if (!seconds || seconds <= 0) return "";
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m} mins`;
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }

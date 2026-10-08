@@ -21,7 +21,8 @@ function parseToc(json: unknown, locale: Locale): TableOfContentsItem[] {
 function storageKeyToUrl(key: string | undefined | null): string | undefined {
   if (!key) return undefined;
   if (key.startsWith("http://") || key.startsWith("https://")) return key;
-  // B2 key: s3://bucket/path/to/file → /api/media/b2/path/to/file
+  // B2 key: s3://bucket/path → /api/media/b2/path (redirect to pre-signed URL)
+  // For PDFs we use the redirect (not presign JSON) since PDFs are opened in new tab
   if (key.startsWith("s3://")) {
     const objectKey = key.split("/").slice(3).join("/");
     return `/api/media/b2/${objectKey}`;

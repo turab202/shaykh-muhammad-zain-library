@@ -7,7 +7,7 @@ import { getCategoryBySlug } from "@/server/categories/queries";
 import { getSeriesBySlug } from "@/server/series/queries";
 import { getLessonsByBook } from "@/server/lessons/queries";
 import type { Locale } from "@/types/i18n";
-import { BookOpen, Layers, Headphones, User, Tag, Clock, ChevronRight } from "lucide-react";
+import { BookOpen, Layers, Headphones, User, Tag, Clock, ChevronRight, FileText } from "lucide-react";
 import { BookLessons } from "./BookTabs";
 import { PdfViewer } from "@/components/books/PdfViewer";
 

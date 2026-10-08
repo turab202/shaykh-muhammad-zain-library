@@ -87,7 +87,20 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
     const onLoadedMetadata = () => {
       const d = audio.duration;
-      if (!isNaN(d) && d > 0) setDuration(d);
+      if (!isNaN(d) && d > 0) {
+        setDuration(d);
+        // Persist real duration to DB so the header shows correct time on next load.
+        // Fire-and-forget — don't block playback.
+        const lesson = currentLessonRef.current;
+        if (lesson) {
+          const durationSecs = Math.round(d);
+          fetch(`/api/lessons/${lesson.id}/duration`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ duration: durationSecs }),
+          }).catch(() => {}); // silent — non-critical
+        }
+      }
     };
 
     const onEnded = () => setIsPlaying(false);
@@ -169,7 +182,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const clamped = Math.max(0, Math.min(seconds, max));
     setCurrentTime(clamped);
     if (audio) {
-      try { audio.currentTime = clamped; } catch { /* ignore */ }
+      try {
+        audio.currentTime = clamped;
+        // If audio was playing, seeking pauses it internally on some browsers —
+        // re-trigger play so it continues from the new position.
+        if (isPlayingRef.current && audio.paused) {
+          audio.play().catch((err: Error) => {
+            if (err.name !== "AbortError") console.error("[AudioContext] seek play() failed:", err);
+          });
+        }
+      } catch { /* ignore */ }
     }
   }, []);
 
@@ -203,40 +225,59 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       if (saved) {
         const p = JSON.parse(saved) as { currentTime?: number };
         const t = p.currentTime ?? 0;
-        resumeTime = t < (lesson.duration - 10) ? t : 0;
+        resumeTime = t < ((lesson.duration ?? 0) - 10) ? t : 0;
       }
     } catch { /* ignore */ }
 
-    // Update state FIRST, then set src + play.
+    // Update UI state immediately so player shows the lesson.
     setCurrentLesson(lesson);
-    setDuration(lesson.duration);
+    setDuration(lesson.duration ?? 0);
     setCurrentTime(resumeTime);
     setIsMiniPlayerOpen(true);
 
-    // Only change src if the lesson actually changed.
-    if (audio.src !== audioUrl) {
-      // Pause any current playback cleanly before swapping src.
-      if (!audio.paused) audio.pause();
-      audio.src         = audioUrl;
-      audio.currentTime = 0;
-      audio.playbackRate = playbackRate;
-    }
+    // If this is a presign URL, resolve the real B2 URL first.
+    // The real URL supports Range requests natively — seek works properly.
+    const isPresign = audioUrl.startsWith("/api/media/presign");
 
-    if (resumeTime > 0) {
-      try { audio.currentTime = resumeTime; } catch { /* ignore */ }
-    }
+    const doPlay = (resolvedUrl: string) => {
+      if (audio.src !== resolvedUrl) {
+        if (!audio.paused) audio.pause();
+        audio.src          = resolvedUrl;
+        audio.currentTime  = 0;
+        audio.playbackRate = playbackRate;
+      }
+      if (resumeTime > 0) {
+        try { audio.currentTime = resumeTime; } catch { /* ignore */ }
+      }
+      setTimeout(() => {
+        audio.play()
+          .then(() => setIsPlaying(true))
+          .catch((err: Error) => {
+            if (err.name === "AbortError") return;
+            console.error("[AudioContext] play() failed:", err);
+            setIsPlaying(false);
+          });
+      }, 0);
+    };
 
-    // Use a small timeout to let React flush state before calling play(),
-    // avoiding the AbortError from simultaneous set-src + play.
-    setTimeout(() => {
-      audio.play()
-        .then(() => setIsPlaying(true))
-        .catch((err: Error) => {
-          if (err.name === "AbortError") return; // race condition — safe to ignore
-          console.error("[AudioContext] playLesson play() failed:", err);
+    if (isPresign) {
+      fetch(audioUrl)
+        .then((r) => r.json())
+        .then((data: { url?: string }) => {
+          if (data.url) {
+            doPlay(data.url);
+          } else {
+            console.error("[AudioContext] presign returned no URL:", data);
+            setIsPlaying(false);
+          }
+        })
+        .catch((err) => {
+          console.error("[AudioContext] presign fetch failed:", err);
           setIsPlaying(false);
         });
-    }, 0);
+    } else {
+      doPlay(audioUrl);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playbackRate]);
 

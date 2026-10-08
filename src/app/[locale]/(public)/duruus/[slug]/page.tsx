@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { AudioPlayer } from "@/components/audio/AudioPlayer";
+import { LessonDuration } from "@/components/audio/LessonDuration";
 import { SeriesPlaylist } from "./SeriesPlaylist";
 import { getLessonBySlug, getLessonsBySeries } from "@/server/lessons/queries";
 import { getSeriesBySlug } from "@/server/series/queries";
@@ -59,7 +60,7 @@ export default async function LessonDetailPage({ params }: Props) {
         <div className="flex flex-wrap items-center gap-4 text-xs text-stone-500 dark:text-stone-400 pt-3 border-t border-stone-200/60 dark:border-stone-800/60">
           {lesson.publishedAt && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" aria-hidden="true" />{lesson.publishedAt}</span>}
           <span aria-hidden="true">·</span>
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{fmt(lesson.duration)}</span>
+          <LessonDuration lessonId={lesson.id} dbDuration={lesson.duration ?? 0} />
           {series && <><span aria-hidden="true">·</span><span>{tLesson("lessonPrefix")} {lesson.lessonNumber} {tLesson("of")} {series.lessonCount ?? seriesLessons.length}</span></>}
         </div>
       </div>
