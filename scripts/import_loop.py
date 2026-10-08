@@ -19,12 +19,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 def kill_stale_session():
+    """Remove Telethon SQLite lock files — silently skip if locked by another process."""
     session = ROOT / "telegram" / ".session" / "importer"
     for suffix in [".session-journal", ".session-wal", ".session-shm"]:
         p = Path(str(session) + suffix)
         if p.exists():
-            p.unlink()
-            print(f"  Removed lock: {p.name}")
+            try:
+                p.unlink()
+                print(f"  Removed lock: {p.name}")
+            except PermissionError:
+                print(f"  Warning: {p.name} is locked by another process.")
+                print("  Please close the other Python/import process first.")
+            except Exception as e:
+                print(f"  Could not remove {p.name}: {e}")
 
 def get_max_channel_message_id() -> int:
     """Get highest messageId from telegram_messages table."""
