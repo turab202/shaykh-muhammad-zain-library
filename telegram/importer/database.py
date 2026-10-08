@@ -166,6 +166,25 @@ class ImportDB:
                 return cur.fetchone() is not None
         return self._execute_with_retry(_do)
 
+    def message_has_media(self, chat_id: str, message_id: int) -> bool:
+        """Returns True if this message already has a B2 audio media record linked."""
+        self._ping()
+        def _do():
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT m.id FROM telegram_messages ts
+                    JOIN lessons l ON l."telegramSourceId" = ts.id
+                    JOIN media m ON m."lessonId" = l.id AND m."mediaType" = 'AUDIO'
+                    WHERE ts."chatId" = %s AND ts."messageId" = %s
+                      AND m."storageKey" LIKE 's3://%%'
+                    LIMIT 1
+                    """,
+                    (chat_id, message_id),
+                )
+                return cur.fetchone() is not None
+        return self._execute_with_retry(_do)
+
     def insert_raw_message(
         self,
         *,

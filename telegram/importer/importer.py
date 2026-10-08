@@ -438,6 +438,12 @@ async def run_live(
                             auto_publish=auto_publish,
                         )
                     else:
+                        # Skip download if message already has a B2 media record
+                        already_has_media = db.message_has_media(chat_id, message.id)
+                        if already_has_media:
+                            log.info("  ↷ skip (already has B2 audio): msgId=%d", message.id)
+                            results.append({"message_id": message.id, "skipped": True, "skip_reason": "already_has_media"})
+                            continue
                         with tempfile.TemporaryDirectory() as tmpdir:
                             temp_dest = os.path.join(tmpdir, audio_filename or "media")
                             downloaded = await client.download_media(message, file=temp_dest)
