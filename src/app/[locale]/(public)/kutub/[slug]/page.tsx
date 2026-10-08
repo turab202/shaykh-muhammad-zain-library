@@ -100,15 +100,28 @@ export default async function BookDetailPage({ params }: Props) {
                 )}
               </div>
 
-              {/* Go to series button */}
-              {series && (
-                <Link href={`/series/${series.slug}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-900 dark:bg-emerald-800 text-amber-100 text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors">
-                  <Layers className="w-3.5 h-3.5" aria-hidden="true" />
-                  {tBook("goToSeries")}
-                  <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                </Link>
-              )}
+              {/* Go to series button + PDF download */}
+              <div className="flex flex-wrap gap-2">
+                {series && (
+                  <Link href={`/series/${series.slug}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-900 dark:bg-emerald-800 text-amber-100 text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors">
+                    <Layers className="w-3.5 h-3.5" aria-hidden="true" />
+                    {tBook("goToSeries")}
+                    <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </Link>
+                )}
+                {book.pdfUrl && (
+                  <a
+                    href={book.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-800 dark:border-emerald-700 text-emerald-800 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
+                    {tBook("pdfAvailable")}{book.pdfSize ? ` (${book.pdfSize})` : ""}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 

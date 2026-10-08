@@ -1,61 +1,76 @@
 """
-Download PDF books from Telegram and store them.
-Uses Telethon session (same as main importer).
+Download PDF books from Telegram, upload to B2, and link to Book records.
 
 Usage:
     py scripts/import_pdfs.py
 
-This downloads all PDF files from the telegram_messages table
-that haven't been stored yet, saves them to ./storage/pdfs/,
-creates Media records, and links them to the appropriate Book.
+Requires: same .env as main importer (TELEGRAM_*, B2_*, DATABASE_URL).
 """
-import asyncio
-import os
-import sys
-import json
+import asyncio, os, sys, json, time, boto3
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT))
 
 from dotenv import load_dotenv
 load_dotenv(ROOT / ".env")
 
-import psycopg2
-from telegram.importer.database import ImportDB, _cuid
+from _neon import connect
 
-# Book slug mapping from PDF filename patterns
+# ── Book slug mapping: substring of PDF filename → book slug ─────────────────
 PDF_TO_BOOK: dict[str, str] = {
-    "تيسير_الكريم_الرحمن": "tafsir-al-saadi",
-    "Quraan17394": "tafsir-al-saadi",
-    "Quraan17395": "tafsir-al-saadi",
-    "Quraan17396": "tafsir-al-saadi",
-    "تيسير الكريم": "tafsir-al-saadi",
-    "بلوغ المرام": "bulugh-al-maram",
-    "متن بلوغ": "bulugh-al-maram",
-    "بلوغ_المرام": "bulugh-al-maram",
-    "المقدمة الآجرومية": "al-ajrumiyyah",
-    "الآجرومية": "al-ajrumiyyah",
-    "العقيدة الواسطية": "al-aqeedah-al-wasitiyyah",
-    "الواسطية": "al-aqeedah-al-wasitiyyah",
-    "مذكرة على العقيدة": "al-aqeedah-al-wasitiyyah",
-    "رياض الصالحين": "riyad-as-salihin",
-    "سنن النسائي": "sunan-al-nasai",
-    "سنن ابن ماجه": "sunan-ibn-majah",
-    "القول المفيد": "al-qawl-al-mufid",
-    "كتاب التوحيد": "al-qawl-al-mufid",
-    "الأصول الثلاثة": "al-usool-al-thalatha",
-    "مصطلح الحديث": "mustalah-al-hadith",
-    "شرح مقدمة التفسير": "muqaddimah-al-tafsir",
-    "مقدمة في أصول التفسير": "muqaddimah-al-tafsir",
+    "تيسير_الكريم_الرحمن":  "tafsir-al-saadi",
+    "تيسير الكريم":          "tafsir-al-saadi",
+    "Quraan17394":           "tafsir-al-saadi",
+    "Quraan17395":           "tafsir-al-saadi",
+    "Quraan17396":           "tafsir-al-saadi",
+    "بلوغ المرام":           "bulugh-al-maram",
+    "بلوغ_المرام":           "bulugh-al-maram",
+    "متن بلوغ":              "bulugh-al-maram",
+    "المقدمة الآجرومية":     "al-ajrumiyyah",
+    "الآجرومية":             "al-ajrumiyyah",
+    "آجرومية":               "al-ajrumiyyah",
+    "العقيدة الواسطية":      "al-aqeedah-al-wasitiyyah",
+    "الواسطية":              "al-aqeedah-al-wasitiyyah",
+    "مذكرة على العقيدة":     "al-aqeedah-al-wasitiyyah",
+    "رياض الصالحين":         "riyad-as-salihin",
+    "سنن النسائي":           "sunan-al-nasai",
+    "سنن ابن ماجه":          "sunan-ibn-majah",
+    "القول المفيد":          "al-qawl-al-mufid",
+    "كتاب التوحيد":          "al-qawl-al-mufid",
+    "الأصول الثلاثة":        "al-usool-al-thalatha",
+    "مصطلح الحديث":          "mustalah-al-hadith",
+    "مقدمة التفسير":         "muqaddimah-al-tafsir",
+    "أصول التفسير":          "muqaddimah-al-tafsir",
 }
 
 def match_book_slug(filename: str) -> str | None:
-    fn = filename.lower()
     for pattern, slug in PDF_TO_BOOK.items():
-        if pattern.lower() in fn or pattern.replace(" ", "_").lower() in fn:
+        if pattern in filename or pattern.replace(" ", "_") in filename:
             return slug
     return None
+
+
+def get_b2_client():
+    endpoint = os.environ["B2_ENDPOINT"]
+    return boto3.client(
+        "s3",
+        endpoint_url=f"https://{endpoint}",
+        aws_access_key_id=os.environ["B2_APPLICATION_KEY_ID"],
+        aws_secret_access_key=os.environ["B2_APPLICATION_KEY"],
+        region_name=endpoint.split(".")[1],
+    )
+
+
+def upload_to_b2(local_path: Path, filename: str) -> str:
+    """Upload file to B2 and return storage key s3://bucket/key."""
+    s3 = get_b2_client()
+    bucket = os.environ["B2_BUCKET_NAME"]
+    key = f"pdfs/{filename}"
+    s3.upload_file(str(local_path), bucket, key,
+                   ExtraArgs={"ContentType": "application/pdf"})
+    return f"s3://{bucket}/{key}"
 
 
 async def main():
@@ -64,117 +79,162 @@ async def main():
 
     api_id   = int(os.environ["TELEGRAM_API_ID"])
     api_hash = os.environ["TELEGRAM_API_HASH"]
+    phone    = os.environ["TELEGRAM_PHONE"]
     channel  = os.environ["TELEGRAM_CHANNEL"]
 
-    session = str(ROOT / "telegram" / ".session" / "importer")
-    db_url  = os.environ["DATABASE_URL"]
-    storage_dir = ROOT / "storage" / "pdfs"
-    storage_dir.mkdir(parents=True, exist_ok=True)
+    session_path = str(ROOT / "telegram" / ".session" / "importer")
+    Path(session_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # Get PDF messages not yet stored
-    db_url_clean = db_url.split("?")[0] if "?" in db_url else db_url
-    conn = psycopg2.connect(db_url_clean + "?channel_binding=disable" if "neon" in db_url_clean else db_url_clean)
+    tmp_dir = ROOT / "storage" / "pdfs"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Get PDF messages from DB ─────────────────────────────────────────────
+    conn = connect()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT tm.id, tm."messageId", tm."audioFilename", tm."suggestedMetadata"
+        SELECT tm.id, tm."messageId", tm."audioFilename"
         FROM telegram_messages tm
+        LEFT JOIN media m ON m."storageKey" LIKE 's3://%%/pdfs/%%'
+                          AND (m."bookId" IS NOT NULL OR m."lessonId" IS NOT NULL)
         WHERE tm."chatId" = '1747155048'
-          AND tm."audioFilename" ILIKE '%.pdf'
-          AND NOT EXISTS (
-              SELECT 1 FROM media m WHERE m."storageKey" LIKE %s
-          )
+          AND (tm."audioFilename" ILIKE '%%.pdf'
+               OR (tm."rawJson"->>'media') IS NOT NULL)
+          AND m.id IS NULL
         ORDER BY tm."messageId" DESC
-    """, ("%/pdfs/%",))
+    """)
     rows = cur.fetchall()
-    print(f"PDFs to download: {len(rows)}")
+    print(f"PDF messages to process: {len(rows)}")
 
     if not rows:
-        print("All PDFs already downloaded!")
+        # Try broader search
+        cur.execute("""
+            SELECT tm.id, tm."messageId", tm."audioFilename"
+            FROM telegram_messages tm
+            WHERE tm."chatId" = '1747155048'
+              AND tm."audioFilename" ILIKE '%%.pdf'
+            ORDER BY tm."messageId" DESC
+        """)
+        rows = cur.fetchall()
+        print(f"  (broad search: {len(rows)} PDF filenames in DB)")
+
+    if not rows:
+        print("No PDFs to download.")
         conn.close()
         return
 
-    # Connect to Telegram
-    DCS = [(2,"149.154.167.41",443),(1,"149.154.175.53",443),(5,"91.108.56.130",443),(4,"149.154.167.91",443)]
-    client = None
-    for dc_id, host, port in DCS:
-        c = TelegramClient(session, api_id, api_hash, connection=ConnectionTcpObfuscated, timeout=30)
-        c.session.set_dc(dc_id, host, port)
-        try:
-            await asyncio.wait_for(c.connect(), timeout=35)
-            if await asyncio.wait_for(c.is_user_authorized(), timeout=20):
-                print(f"Connected via DC{dc_id}")
-                client = c
-                break
-        except Exception as e:
-            print(f"DC{dc_id}: {e}")
-            try: await c.disconnect()
-            except: pass
+    # ── Connect to Telegram ──────────────────────────────────────────────────
+    print("\nConnecting to Telegram...")
+    client = TelegramClient(
+        session_path, api_id, api_hash,
+        connection=ConnectionTcpObfuscated,
+        connection_retries=5, timeout=60, use_ipv6=False,
+    )
 
-    if not client:
-        print("Could not connect to Telegram"); conn.close(); return
+    async def _get_code():
+        return input("Enter Telegram login code: ").strip()
+
+    for attempt in range(2):
+        try:
+            await client.start(phone=phone, code_callback=_get_code)
+            break
+        except Exception as e:
+            if attempt == 0 and "AuthKey" in str(e):
+                sf = Path(session_path + ".session")
+                if sf.exists(): sf.unlink()
+                client = TelegramClient(session_path, api_id, api_hash,
+                    connection=ConnectionTcpObfuscated, timeout=60, use_ipv6=False)
+                continue
+            print(f"Connection failed: {e}"); conn.close(); return
+
+    me = await client.get_me()
+    print(f"Connected as: {getattr(me, 'first_name', '?')}")
 
     entity = await client.get_entity(channel)
 
     downloaded = 0
-    errors = 0
+    errors     = 0
 
-    for tm_id, msg_id, filename, meta in rows:
+    for tm_id, msg_id, filename in rows:
         try:
-            print(f"  Downloading msgId={msg_id}  {str(filename)[:60]}...")
+            print(f"\n  msgId={msg_id}  file={str(filename)[:50]}")
             message = await client.get_messages(entity, ids=msg_id)
             if not message or not message.document:
-                print(f"    No document found"); continue
+                print(f"    ↷ No document"); continue
 
-            save_path = storage_dir / (filename or f"doc_{msg_id}.pdf")
+            # Use filename from Telegram attributes if DB filename missing
+            tg_filename = filename
+            if not tg_filename:
+                for attr in message.document.attributes:
+                    if hasattr(attr, "file_name") and attr.file_name:
+                        tg_filename = attr.file_name
+                        break
+            if not tg_filename:
+                tg_filename = f"doc_{msg_id}.pdf"
+
+            save_path = tmp_dir / tg_filename
+            print(f"    Downloading {tg_filename}...")
             await client.download_media(message, file=str(save_path))
 
             if not save_path.exists():
-                print(f"    Download failed"); continue
+                print(f"    ✗ Download failed"); errors += 1; continue
 
             size = save_path.stat().st_size
-            storage_key = f"pdfs/{save_path.name}"
-            book_slug = match_book_slug(str(filename or ""))
+            print(f"    Downloaded {size//1024}KB")
 
-            # Find book_id
-            book_id = None
+            # Upload to B2
+            print(f"    Uploading to B2...")
+            storage_key = upload_to_b2(save_path, tg_filename)
+            print(f"    ✓ B2: {storage_key}")
+
+            # Match to book
+            book_slug = match_book_slug(tg_filename)
+            book_id   = None
             if book_slug:
                 cur.execute("SELECT id FROM books WHERE slug=%s", (book_slug,))
                 row = cur.fetchone()
                 book_id = row[0] if row else None
+                print(f"    Book: {book_slug} (id={str(book_id)[:12] if book_id else 'not found'})")
+            else:
+                print(f"    ⚠ No book match for: {tg_filename}")
 
-            # Create media record
-            media_id = _cuid()
+            # Insert media record
+            import secrets
+            media_id = f"c{int(time.time()*1000):x}{secrets.token_urlsafe(8)}"[:25]
             cur.execute("""
-                INSERT INTO media (id, filename, "mimeType", size, "mediaType", "storageKey", "storageProvider", "bookId", "createdAt")
-                VALUES (%s,%s,'application/pdf',%s,'PDF'::"MediaType",%s,'LOCAL'::"StorageProvider",%s,NOW())
-            """, (media_id, str(filename), size, storage_key, book_id))
+                INSERT INTO media (id, filename, "mimeType", size, "mediaType",
+                                   "storageKey", "storageProvider", "bookId", "createdAt")
+                VALUES (%s, %s, 'application/pdf', %s,
+                        'PDF'::"MediaType", %s,
+                        'S3'::"StorageProvider", %s, NOW())
+                ON CONFLICT DO NOTHING
+            """, (media_id, tg_filename, size, storage_key, book_id))
 
-            # Update suggestedMetadata
-            meta_dict = meta if isinstance(meta, dict) else json.loads(meta or "{}")
-            meta_dict["mediaStorageKey"] = storage_key
-            meta_dict["pdfBookSlug"] = book_slug
+            # Mark telegram_message as processed
             cur.execute(
-                "UPDATE telegram_messages SET \"processedAt\"=NOW(), \"suggestedMetadata\"=%s WHERE id=%s",
-                (json.dumps(meta_dict), tm_id)
+                'UPDATE telegram_messages SET "processedAt"=NOW() WHERE id=%s',
+                (tm_id,)
             )
             conn.commit()
 
-            print(f"    ✓ Saved {size//1024}KB → {storage_key}  book={book_slug or '?'}")
+            # Clean up local file
+            save_path.unlink(missing_ok=True)
             downloaded += 1
 
         except Exception as e:
             print(f"    ✗ Error: {e}")
             errors += 1
+            try: conn.rollback()
+            except: pass
 
     await client.disconnect()
+    cur.close()
     conn.close()
 
     print(f"\n{'='*50}")
-    print(f"  Downloaded: {downloaded}")
-    print(f"  Errors    : {errors}")
-    print(f"\nPDFs stored in: {storage_dir}")
-    print("Next: deploy to Vercel and serve PDFs via /api/media/pdfs/...")
+    print(f"  Downloaded + uploaded: {downloaded}")
+    print(f"  Errors               : {errors}")
+    print(f"\nRun `py scripts/check_books_state.py` to verify.")
 
 
 if __name__ == "__main__":

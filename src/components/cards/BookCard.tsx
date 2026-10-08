@@ -9,7 +9,7 @@ interface BookCardProps {
   pdfLabel?: string;
 }
 
-export function BookCard({ book, duruusLabel }: BookCardProps) {
+export function BookCard({ book, duruusLabel, pdfLabel }: BookCardProps) {
   return (
     <Link
       href={`/kutub/${book.slug}`}
@@ -59,9 +59,16 @@ export function BookCard({ book, duruusLabel }: BookCardProps) {
             <strong className="text-stone-700 dark:text-stone-300">{book.lessonCount ?? 0}</strong>
             {" "}{duruusLabel}
           </span>
-          <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
-            →
-          </span>
+          <div className="flex items-center gap-2">
+            {book.pdfAvailable && pdfLabel && (
+              <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                PDF
+              </span>
+            )}
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
+          </div>
         </div>
       </div>
     </Link>

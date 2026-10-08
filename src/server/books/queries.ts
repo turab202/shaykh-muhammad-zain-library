@@ -18,6 +18,17 @@ function parseToc(json: unknown, locale: Locale): TableOfContentsItem[] {
   }));
 }
 
+function storageKeyToUrl(key: string | undefined | null): string | undefined {
+  if (!key) return undefined;
+  if (key.startsWith("http://") || key.startsWith("https://")) return key;
+  // B2 key: s3://bucket/path/to/file → /api/media/b2/path/to/file
+  if (key.startsWith("s3://")) {
+    const objectKey = key.split("/").slice(3).join("/");
+    return `/api/media/b2/${objectKey}`;
+  }
+  return `/api/media/${key}`;
+}
+
 function toPublicBook(
   row: {
     id: string;
@@ -50,7 +61,7 @@ function toPublicBook(
     categoryName: row.category ? (resolveJson(row.category.translations, locale) ?? row.category.name) : undefined,
     lessonCount: row._count?.lessons,
     pdfAvailable: !!pdfMedia,
-    pdfUrl: pdfMedia?.storageKey ? `/api/media/${pdfMedia.storageKey}` : undefined,
+    pdfUrl: storageKeyToUrl(pdfMedia?.storageKey),
     pdfSize: pdfSizeMB,
     tableOfContents: parseToc(row.tableOfContents, locale),
   };
