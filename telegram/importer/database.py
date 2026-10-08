@@ -97,9 +97,6 @@ class ImportDB:
             self.conn.cursor().execute("SELECT 1")
         except Exception:
             self._reconnect()
-        clean_url = base + ("?" + kept if kept else "")
-        self.conn = psycopg2.connect(clean_url)
-        self.conn.autocommit = False
 
     def _execute_with_retry(self, fn, max_retries=3):
         """Execute a DB operation, reconnecting on SSL/connection errors."""
