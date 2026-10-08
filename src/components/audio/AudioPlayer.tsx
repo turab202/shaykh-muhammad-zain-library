@@ -92,7 +92,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
   };
 
   return (
-    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-8 shadow-sm">
+    <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-8 shadow-sm">
 
       {/* Telegram fallback banner — shown when audio not yet in storage */}
       {isTelegramProxy && (
@@ -157,7 +157,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
       </div>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
 
         {/* Speed selector */}
         <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800/80 p-1 rounded-lg border border-stone-200 dark:border-stone-700/60">
@@ -177,7 +177,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
         </div>
 
         {/* Primary transport */}
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center justify-center gap-3 sm:gap-5">
           <button
             onClick={() => isActive && skip(-10)}
             disabled={!isActive}
@@ -212,7 +212,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
         </div>
 
         {/* Volume + share + download */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           {/* Volume (hidden on small screens) */}
           <div className="hidden sm:flex items-center gap-1.5 text-stone-500 me-2">
             <button
@@ -271,7 +271,7 @@ export function AudioPlayer({ lesson }: AudioPlayerProps) {
       </div>
 
       {/* Keyboard shortcuts footer */}
-      <div className="mt-6 pt-4 border-t border-stone-200/80 dark:border-stone-800/80 text-[11px] text-stone-400 dark:text-stone-500 flex items-center justify-between">
+      <div className="hidden sm:flex mt-6 pt-4 border-t border-stone-200/80 dark:border-stone-800/80 text-[11px] text-stone-400 dark:text-stone-500 items-center justify-between">
         <div className="flex items-center gap-3">
           <span>{tLesson("shortcuts")}:</span>
           <span>

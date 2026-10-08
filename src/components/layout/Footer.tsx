@@ -18,8 +18,8 @@ export function Footer() {
 
   return (
     <footer className="w-full border-t border-stone-200 dark:border-stone-800 bg-[var(--bg-surface-elevated)] text-stone-600 dark:text-stone-400 text-xs transition-colors mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 lg:py-16">
+        <div className="hidden md:grid md:grid-cols-4 gap-8 lg:gap-12">
 
           {/* ── Column 1: Identity ── */}
           <div className="md:col-span-1 flex flex-col gap-3">
@@ -157,16 +157,79 @@ export function Footer() {
 
         </div>
 
+        <div className="md:hidden">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-sm bg-emerald-900 dark:bg-emerald-800 flex items-center justify-center text-amber-100 font-serif font-bold text-xs">
+                ز
+              </div>
+              <span className="font-serif font-bold text-stone-900 dark:text-stone-100 text-sm">
+                {isRtl ? "مكتبة الشيخ محمد زين" : "Shaykh Muhammad Zain"}
+              </span>
+            </div>
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-xs line-clamp-2">
+              {tHero("description")}
+            </p>
+            <div>
+              <a
+                href="https://t.me/SheikhMuhammedZain"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-stone-200/70 dark:bg-stone-800/80 hover:bg-stone-300/80 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-medium transition-colors"
+              >
+                <Send className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                <span>{tFooter("telegram")}</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-4 divide-y divide-stone-200/80 dark:divide-stone-800/80 border-y border-stone-200/80 dark:border-stone-800/80">
+            <details>
+              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+                {tFooter("catalog")}
+              </summary>
+              <ul className="pb-3 flex flex-col gap-2">
+                <li><Link href="/duruus" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("lessons")}</Link></li>
+                <li><Link href="/series" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("series")}</Link></li>
+                <li><Link href="/kutub" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("books")}</Link></li>
+                <li><Link href="/categories" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("categories")}</Link></li>
+              </ul>
+            </details>
+
+            <details>
+              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+                {tFooter("collections")}
+              </summary>
+              <ul className="pb-3 flex flex-col gap-2">
+                <li><Link href="/series/riyad-as-salihin" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Riyāḍ aṣ-Ṣāliḥīn · رياض الصالحين</Link></li>
+                <li><Link href="/series/tafsir-ibn-kathir" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Tafsīr Ibn Kathīr · تفسير ابن كثير</Link></li>
+                <li><Link href="/series/al-aqeedah-al-wasitiyyah" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Al-Wāsiṭiyyah · الواسطية</Link></li>
+                <li><Link href="/series/al-ajrumiyyah" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">Al-Ājurrūmiyyah · الآجرومية</Link></li>
+              </ul>
+            </details>
+
+            <details>
+              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+                {tFooter("archive")}
+              </summary>
+              <ul className="pb-3 flex flex-col gap-2">
+                <li><Link href="/about" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("about")}</Link></li>
+                <li><Link href="/search" className="hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">{tNav("search")}</Link></li>
+              </ul>
+            </details>
+          </div>
+        </div>
+
         {/* ── Bottom Bar ── */}
-        <div className="mt-12 pt-6 border-t border-stone-200/80 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-stone-400">
+        <div className="mt-6 md:mt-12 pt-4 md:pt-6 border-t border-stone-200/80 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-[11px] text-stone-500 dark:text-stone-400">
           <p>
             © {year} {tFooter("copyright")}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center sm:gap-4">
             <span>{tFooter("telegramMirror")}</span>
-            <span aria-hidden="true">·</span>
+            <span className="hidden sm:inline" aria-hidden="true">·</span>
             <span>{tFooter("multilingualNote")}</span>
-            <span aria-hidden="true">·</span>
+            <span className="hidden sm:inline" aria-hidden="true">·</span>
             <span>{tFooter("noCommercial")}</span>
           </div>
         </div>

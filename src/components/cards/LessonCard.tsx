@@ -97,6 +97,11 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
             >
               {lesson.title}
             </Link>
+            {lesson.description && (
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 mt-0.5" dir="rtl">
+                {lesson.description}
+              </p>
+            )}
 
             <div className="flex items-center gap-3 text-[11px] text-stone-400 dark:text-stone-500 mt-1">
               <span className="font-mono flex items-center gap-1">

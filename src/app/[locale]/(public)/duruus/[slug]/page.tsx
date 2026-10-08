@@ -57,6 +57,11 @@ export default async function LessonDetailPage({ params }: Props) {
           <span className="font-mono text-xs px-2 py-0.5 rounded bg-emerald-900 text-amber-100 font-semibold ms-auto">#{String(lesson.lessonNumber ?? 0).padStart(3, "0")}</span>
         </div>
         <h1 className="font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-tight mb-3">{lesson.title}</h1>
+        {lesson.description && (
+          <p className="text-base sm:text-lg text-emerald-800 dark:text-emerald-400 font-medium mb-3 leading-relaxed" dir="rtl">
+            {lesson.description}
+          </p>
+        )}
         <div className="flex flex-wrap items-center gap-4 text-xs text-stone-500 dark:text-stone-400 pt-3 border-t border-stone-200/60 dark:border-stone-800/60">
           {lesson.publishedAt && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" aria-hidden="true" />{lesson.publishedAt}</span>}
           <span aria-hidden="true">·</span>
