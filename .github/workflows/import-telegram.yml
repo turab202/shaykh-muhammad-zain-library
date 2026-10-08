@@ -38,6 +38,27 @@ jobs:
       - name: Install dependencies
         run: pip install -r telegram/requirements.txt
 
+      - name: Verify required secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.DATABASE_URL }}" ]        && missing="$missing DATABASE_URL"
+          [ -z "${{ secrets.TELEGRAM_API_ID }}" ]     && missing="$missing TELEGRAM_API_ID"
+          [ -z "${{ secrets.TELEGRAM_API_HASH }}" ]   && missing="$missing TELEGRAM_API_HASH"
+          [ -z "${{ secrets.TELEGRAM_PHONE }}" ]      && missing="$missing TELEGRAM_PHONE"
+          [ -z "${{ secrets.TELEGRAM_CHANNEL }}" ]    && missing="$missing TELEGRAM_CHANNEL"
+          [ -z "${{ secrets.B2_APPLICATION_KEY_ID }}" ] && missing="$missing B2_APPLICATION_KEY_ID"
+          [ -z "${{ secrets.B2_APPLICATION_KEY }}" ]  && missing="$missing B2_APPLICATION_KEY"
+          [ -z "${{ secrets.B2_BUCKET_NAME }}" ]      && missing="$missing B2_BUCKET_NAME"
+          [ -z "${{ secrets.B2_ENDPOINT }}" ]         && missing="$missing B2_ENDPOINT"
+          if [ -n "$missing" ]; then
+            echo "❌ Missing required GitHub secrets:$missing"
+            echo ""
+            echo "Go to: Settings → Secrets and variables → Actions"
+            echo "Add each missing secret listed above."
+            exit 1
+          fi
+          echo "✓ All required secrets are present"
+
       - name: Restore Telegram session
         env:
           SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
@@ -45,9 +66,16 @@ jobs:
           mkdir -p telegram/.session
           if [ -n "$SESSION_BASE64" ]; then
             echo "$SESSION_BASE64" | base64 -d > telegram/.session/importer.session
-            echo "Session restored from secret"
+            echo "✓ Session restored from secret"
           else
-            echo "No session secret found — first run requires local auth"
+            echo "⚠ TELEGRAM_SESSION_BASE64 not set"
+            echo "The importer will need to authenticate interactively."
+            echo "Run locally first to create a session, then add the base64-encoded"
+            echo "session file as the TELEGRAM_SESSION_BASE64 secret."
+            echo ""
+            echo "To get the base64 value, run this PowerShell command locally:"
+            echo '  [Convert]::ToBase64String([IO.File]::ReadAllBytes("telegram\.session\importer.session"))'
+            exit 1
           fi
 
       - name: Run metadata import (no-media, fast)
