@@ -4,6 +4,9 @@ import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { AudioPlayer } from "@/components/audio/AudioPlayer";
 import { LessonDuration } from "@/components/audio/LessonDuration";
+
+// Revalidate every 10 minutes — durations get updated after first play
+export const revalidate = 600;
 import { SeriesPlaylist } from "./SeriesPlaylist";
 import { getLessonBySlug, getLessonsBySeries } from "@/server/lessons/queries";
 import { getSeriesBySlug } from "@/server/series/queries";

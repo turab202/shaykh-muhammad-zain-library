@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { getSeriesBySlug } from "@/server/series/queries";
+
+// Revalidate every 10 minutes so duration updates from audio playback show promptly
+export const revalidate = 600;
 import { getCategoryBySlug } from "@/server/categories/queries";
 import { getBookBySlug } from "@/server/books/queries";
 import { getLessonsBySeries } from "@/server/lessons/queries";

@@ -10,6 +10,11 @@ from _neon import connect
 
 BYTES_PER_SEC_128KBPS = 128 * 1024 // 8  # 16384 bytes/sec
 
+# Most of these Arabic audio files are 32-64kbps compressed speech
+# Use 32kbps as default estimate for undetermined files
+# The real duration will be corrected when the audio element loads
+BYTES_PER_SEC_32KBPS = 32 * 1024 // 8   # 4096 bytes/sec
+
 conn = connect()
 cur = conn.cursor()
 
