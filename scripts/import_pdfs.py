@@ -54,22 +54,28 @@ def match_book_slug(filename: str) -> str | None:
 
 def get_b2_client():
     endpoint = os.environ["B2_ENDPOINT"]
+    region   = endpoint.split(".")[1]
+    from botocore.config import Config
     return boto3.client(
         "s3",
         endpoint_url=f"https://{endpoint}",
         aws_access_key_id=os.environ["B2_APPLICATION_KEY_ID"],
         aws_secret_access_key=os.environ["B2_APPLICATION_KEY"],
-        region_name=endpoint.split(".")[1],
+        region_name=region,
+        config=Config(signature_version="s3v4"),
     )
 
 
 def upload_to_b2(local_path: Path, filename: str) -> str:
-    """Upload file to B2 and return storage key s3://bucket/key."""
-    s3 = get_b2_client()
+    """Upload PDF to B2 and return storage key s3://bucket/key."""
+    from boto3.s3.transfer import TransferConfig
+    s3     = get_b2_client()
     bucket = os.environ["B2_BUCKET_NAME"]
-    key = f"pdfs/{filename}"
+    key    = f"pdfs/{filename}"
+    config = TransferConfig(multipart_threshold=100*1024*1024, max_concurrency=1)
     s3.upload_file(str(local_path), bucket, key,
-                   ExtraArgs={"ContentType": "application/pdf"})
+                   ExtraArgs={"ContentType": "application/pdf"},
+                   Config=config)
     return f"s3://{bucket}/{key}"
 
 
@@ -95,28 +101,16 @@ async def main():
     cur.execute("""
         SELECT tm.id, tm."messageId", tm."audioFilename"
         FROM telegram_messages tm
-        LEFT JOIN media m ON m."storageKey" LIKE 's3://%%/pdfs/%%'
-                          AND (m."bookId" IS NOT NULL OR m."lessonId" IS NOT NULL)
         WHERE tm."chatId" = '1747155048'
-          AND (tm."audioFilename" ILIKE '%%.pdf'
-               OR (tm."rawJson"->>'media') IS NOT NULL)
-          AND m.id IS NULL
+          AND tm."audioFilename" ILIKE '%%.pdf'
+          AND NOT EXISTS (
+              SELECT 1 FROM media m
+              WHERE m."storageKey" LIKE 's3://%%/pdfs/%%'
+          )
         ORDER BY tm."messageId" DESC
     """)
     rows = cur.fetchall()
     print(f"PDF messages to process: {len(rows)}")
-
-    if not rows:
-        # Try broader search
-        cur.execute("""
-            SELECT tm.id, tm."messageId", tm."audioFilename"
-            FROM telegram_messages tm
-            WHERE tm."chatId" = '1747155048'
-              AND tm."audioFilename" ILIKE '%%.pdf'
-            ORDER BY tm."messageId" DESC
-        """)
-        rows = cur.fetchall()
-        print(f"  (broad search: {len(rows)} PDF filenames in DB)")
 
     if not rows:
         print("No PDFs to download.")
