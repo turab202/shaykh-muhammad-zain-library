@@ -88,31 +88,47 @@ class S3Storage:
 
         try:
             import boto3
+            from botocore.config import Config
+            # B2 requires the real region derived from the endpoint hostname
+            # e.g. "s3.us-east-005.backblazeb2.com" → "us-east-005"
+            region = "auto"
+            if endpoint_url:
+                host = endpoint_url.replace("https://", "").replace("http://", "")
+                parts = host.split(".")
+                if len(parts) >= 2:
+                    region = parts[1]  # "us-east-005"
             self._s3 = boto3.client(
                 "s3",
                 endpoint_url=endpoint_url,
                 aws_access_key_id=access_key_id,
                 aws_secret_access_key=secret_access_key,
-                region_name="auto",
+                region_name=region,
+                config=Config(signature_version="s3v4"),
             )
         except ImportError:
             raise ImportError("boto3 is required for cloud storage. Run: pip install boto3")
 
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
+        import logging
+        from boto3.s3.transfer import TransferConfig
+        log = logging.getLogger(__name__)
         key = _object_key(original_filename, mime_type, message_date)
-        with open(source_path, "rb") as f:
-            self._s3.put_object(
-                Bucket=self.bucket,
-                Key=key,
-                Body=f,
-                ContentType=mime_type,
-                CacheControl="public, max-age=31536000",
-            )
+        size_kb = os.path.getsize(source_path) // 1024
+        log.info("  ☁ Uploading to B2: %s (%s KB)", key, size_kb)
+        # Use single-part upload for files under 100MB to avoid multipart timeouts
+        config = TransferConfig(
+            multipart_threshold=100 * 1024 * 1024,
+            max_concurrency=1,
+        )
+        self._s3.upload_file(
+            source_path, self.bucket, key,
+            ExtraArgs={"ContentType": mime_type, "CacheControl": "public, max-age=31536000"},
+            Config=config,
+        )
+        log.info("  ✓ Uploaded to B2: %s", key)
         if self.public_url:
-            # Public bucket → return full CDN URL
             return f"{self.public_url}/{key}"
-        # Private bucket → return internal reference; Next.js signs on demand
         return f"s3://{self.bucket}/{key}"
 
     def get_presigned_url(self, storage_key: str, expires: int = 3600) -> str:
