@@ -462,6 +462,30 @@ async def run_live(
                         else:
                             log.warning("  ✗ Download produced no file for msgId=%d", message.id)
 
+                        # For duplicate messages, still upload to B2 if we have a local file.
+                        # process_one_message skips duplicates without calling storage.save(),
+                        # so we handle the upload directly here.
+                        if downloaded_path and os.path.exists(downloaded_path) and db.message_exists(chat_id, message.id):
+                            # Duplicate message — upload the local file directly to B2
+                            try:
+                                storage_key = storage.save(
+                                    source_path=downloaded_path,
+                                    original_filename=audio_filename or os.path.basename(downloaded_path),
+                                    mime_type="audio/mpeg",
+                                    message_date=message.date,
+                                )
+                                log.info("  ✓ Uploaded duplicate to B2: %s", storage_key)
+                                # Remove local file after successful B2 upload
+                                try:
+                                    os.remove(downloaded_path)
+                                except Exception:
+                                    pass
+                            except Exception as e:
+                                log.warning("  ⚠ B2 upload failed for duplicate msgId=%d: %s — file kept at %s",
+                                            message.id, e, downloaded_path)
+                            results.append({"message_id": message.id, "skipped": True, "skip_reason": "duplicate_uploaded"})
+                            continue
+
                         r = process_one_message(
                             db=db, storage=storage, import_id=import_id,
                             chat_id=chat_id,

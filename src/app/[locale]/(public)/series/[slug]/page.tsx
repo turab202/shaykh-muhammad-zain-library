@@ -103,6 +103,9 @@ export default async function SeriesDetailPage({ params }: Props) {
                 <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-bold flex items-center justify-center shrink-0">{String(lesson.lessonNumber ?? 0).padStart(2, "0")}</div>
                 <div className="min-w-0">
                   <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm sm:text-base hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 block text-stone-900 dark:text-stone-100">{lesson.title}</Link>
+                  {lesson.description && (
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 font-medium mt-0.5" dir="rtl">{lesson.description}</p>
+                  )}
                   <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                     <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{fmt(lesson.duration)}</span>
                     {lesson.publishedAt && (<><span aria-hidden="true">·</span><span>{lesson.publishedAt}</span></>)}

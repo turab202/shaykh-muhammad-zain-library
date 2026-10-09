@@ -114,7 +114,7 @@ export async function getLessonBySlug(slug: string, locale: Locale): Promise<Pub
 export async function getLessonsBySeries(seriesId: string, locale: Locale): Promise<PublicLesson[]> {
   const rows = await prisma.lesson.findMany({
     where: { seriesId, status: "PUBLISHED" },
-    orderBy: { lessonNumber: "asc" },
+    orderBy: [{ publishedAt: "asc" }, { lessonNumber: "asc" }],
     include: INCLUDE,
   });
   return rows.map((r) => toPublicLesson(r as LessonRow, locale));
