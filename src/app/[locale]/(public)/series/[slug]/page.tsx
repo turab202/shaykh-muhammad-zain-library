@@ -97,27 +97,46 @@ export default async function SeriesDetailPage({ params }: Props) {
         <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-y divide-stone-200/70 dark:divide-stone-800/70">
           {lessons.length === 0 ? (
             <p className="p-6 text-sm text-stone-500">{tSeries("noSeriesFound")}</p>
-          ) : lessons.map((lesson) => (
-            <div key={lesson.id} className="p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 transition-colors">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-bold flex items-center justify-center shrink-0">{String(lesson.lessonNumber ?? 0).padStart(2, "0")}</div>
-                <div className="min-w-0">
-                  <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm sm:text-base hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 block text-stone-900 dark:text-stone-100">{lesson.title}</Link>
-                  {lesson.description && (
-                    <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 font-medium mt-0.5" dir="rtl">{lesson.description}</p>
-                  )}
-                  <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{fmt(lesson.duration)}</span>
-                    {lesson.publishedAt && (<><span aria-hidden="true">·</span><span>{lesson.publishedAt}</span></>)}
+          ) : lessons.map((lesson, index) => {
+            // Detect when lesson number resets (new teaching run)
+            const prevLesson = index > 0 ? lessons[index - 1] : null;
+            const isNewRun = prevLesson &&
+              (lesson.lessonNumber ?? 0) < (prevLesson.lessonNumber ?? 0) &&
+              lesson.lessonNumber !== null;
+            return (
+              <div key={lesson.id}>
+                {/* Run separator — shown when lesson number resets */}
+                {isNewRun && (
+                  <div className="px-5 py-2 bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
+                    <div className="h-px flex-1 bg-emerald-200 dark:bg-emerald-800" />
+                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider shrink-0">
+                      New teaching run — {lesson.description ?? `Lesson ${lesson.lessonNumber}`}
+                    </span>
+                    <div className="h-px flex-1 bg-emerald-200 dark:bg-emerald-800" />
+                  </div>
+                )}
+                <div className="p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 transition-colors">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-bold flex items-center justify-center shrink-0">{String(lesson.lessonNumber ?? 0).padStart(2, "0")}</div>
+                    <div className="min-w-0">
+                      <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm sm:text-base hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 block text-stone-900 dark:text-stone-100">{lesson.title}</Link>
+                      {lesson.description && (
+                        <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 font-medium mt-0.5" dir="rtl">{lesson.description}</p>
+                      )}
+                      <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                        <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{fmt(lesson.duration)}</span>
+                        {lesson.publishedAt && (<><span aria-hidden="true">·</span><span>{lesson.publishedAt}</span></>)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <LessonPlayButton lesson={lesson} listenLabel={tActions("listen")} />
+                    <Link href={`/duruus/${lesson.slug}`} className="p-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 transition-colors" aria-label={tActions("listen")}><ArrowRight className="w-4 h-4 rtl:rotate-180" aria-hidden="true" /></Link>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <LessonPlayButton lesson={lesson} listenLabel={tActions("listen")} />
-                <Link href={`/duruus/${lesson.slug}`} className="p-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 transition-colors" aria-label={tActions("listen")}><ArrowRight className="w-4 h-4 rtl:rotate-180" aria-hidden="true" /></Link>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
