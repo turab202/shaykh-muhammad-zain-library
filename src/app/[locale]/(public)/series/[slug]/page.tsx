@@ -4,14 +4,14 @@ import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { getSeriesBySlug } from "@/server/series/queries";
 
-// Revalidate every 10 minutes so duration updates from audio playback show promptly
 export const revalidate = 600;
+
 import { getCategoryBySlug } from "@/server/categories/queries";
 import { getBookBySlug } from "@/server/books/queries";
 import { getLessonsBySeries } from "@/server/lessons/queries";
 import type { Locale } from "@/types/i18n";
 import { isRtlLocale } from "@/types/i18n";
-import { Layers, BookOpen, FileText, Clock, ArrowRight } from "lucide-react";
+import { Layers, BookOpen, FileText, Clock, ArrowRight, Headphones } from "lucide-react";
 import { SeriesAudioControls } from "./SeriesAudioControls";
 import { LessonPlayButton } from "./LessonPlayButton";
 
@@ -22,11 +22,11 @@ export default async function SeriesDetailPage({ params }: Props) {
   const l = locale as Locale;
   const isRtl = isRtlLocale(l);
 
-  const tSeries = await getTranslations({ locale, namespace: "series" });
-  const tNav = await getTranslations({ locale, namespace: "nav" });
+  const tSeries  = await getTranslations({ locale, namespace: "series" });
+  const tNav     = await getTranslations({ locale, namespace: "nav" });
   const tActions = await getTranslations({ locale, namespace: "actions" });
-  const tCat = await getTranslations({ locale, namespace: "categories" });
-  const tBook = await getTranslations({ locale, namespace: "book" });
+  const tCat     = await getTranslations({ locale, namespace: "categories" });
+  const tBook    = await getTranslations({ locale, namespace: "book" });
 
   const series = await getSeriesBySlug(slug, l);
   if (!series) notFound();
@@ -57,8 +57,7 @@ export default async function SeriesDetailPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-2">
                 {category && (<><Link href={`/categories/${category.slug}`} className="font-semibold text-emerald-800 dark:text-emerald-400 hover:underline">{category.name}</Link><span aria-hidden="true">·</span></>)}
                 <span>{lessons.length} {tCat("duruusCount")}</span>
-                {durationHours && (<><span aria-hidden="true">·</span><span className="flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{durationHours}h</span></>)}
-                {book?.pdfAvailable && (<><span aria-hidden="true">·</span><span className="text-emerald-700 dark:text-emerald-400 font-medium">{tSeries("bookAvailable")}</span></>)}
+                {durationHours && (<><span aria-hidden="true">·</span><span className="flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{durationHours}h total</span></>)}
               </div>
               <h1 className="font-serif font-bold text-2xl sm:text-3xl text-stone-900 dark:text-stone-100 leading-tight mb-3">{series.title}</h1>
               {book && <div className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400 mb-3"><span className="font-semibold text-stone-800 dark:text-stone-200">{tBook("author")}:</span><span className="italic">{book.author}</span></div>}
@@ -74,73 +73,94 @@ export default async function SeriesDetailPage({ params }: Props) {
         <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl p-6 mb-10 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0"><BookOpen className="w-6 h-6" aria-hidden="true" /></div>
+              <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0">
+                <BookOpen className="w-6 h-6" aria-hidden="true" />
+              </div>
               <div>
                 <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 tracking-wider uppercase">{tBook("tabReader")}</span>
                 <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 mt-0.5">{book.title}</h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">{book.author}{book.pdfPages ? ` · ${book.pdfPages}p` : ""}{book.pdfSize ? ` · ${book.pdfSize}` : ""}</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  {book.author}{book.pdfSize ? ` · ${book.pdfSize}` : ""}
+                  {book.pdfAvailable && <span className="ml-2 text-amber-700 dark:text-amber-400 font-medium">PDF available</span>}
+                </p>
               </div>
             </div>
-            <Link href={`/kutub/${book.slug}`} className="px-4 py-2 bg-emerald-900 hover:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shrink-0"><FileText className="w-3.5 h-3.5" aria-hidden="true" />{tBook("tabReader")}</Link>
+            <Link href={`/kutub/${book.slug}`} className="px-4 py-2 bg-emerald-900 hover:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shrink-0">
+              <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+              Open Book
+            </Link>
           </div>
         </div>
       )}
 
-      {/* Lessons */}
+      {/* Lessons list */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-3 border-b border-stone-200 dark:border-stone-800">
-          <div>
-            <h3 className="font-serif font-bold text-xl sm:text-2xl text-stone-900 dark:text-stone-100">{tSeries("lessonsIn")}</h3>
-            <span className="text-xs text-stone-500">{lessons.length} {tCat("duruusCount")}</span>
+        <div className="flex items-center justify-between gap-4 mb-5">
+          <div className="flex items-center gap-2">
+            <Headphones className="w-5 h-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+            <h3 className="font-serif font-bold text-xl text-stone-900 dark:text-stone-100">
+              Audio Lessons
+            </h3>
           </div>
+          <span className="text-sm text-stone-500 dark:text-stone-400">{lessons.length} lessons</span>
         </div>
+
         <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden divide-y divide-stone-200/70 dark:divide-stone-800/70">
           {lessons.length === 0 ? (
             <p className="p-6 text-sm text-stone-500">{tSeries("noSeriesFound")}</p>
-          ) : lessons.map((lesson, index) => {
-            // Detect when lesson number resets (new teaching run)
-            const prevLesson = index > 0 ? lessons[index - 1] : null;
-            const isNewRun = prevLesson &&
-              (lesson.lessonNumber ?? 0) < (prevLesson.lessonNumber ?? 0) &&
-              lesson.lessonNumber !== null;
-            return (
-              <div key={lesson.id}>
-                {/* Run separator — shown when lesson number resets */}
-                {isNewRun && (
-                  <div className="px-5 py-2 bg-emerald-50 dark:bg-emerald-950/30 border-y border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
-                    <div className="h-px flex-1 bg-emerald-200 dark:bg-emerald-800" />
-                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider shrink-0">
-                      New teaching run — {lesson.description ?? `Lesson ${lesson.lessonNumber}`}
+          ) : lessons.map((lesson) => (
+            <div key={lesson.id} className="p-4 sm:p-5 flex items-center gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 transition-colors">
+              {/* Number badge */}
+              <div className="w-9 h-9 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                {String(lesson.lessonNumber ?? 0).padStart(2, "0")}
+              </div>
+
+              {/* Title area — takes full width */}
+              <div className="flex-1 min-w-0">
+                <Link
+                  href={`/duruus/${lesson.slug}`}
+                  className="font-medium text-sm sm:text-base hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 block text-stone-900 dark:text-stone-100"
+                >
+                  {/* Show description (surah/topic) as primary, title as fallback */}
+                  {lesson.description ?? (lesson.displayTitle ?? lesson.title)}
+                </Link>
+                <div className="flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+                  {(lesson.duration ?? 0) > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" aria-hidden="true" />
+                      {fmt(lesson.duration)}
                     </span>
-                    <div className="h-px flex-1 bg-emerald-200 dark:bg-emerald-800" />
-                  </div>
-                )}
-                <div className="p-4 sm:p-5 flex items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-stone-900/40 transition-colors">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-bold flex items-center justify-center shrink-0">{String(lesson.lessonNumber ?? 0).padStart(2, "0")}</div>
-                    <div className="min-w-0">
-                      <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-sm sm:text-base hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1 block text-stone-900 dark:text-stone-100">{lesson.displayTitle}</Link>
-                      {lesson.description && lesson.displayTitle !== lesson.description && (
-                        <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 font-medium mt-0.5" dir="rtl">{lesson.description}</p>
-                      )}
-                      <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                        <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" aria-hidden="true" />{fmt(lesson.duration)}</span>
-                        {lesson.publishedAt && (<><span aria-hidden="true">·</span><span>{lesson.publishedAt}</span></>)}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <LessonPlayButton lesson={lesson} listenLabel={tActions("listen")} />
-                    <Link href={`/duruus/${lesson.slug}`} className="p-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 transition-colors" aria-label={tActions("listen")}><ArrowRight className="w-4 h-4 rtl:rotate-180" aria-hidden="true" /></Link>
-                  </div>
+                  )}
+                  {lesson.publishedAt && (
+                    <><span aria-hidden="true">·</span><span>{lesson.publishedAt}</span></>
+                  )}
                 </div>
               </div>
-            );
-          })}
+
+              {/* Actions */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <LessonPlayButton lesson={lesson} listenLabel={tActions("listen")} />
+                <Link
+                  href={`/duruus/${lesson.slug}`}
+                  className="p-2 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 transition-colors"
+                  aria-label="View lesson"
+                >
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function fmt(s: number): string { const m = Math.floor(s / 60); return `${m}:${String(Math.floor(s % 60)).padStart(2, "0")}`; }
+function fmt(s: number): string {
+  if (!s || s <= 0) return "";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = Math.floor(s % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+  return `${m}:${String(sec).padStart(2,"0")}`;
+}

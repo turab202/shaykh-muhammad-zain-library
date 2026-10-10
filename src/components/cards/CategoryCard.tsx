@@ -99,7 +99,7 @@ export function CategoryCard({ category, arabicName }: CategoryCardProps) {
         <div className="pt-3 border-t border-stone-200/60 dark:border-stone-800/60 flex items-center gap-3 text-[11px] text-stone-500 dark:text-stone-400">
           {category.lessonCount !== undefined && (
             <span className="font-medium text-stone-700 dark:text-stone-300">
-              {category.lessonCount} duruus
+              {category.lessonCount} lessons
             </span>
           )}
           {category.seriesCount !== undefined && (

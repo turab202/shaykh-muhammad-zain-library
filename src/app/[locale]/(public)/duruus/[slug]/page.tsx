@@ -47,29 +47,62 @@ export default async function LessonDetailPage({ params }: Props) {
       <Breadcrumbs items={[
         ...(category ? [{ label: category.name, href: `/categories/${category.slug}` }] : [{ label: tNav("categories"), href: "/categories" }]),
         ...(series ? [{ label: series.title, href: `/series/${series.slug}` }] : []),
-        { label: `${tLesson("lessonPrefix")} ${lesson.lessonNumber ?? ""}` },
+        { label: lesson.description ?? (lesson.displayTitle ?? lesson.title) },
       ]} />
 
       {/* Header card */}
       <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl p-6 sm:p-7 mb-8 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-3">
-          {category && <Link href={`/categories/${category.slug}`} className="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-emerald-800 dark:text-emerald-400 font-semibold transition-colors flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5" aria-hidden="true" />{category.name}</Link>}
-          {category && series && <ChevronRight className={`w-3 h-3 text-stone-400 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" />}
-          {series && <Link href={`/series/${series.slug}`} className="px-2.5 py-1 rounded bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-medium transition-colors flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-stone-400" aria-hidden="true" />{series.title}</Link>}
-          {book && <><ChevronRight className={`w-3 h-3 text-stone-400 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" /><Link href={`/kutub/${book.slug}`} className="px-2.5 py-1 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-medium hover:underline flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" aria-hidden="true" />{book.title}</Link></>}
-          <span className="font-mono text-xs px-2 py-0.5 rounded bg-emerald-900 text-amber-100 font-semibold ms-auto">#{String(lesson.lessonNumber ?? 0).padStart(3, "0")}</span>
+        {/* Series / book breadcrumb row */}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-400 mb-4">
+          {series && (
+            <Link href={`/series/${series.slug}`} className="flex items-center gap-1.5 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors">
+              <Layers className="w-3.5 h-3.5" aria-hidden="true" />
+              {series.title}
+            </Link>
+          )}
+          {book && (
+            <>
+              <ChevronRight className={`w-3 h-3 text-stone-300 ${isRtl ? "rotate-180" : ""}`} aria-hidden="true" />
+              <Link href={`/kutub/${book.slug}`} className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 hover:underline transition-colors">
+                <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                {book.title}
+              </Link>
+            </>
+          )}
+          {/* Lesson number badge — right aligned */}
+          {lesson.lessonNumber && (
+            <span className="ms-auto font-mono text-[11px] px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
+              Lesson {lesson.lessonNumber}
+            </span>
+          )}
         </div>
-        <h1 className="font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-tight mb-3">{lesson.displayTitle}</h1>
-        {lesson.description && lesson.displayTitle !== lesson.description && (
-          <p className="text-base sm:text-lg text-emerald-800 dark:text-emerald-400 font-medium mb-3 leading-relaxed" dir="rtl">
-            {lesson.description}
+
+        {/* Main title — description (surah/topic) if available, else series title */}
+        <h1 className="font-serif font-bold text-2xl sm:text-3xl lg:text-4xl text-stone-900 dark:text-stone-100 leading-tight mb-2" dir="auto">
+          {lesson.description ?? series?.title ?? lesson.title}
+        </h1>
+
+        {/* Series name as subtitle */}
+        {series && (
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
+            {series.title}
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-4 text-xs text-stone-500 dark:text-stone-400 pt-3 border-t border-stone-200/60 dark:border-stone-800/60">
-          {lesson.publishedAt && <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" aria-hidden="true" />{lesson.publishedAt}</span>}
+
+        {/* Meta row */}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 dark:text-stone-400 pt-3 border-t border-stone-200/60 dark:border-stone-800/60">
+          {lesson.publishedAt && (
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+              {lesson.publishedAt}
+            </span>
+          )}
           <span aria-hidden="true">·</span>
           <LessonDuration lessonId={lesson.id} dbDuration={lesson.duration ?? 0} />
-          {series && <><span aria-hidden="true">·</span><span>{tLesson("lessonPrefix")} {lesson.lessonNumber} {tLesson("of")} {series.lessonCount ?? seriesLessons.length}</span></>}
+          {series && seriesLessons.length > 0 && (
+            <><span aria-hidden="true">·</span>
+            <span>{lesson.lessonNumber} of {series.lessonCount ?? seriesLessons.length}</span></>
+          )}
         </div>
       </div>
 
@@ -85,21 +118,9 @@ export default async function LessonDetailPage({ params }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main column */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          {/* Summary */}
-          <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
-            <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 mb-3">{tLesson("summary")}</h3>
-            {lesson.description && <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">{lesson.description}</p>}
-            {lesson.tags && lesson.tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-6 pt-4 border-t border-stone-200/80 dark:border-stone-800/80 text-xs">
-                <span className="text-stone-400 font-medium">{tLesson("tags")}:</span>
-                {lesson.tags.map((tag) => <span key={tag} className="px-2.5 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded text-[11px]">#{tag}</span>)}
-              </div>
-            )}
-          </div>
-
           {/* Materials */}
           <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-7 shadow-sm">
-            <h3 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2"><FileText className="w-4 h-4 text-emerald-800 dark:text-emerald-400" aria-hidden="true" />{tLesson("materials")}</h3>
+            <h3 className="font-serif font-bold text-base text-stone-900 dark:text-stone-100 mb-4">Resources</h3>
             <div className="space-y-3">
               <div className="p-3.5 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
