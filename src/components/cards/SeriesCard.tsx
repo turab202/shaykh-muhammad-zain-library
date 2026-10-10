@@ -75,3 +75,5 @@ export function SeriesCard({ series, duruusLabel }: SeriesCardProps) {
     </Link>
   );
 }
+
+

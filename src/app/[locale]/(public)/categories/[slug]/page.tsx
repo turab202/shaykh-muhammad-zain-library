@@ -171,7 +171,7 @@ export default async function CategoryDetailPage({ params }: Props) {
                       <div className="flex items-center gap-3.5 min-w-0">
                         <span className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 font-mono text-xs font-semibold flex items-center justify-center shrink-0">{String(lesson.lessonNumber ?? 0).padStart(2, "0")}</span>
                         <div className="min-w-0">
-                          <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100 hover:text-emerald-900 dark:hover:text-emerald-400 transition-colors line-clamp-1 block">{lesson.title}</Link>
+                          <Link href={`/duruus/${lesson.slug}`} className="font-serif font-bold text-xs sm:text-sm text-stone-900 dark:text-stone-100 hover:text-emerald-900 dark:hover:text-emerald-400 transition-colors line-clamp-1 block">{lesson.displayTitle}</Link>
                           <span className="text-[11px] text-stone-400">{fmt(lesson.duration)}</span>
                         </div>
                       </div>

@@ -94,7 +94,7 @@ export function MiniAudioPlayer() {
               href={`/duruus/${currentLesson.slug}`}
               className="text-xs sm:text-sm font-semibold text-stone-900 dark:text-stone-100 truncate hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors"
             >
-              {currentLesson.title}
+              {(currentLesson.displayTitle ?? currentLesson.title)}
             </Link>
             <div className="flex items-center gap-2 text-[11px] text-stone-500 dark:text-stone-400">
               {currentLesson.seriesTitle && (
@@ -186,3 +186,5 @@ function fmt(s: number): string {
   const sec = Math.floor(s % 60);
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
+
+

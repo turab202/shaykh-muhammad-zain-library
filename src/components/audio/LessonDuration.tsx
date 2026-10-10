@@ -37,3 +37,5 @@ export function LessonDuration({ lessonId, dbDuration }: LessonDurationProps) {
     </span>
   );
 }
+
+

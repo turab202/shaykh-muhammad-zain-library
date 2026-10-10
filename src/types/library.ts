@@ -126,6 +126,8 @@ export interface PublicLesson {
   slug: string;
   lessonNumber?: number;
   title: string;
+  /** Surah/ayah description when available, falls back to title. Use this for display. */
+  displayTitle?: string;
   description?: string;
   /** Audio file URL. Resolved from the Media table (storageKey → URL). */
   audioUrl: string;

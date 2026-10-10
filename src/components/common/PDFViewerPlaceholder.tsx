@@ -89,3 +89,5 @@ export function PDFViewerPlaceholder({ title, pdfUrl, totalPages = 1 }: PDFViewe
     </div>
   );
 }
+
+

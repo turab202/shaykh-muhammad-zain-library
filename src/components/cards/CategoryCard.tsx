@@ -119,3 +119,5 @@ export function CategoryCard({ category, arabicName }: CategoryCardProps) {
     </Link>
   );
 }
+
+

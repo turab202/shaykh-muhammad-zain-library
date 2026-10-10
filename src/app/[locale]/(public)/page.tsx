@@ -142,7 +142,7 @@ export default async function HomePage({ params }: Props) {
                   </div>
                   {lesson.lessonNumber && <span className="shrink-0 text-[10px] font-mono text-stone-400 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded">#{lesson.lessonNumber}</span>}
                 </div>
-                <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors leading-snug line-clamp-2">{lesson.title}</h3>
+                <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100 group-hover:text-emerald-800 dark:group-hover:text-emerald-300 transition-colors leading-snug line-clamp-2">{lesson.displayTitle}</h3>
                 {lesson.description && <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed line-clamp-2">{lesson.description}</p>}
                 <div className="flex items-center gap-3 text-[10px] text-stone-400 dark:text-stone-500 mt-auto pt-2 border-t border-stone-100 dark:border-stone-800">
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" aria-hidden="true" />{formatDuration(lesson.duration)}</span>

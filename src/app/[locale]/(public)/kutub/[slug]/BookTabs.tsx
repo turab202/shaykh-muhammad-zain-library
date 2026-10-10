@@ -102,7 +102,7 @@ export function BookTabs({
                       href={`/duruus/${lesson.slug}`}
                       className="text-sm font-medium text-stone-900 dark:text-stone-100 hover:text-emerald-800 dark:hover:text-emerald-400 transition-colors line-clamp-1"
                     >
-                      {lesson.lessonNumber ? `${lesson.title}` : lesson.title}
+                      {lesson.lessonNumber ? `${lesson.displayTitle}` : lesson.displayTitle}
                     </Link>
                     {lesson.description && (
                       <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 mt-0.5" dir="rtl">

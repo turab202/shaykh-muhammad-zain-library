@@ -69,8 +69,8 @@ export function SeriesPlaylist({
                   #{String(lesson.lessonNumber ?? 0).padStart(2, "0")}
                 </span>
                 <span className="min-w-0">
-                  <span className="truncate block">{lesson.title}</span>
-                  {lesson.description && (
+                  <span className="truncate block">{lesson.displayTitle}</span>
+                  {lesson.description && lesson.displayTitle !== lesson.description && (
                     <span className="truncate block text-[10px] opacity-70 font-normal" dir="rtl">
                       {lesson.description}
                     </span>

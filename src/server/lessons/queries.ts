@@ -54,12 +54,18 @@ type LessonRow = Awaited<ReturnType<typeof prisma.lesson.findMany>>[0] & {
 function toPublicLesson(row: LessonRow, locale: Locale): PublicLesson {
   const audioMedia = row.media?.find((m) => m.mediaType === "AUDIO");
   const pdfMedia = row.media?.find((m) => m.mediaType === "PDF");
+  const title = resolveJson(row.translations, locale) ?? row.title;
+  const description = resolveJson(row.descTranslations ?? {}, locale) ?? row.description ?? undefined;
+  // If the lesson has a description (surah/ayah info), use it as the display title
+  // so users see "سورة إبراهيم — الآية 24–34" instead of "Tafsīr as-Saʿdī — Lesson 230"
+  const displayTitle = description ?? title;
   return {
     id: row.id,
     slug: row.slug,
     lessonNumber: row.lessonNumber ?? undefined,
-    title: resolveJson(row.translations, locale) ?? row.title,
-    description: resolveJson(row.descTranslations ?? {}, locale) ?? row.description ?? undefined,
+    title,
+    displayTitle,
+    description,
     audioUrl: resolveAudioUrl(
       audioMedia?.storageKey,
       row.telegramSourceId,

@@ -95,9 +95,9 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
               href={`/duruus/${lesson.slug}`}
               className="text-sm font-semibold text-stone-900 dark:text-stone-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300 transition-colors line-clamp-1"
             >
-              {lesson.title}
+              {(lesson.displayTitle ?? lesson.title)}
             </Link>
-            {lesson.description && (
+            {lesson.description && (lesson.displayTitle ?? lesson.title) !== lesson.description && (
               <p className="text-xs text-emerald-700 dark:text-emerald-400 line-clamp-1 mt-0.5" dir="rtl">
                 {lesson.description}
               </p>
@@ -160,7 +160,7 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
           href={`/duruus/${lesson.slug}`}
           className="block text-base font-serif font-bold text-stone-900 dark:text-stone-100 group-hover:text-emerald-900 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug mb-2"
         >
-          {lesson.title}
+          {(lesson.displayTitle ?? lesson.title)}
         </Link>
 
         {lesson.seriesTitle && (
@@ -217,3 +217,5 @@ function formatDuration(seconds: number): string {
   const s = Math.floor(seconds % 60);
   return `${m}:${String(s).padStart(2, "0")}`;
 }
+
+
