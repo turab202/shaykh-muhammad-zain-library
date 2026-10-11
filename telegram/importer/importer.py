@@ -445,6 +445,15 @@ async def run_live(
                             results.append({"message_id": message.id, "skipped": True, "skip_reason": "already_has_media"})
                             continue
 
+                        # Skip non-audio files (stickers, images, etc.)
+                        if audio_filename:
+                            ext = audio_filename.lower().rsplit('.', 1)[-1] if '.' in audio_filename else ''
+                            if ext not in ('mp3', 'm4a', 'aac', 'ogg', 'wav', 'flac', 'opus'):
+                                log.info("  ↷ skip non-audio file: %s (ext=%s) msgId=%d",
+                                         audio_filename, ext, message.id)
+                                results.append({"message_id": message.id, "skipped": True, "skip_reason": "not_audio"})
+                                continue
+
                         # Download to a stable local path (not temp) so we can
                         # retry the B2 upload if the connection drops mid-upload.
                         import time as _time
