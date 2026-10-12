@@ -24,6 +24,7 @@ interface AudioContextValue {
   volume: number;
   isMuted: boolean;
   isMiniPlayerOpen: boolean;
+  playlist: PublicLesson[];
   playLesson: (lesson: PublicLesson) => void;
   togglePlay: () => void;
   pause: () => void;
@@ -34,6 +35,7 @@ interface AudioContextValue {
   setVol: (volume: number) => void;
   toggleMute: () => void;
   closeMiniPlayer: () => void;
+  setPlaylist: (lessons: PublicLesson[]) => void;
 }
 
 const AudioContext = createContext<AudioContextValue | undefined>(undefined);
@@ -58,9 +60,21 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const currentLessonRef = useRef<PublicLesson | null>(null);
   const isPlayingRef     = useRef(false);
 
+  // Playlist for auto-advance.
+  const [playlist, setPlaylistState] = useState<PublicLesson[]>([]);
+  const playlistRef = useRef<PublicLesson[]>([]);
+
+  // Stable ref for playLesson so onEnded can call it without a stale closure.
+  const playLessonRef = useRef<(lesson: PublicLesson) => void>(() => {});
+
+  // Retry state for network error backoff.
+  const retryCountRef  = useRef(0);
+  const currentSrcRef  = useRef<string>("");
+
   // Keep refs in sync with state.
   useEffect(() => { currentLessonRef.current = currentLesson; }, [currentLesson]);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  useEffect(() => { playlistRef.current = playlist; }, [playlist]);
 
   // ── Create the Audio element exactly once ─────────────────
   useEffect(() => {
@@ -103,17 +117,60 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const onEnded = () => setIsPlaying(false);
+    const onEnded = () => {
+      const currentLesson = currentLessonRef.current;
+      const pl = playlistRef.current;
+      if (currentLesson && pl.length > 0) {
+        const idx = pl.findIndex((l) => l.id === currentLesson.id);
+        if (idx !== -1 && idx + 1 < pl.length) {
+          playLessonRef.current(pl[idx + 1]);
+          return;
+        }
+      }
+      setIsPlaying(false);
+    };
 
     const onError = () => {
       const err = audio.error;
+      const code = err?.code ?? 0;
+      const meanings = ["", "ABORTED", "NETWORK_ERROR", "DECODE_ERROR", "SRC_NOT_SUPPORTED"];
       console.error("[AudioContext] <audio> error:", {
-        code: err?.code,
+        code,
         message: err?.message,
-        meaning: ["", "ABORTED", "NETWORK_ERROR", "DECODE_ERROR", "SRC_NOT_SUPPORTED"][err?.code ?? 0],
+        meaning: meanings[code],
         src: audio.src?.slice(0, 120),
       });
-      setIsPlaying(false);
+
+      // ABORTED (1): do not retry
+      // DECODE_ERROR (3) or SRC_NOT_SUPPORTED (4): do not retry
+      // NETWORK_ERROR (2): retry up to 3 times with exponential backoff
+      if (code === 2) {
+        if (retryCountRef.current < 3) {
+          const delay = Math.pow(2, retryCountRef.current) * 1000; // 1s, 2s, 4s
+          retryCountRef.current += 1;
+          console.warn(`[AudioContext] Network error, retry ${retryCountRef.current}/3 in ${delay}ms`);
+          setTimeout(() => {
+            const src = currentSrcRef.current;
+            if (!src) return;
+            if (!audio.paused) audio.pause();
+            audio.src = src;
+            audio.load();
+            audio.play()
+              .then(() => setIsPlaying(true))
+              .catch((playErr: Error) => {
+                if (playErr.name !== "AbortError") {
+                  console.error("[AudioContext] retry play() failed:", playErr);
+                  setIsPlaying(false);
+                }
+              });
+          }, delay);
+        } else {
+          console.error("[AudioContext] Network error after 3 retries, giving up.");
+          setIsPlaying(false);
+        }
+      } else {
+        setIsPlaying(false);
+      }
     };
 
     audio.addEventListener("timeupdate",     onTimeUpdate);
@@ -240,6 +297,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const isPresign = audioUrl.startsWith("/api/media/presign");
 
     const doPlay = (resolvedUrl: string) => {
+      currentSrcRef.current = resolvedUrl;
       if (audio.src !== resolvedUrl) {
         if (!audio.paused) audio.pause();
         audio.src          = resolvedUrl;
@@ -265,6 +323,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         .then((r) => r.json())
         .then((data: { url?: string }) => {
           if (data.url) {
+            retryCountRef.current = 0;
             doPlay(data.url);
           } else {
             console.error("[AudioContext] presign returned no URL:", data);
@@ -276,10 +335,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           setIsPlaying(false);
         });
     } else {
+      retryCountRef.current = 0;
       doPlay(audioUrl);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playbackRate]);
+
+  // Keep playLessonRef in sync so onEnded can call it without a stale closure.
+  useEffect(() => { playLessonRef.current = playLesson; }, [playLesson]);
+
+  // Stable setter for the playlist.
+  const setPlaylist = useCallback((lessons: PublicLesson[]) => {
+    setPlaylistState(lessons);
+  }, []);
 
   // Keep actionsRef fresh for the keyboard handler.
   useEffect(() => {
@@ -324,6 +392,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       volume,
       isMuted,
       isMiniPlayerOpen,
+      playlist,
       playLesson,
       togglePlay,
       pause,
@@ -334,6 +403,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setVol,
       toggleMute,
       closeMiniPlayer,
+      setPlaylist,
     }}>
       {children}
     </AudioContext.Provider>

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect } from "react";
 import { Play } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useAudio } from "@/lib/context/AudioContext";
@@ -28,7 +29,11 @@ export function SeriesPlaylist({
   sequentialLabel,
   listenLabel,
 }: SeriesPlaylistProps) {
-  const { playLesson } = useAudio();
+  const { playLesson, setPlaylist } = useAudio();
+
+  useEffect(() => {
+    setPlaylist(lessons);
+  }, [lessons, setPlaylist]);
 
   return (
     <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
