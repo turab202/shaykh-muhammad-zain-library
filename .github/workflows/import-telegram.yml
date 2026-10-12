@@ -4,19 +4,19 @@ on:
   # Run automatically every day at 3am UTC
   schedule:
     - cron: "0 3 * * *"
-  # Also allow manual trigger from GitHub Actions tab
+  # Allow manual trigger
   workflow_dispatch:
     inputs:
       batch:
-        description: "Audio files per batch (default 3)"
-        default: "3"
+        description: "Audio files per batch (default 5)"
+        default: "5"
         required: false
       no_media:
         description: "Metadata only? (true = fast, no audio download)"
         default: "false"
         required: false
       start_id:
-        description: "Start from message ID (0 = auto)"
+        description: "Start from message ID (0 = smart auto-detect)"
         default: "0"
         required: false
 
@@ -41,20 +41,17 @@ jobs:
       - name: Verify required secrets
         run: |
           missing=""
-          [ -z "${{ secrets.DATABASE_URL }}" ]        && missing="$missing DATABASE_URL"
-          [ -z "${{ secrets.TELEGRAM_API_ID }}" ]     && missing="$missing TELEGRAM_API_ID"
-          [ -z "${{ secrets.TELEGRAM_API_HASH }}" ]   && missing="$missing TELEGRAM_API_HASH"
-          [ -z "${{ secrets.TELEGRAM_PHONE }}" ]      && missing="$missing TELEGRAM_PHONE"
-          [ -z "${{ secrets.TELEGRAM_CHANNEL }}" ]    && missing="$missing TELEGRAM_CHANNEL"
+          [ -z "${{ secrets.DATABASE_URL }}" ]          && missing="$missing DATABASE_URL"
+          [ -z "${{ secrets.TELEGRAM_API_ID }}" ]       && missing="$missing TELEGRAM_API_ID"
+          [ -z "${{ secrets.TELEGRAM_API_HASH }}" ]     && missing="$missing TELEGRAM_API_HASH"
+          [ -z "${{ secrets.TELEGRAM_PHONE }}" ]        && missing="$missing TELEGRAM_PHONE"
+          [ -z "${{ secrets.TELEGRAM_CHANNEL }}" ]      && missing="$missing TELEGRAM_CHANNEL"
           [ -z "${{ secrets.B2_APPLICATION_KEY_ID }}" ] && missing="$missing B2_APPLICATION_KEY_ID"
-          [ -z "${{ secrets.B2_APPLICATION_KEY }}" ]  && missing="$missing B2_APPLICATION_KEY"
-          [ -z "${{ secrets.B2_BUCKET_NAME }}" ]      && missing="$missing B2_BUCKET_NAME"
-          [ -z "${{ secrets.B2_ENDPOINT }}" ]         && missing="$missing B2_ENDPOINT"
+          [ -z "${{ secrets.B2_APPLICATION_KEY }}" ]    && missing="$missing B2_APPLICATION_KEY"
+          [ -z "${{ secrets.B2_BUCKET_NAME }}" ]        && missing="$missing B2_BUCKET_NAME"
+          [ -z "${{ secrets.B2_ENDPOINT }}" ]           && missing="$missing B2_ENDPOINT"
           if [ -n "$missing" ]; then
             echo "❌ Missing required GitHub secrets:$missing"
-            echo ""
-            echo "Go to: Settings → Secrets and variables → Actions"
-            echo "Add each missing secret listed above."
             exit 1
           fi
           echo "✓ All required secrets are present"
@@ -66,46 +63,57 @@ jobs:
           mkdir -p telegram/.session
           if [ -n "$SESSION_BASE64" ]; then
             echo "$SESSION_BASE64" | base64 -d > telegram/.session/importer.session
-            echo "✓ Session restored from secret"
+            echo "✓ Session restored"
           else
-            echo "⚠ TELEGRAM_SESSION_BASE64 not set"
-            echo "The importer will need to authenticate interactively."
-            echo "Run locally first to create a session, then add the base64-encoded"
-            echo "session file as the TELEGRAM_SESSION_BASE64 secret."
-            echo ""
-            echo "To get the base64 value, run this PowerShell command locally:"
-            echo '  [Convert]::ToBase64String([IO.File]::ReadAllBytes("telegram\.session\importer.session"))'
+            echo "❌ TELEGRAM_SESSION_BASE64 not set"
             exit 1
           fi
 
-      - name: Run metadata import (no-media, fast)
-        if: ${{ github.event.inputs.no_media == 'true' || github.event_name == 'schedule' }}
+      - name: Determine import strategy
+        id: strategy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
-          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
-          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
-          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
-          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
-          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
-          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
-          STORAGE_PROVIDER: B2
         run: |
-          START_ID=${{ github.event.inputs.start_id || '0' }}
-          BATCH=${{ github.event.inputs.batch || '3' }}
-          python scripts/import_loop.py --no-media --batch 50
+          # Check how many lessons still need audio
+          NEED=$(python -c "
+          import os, psycopg2
+          url = os.environ['DATABASE_URL']
+          if '?' in url:
+              from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+              p = urlparse(url)
+              qs = {k: v for k,v in parse_qs(p.query).items() if k in ('sslmode',)}
+              url = urlunparse(p._replace(query=urlencode(qs, doseq=True)))
+          conn = psycopg2.connect(url, connect_timeout=30)
+          cur = conn.cursor()
+          cur.execute('''
+              SELECT COUNT(DISTINCT l.id) FROM lessons l
+              JOIN telegram_messages ts ON l.\"telegramSourceId\"=ts.id
+              LEFT JOIN media m ON m.\"lessonId\"=l.id AND m.\"mediaType\"='AUDIO'
+              WHERE l.status='PUBLISHED' AND m.id IS NULL
+          ''')
+          print(cur.fetchone()[0])
+          conn.close()
+          " 2>/dev/null || echo "999")
+          echo "need_audio=$NEED" >> $GITHUB_OUTPUT
+          echo "Lessons needing audio: $NEED"
 
-      - name: Run audio import
-        if: ${{ github.event.inputs.no_media != 'true' && github.event_name != 'schedule' }}
+          if [ "$NEED" -le "10" ]; then
+            # All old audio done — switch to NEW message monitoring mode
+            echo "mode=new_messages" >> $GITHUB_OUTPUT
+            echo "Strategy: MONITORING for new messages (oldest backlog done)"
+          else
+            echo "mode=backfill" >> $GITHUB_OUTPUT
+            echo "Strategy: BACKFILL old audio ($NEED lessons remaining)"
+          fi
+
+      - name: Run audio import — backfill mode (catch up on old lessons)
+        if: ${{ steps.strategy.outputs.mode == 'backfill' && github.event.inputs.no_media != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
           B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
           B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
           B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
@@ -113,11 +121,55 @@ jobs:
           STORAGE_PROVIDER: B2
         run: |
           BATCH=${{ github.event.inputs.batch || '5' }}
-          START=${{ github.event.inputs.start_id || '2920' }}
+          # Use provided start_id or auto-detect from DB
+          START=${{ github.event.inputs.start_id || '0' }}
+          if [ "$START" = "0" ]; then
+            # Auto: start from just above the oldest undownloaded message
+            START=$(python -c "
+          import os, psycopg2
+          url = os.environ['DATABASE_URL']
+          if '?' in url:
+              from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+              p = urlparse(url)
+              qs = {k: v for k,v in parse_qs(p.query).items() if k in ('sslmode',)}
+              url = urlunparse(p._replace(query=urlencode(qs, doseq=True)))
+          conn = psycopg2.connect(url, connect_timeout=30)
+          cur = conn.cursor()
+          cur.execute('''
+              SELECT MAX(ts.\"messageId\") + 5
+              FROM lessons l
+              JOIN telegram_messages ts ON l.\"telegramSourceId\"=ts.id
+              LEFT JOIN media m ON m.\"lessonId\"=l.id AND m.\"mediaType\"='AUDIO'
+              WHERE l.status='PUBLISHED' AND m.id IS NULL
+          ''')
+          r = cur.fetchone()[0]
+          print(r or 3335)
+          conn.close()
+            " 2>/dev/null || echo "3335")
+            echo "Auto-detected start_id: $START"
+          fi
           python scripts/import_loop.py --batch $BATCH --start-id $START
 
+      - name: Run audio import — new messages mode (check for new lessons daily)
+        if: ${{ steps.strategy.outputs.mode == 'new_messages' || github.event_name == 'schedule' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+          STORAGE_PROVIDER: B2
+        run: |
+          # Check for new messages beyond what we have, download with media
+          echo "Checking for new lessons from Telegram..."
+          python scripts/import_loop.py --batch 5 --start-id 3335
+
       - name: Fix audio durations from B2 metadata
-        if: ${{ github.event.inputs.no_media != 'true' && github.event_name != 'schedule' }}
+        if: ${{ github.event.inputs.no_media != 'true' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
@@ -126,7 +178,7 @@ jobs:
           B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
         run: |
           pip install mutagen -q
-          python scripts/fix_audio_durations_from_b2.py
+          python scripts/fix_audio_durations_from_b2.py || true
 
       - name: Run PDF import
         env:
@@ -135,25 +187,17 @@ jobs:
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          B2_ACCOUNT_ID: ${{ secrets.B2_ACCOUNT_ID }}
           B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
           B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
           B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
           B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
           STORAGE_PROVIDER: B2
-        run: |
-          echo "TELEGRAM_API_ID length: ${#TELEGRAM_API_ID}"
-          echo "TELEGRAM_API_HASH length: ${#TELEGRAM_API_HASH}"
-          echo "TELEGRAM_PHONE length: ${#TELEGRAM_PHONE}"
-          python scripts/import_pdfs.py
+        run: python scripts/import_pdfs.py || true
 
       - name: Save Telegram session back
         if: always()
-        env:
-          SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
         run: |
           if [ -f telegram/.session/importer.session ]; then
             NEW_SESSION=$(base64 -w 0 telegram/.session/importer.session)
-            echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 secret with this value if it changed"
-            # Actual update requires gh CLI with appropriate permissions
+            echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 secret with: $NEW_SESSION"
           fi
