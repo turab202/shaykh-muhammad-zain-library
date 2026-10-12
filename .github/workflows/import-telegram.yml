@@ -112,8 +112,21 @@ jobs:
           B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
           STORAGE_PROVIDER: B2
         run: |
-          BATCH=${{ github.event.inputs.batch || '3' }}
-          python scripts/import_loop.py --batch $BATCH
+          BATCH=${{ github.event.inputs.batch || '5' }}
+          START=${{ github.event.inputs.start_id || '2920' }}
+          python scripts/import_loop.py --batch $BATCH --start-id $START
+
+      - name: Fix audio durations from B2 metadata
+        if: ${{ github.event.inputs.no_media != 'true' && github.event_name != 'schedule' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
+          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
+          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+        run: |
+          pip install mutagen -q
+          python scripts/fix_audio_durations_from_b2.py
 
       - name: Run PDF import
         env:
