@@ -133,6 +133,8 @@ def main():
             if not args.no_media:
                 print("\nLinking B2 files...")
                 run(linker)
+                # Force-link any unlinked files (handles hash-suffix filenames)
+                run([py, str(ROOT / "scripts" / "force_link_all.py")])
             # Move cursor backward by batch size
             cursor = max(0, cursor - args.batch)
             # Wait to let Telethon fully release the SQLite session lock
