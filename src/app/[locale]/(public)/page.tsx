@@ -16,6 +16,7 @@ import {
 import { getLibraryStats, getRecentLessons } from "@/server/lessons/queries";
 import { getPublishedCategories } from "@/server/categories/queries";
 import { getPublishedSeries } from "@/server/series/queries";
+import { getPublishedBooks } from "@/server/books/queries";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -31,11 +32,12 @@ export default async function HomePage({ params }: Props) {
   const tCat = await getTranslations({ locale, namespace: "categories" });
 
   // Real Prisma queries — returns empty arrays/zeroes if DB is not seeded yet
-  const [stats, categories, series, lessons] = await Promise.all([
+  const [stats, categories, series, lessons, books] = await Promise.all([
     getLibraryStats(),
     getPublishedCategories(locale as Locale),
     getPublishedSeries(locale as Locale),
     getRecentLessons(locale as Locale, 6),
+    getPublishedBooks(locale as Locale),
   ]);
 
   return (
@@ -127,6 +129,41 @@ export default async function HomePage({ params }: Props) {
           </div>
         )}
       </section>
+
+      {/* Featured Books */}
+      {books.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <SectionHeader eyebrow="Classical Texts" title={tNav("books")} viewAllHref="/kutub" viewAllLabel={tActions("viewAll")} isRtl={isRtl} />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {books.filter(b => b.lessonCount || b.pdfAvailable).slice(0, 6).map((book) => (
+              <Link key={book.id} href={`/kutub/${book.slug}`}
+                className="group flex flex-col bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md transition-all">
+                {/* Cover */}
+                <div className="relative h-28 w-full bg-gradient-to-br from-emerald-900/10 to-amber-900/10 dark:from-emerald-400/8 dark:to-amber-400/8 flex items-center justify-center border-b border-stone-100 dark:border-stone-800">
+                  {book.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={book.coverImageUrl} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <BookOpen className="w-8 h-8 text-emerald-800/20 dark:text-emerald-400/20 group-hover:text-emerald-800/35 transition-all duration-300" aria-hidden="true" />
+                  )}
+                  {book.pdfAvailable && (
+                    <span className="absolute top-1.5 end-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50/90 dark:bg-amber-900/80 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700">PDF</span>
+                  )}
+                </div>
+                {/* Info */}
+                <div className="p-2.5 flex flex-col flex-1">
+                  <h3 className="text-[11px] font-semibold text-stone-800 dark:text-stone-200 group-hover:text-emerald-900 dark:group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug">
+                    {book.title}
+                  </h3>
+                  {book.lessonCount ? (
+                    <span className="text-[10px] text-stone-400 mt-1">{book.lessonCount} lessons</span>
+                  ) : null}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Recent Lessons */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">

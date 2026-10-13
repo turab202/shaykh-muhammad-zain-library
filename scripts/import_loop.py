@@ -133,10 +133,10 @@ def main():
             if not args.no_media:
                 print("\nLinking B2 files...")
                 run(linker)
-                # Sync all B2 files to DB (handles hash-suffixed filenames)
-                run([py, str(ROOT / "scripts" / "sync_b2_to_db.py")])
-                # Fix any wrong Content-Types
-                run([py, str(ROOT / "scripts" / "fix_b2_content_types.py")])
+            # Move cursor backward by batch size
+            cursor = max(0, cursor - args.batch)
+            # Wait to let Telethon fully release the SQLite session lock
+            time.sleep(8)
             # Move cursor backward by batch size
             cursor = max(0, cursor - args.batch)
             # Wait to let Telethon fully release the SQLite session lock

@@ -3,10 +3,11 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { createBook, deleteBook } from "@/server/admin/actions";
+import { createBook, deleteBook, toggleBookVisibility } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditBookButton } from "@/components/admin/EditBookButton";
 import { UploadPdfButton } from "@/components/admin/UploadPdfButton";
+import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 
 export default async function AdminBooksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -68,6 +69,12 @@ export default async function AdminBooksPage({ params }: { params: Promise<{ loc
                   )}
                 </td>
                 <td className="px-4 py-3 flex items-center gap-2 flex-wrap">
+                  <ToggleVisibilityButton
+                    id={b.id}
+                    currentStatus={b.status}
+                    itemName={b.title}
+                    action={toggleBookVisibility}
+                  />
                   <Link href={`/kutub/${b.slug}`} className="text-blue-600 hover:underline text-[11px]">View</Link>
                   <UploadPdfButton
                     bookId={b.id}

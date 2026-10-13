@@ -519,3 +519,38 @@ export async function publishAllPending(): Promise<BulkPublishState> {
 
   return { published, skipped };
 }
+
+// ── Visibility Toggles ────────────────────────────────────
+
+export async function toggleBookVisibility(id: string, newStatus: string) {
+  await guard();
+  const status = newStatus === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
+  await prisma.book.update({ where: { id }, data: { status } });
+  revalidatePath("/[locale]/admin/books", "page");
+  revalidatePath("/[locale]/(public)/kutub", "page");
+  revalidatePath("/[locale]/(public)", "page");
+}
+
+export async function toggleSeriesVisibility(id: string, newStatus: string) {
+  await guard();
+  const status = newStatus === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
+  await prisma.series.update({ where: { id }, data: { status } });
+  revalidatePath("/[locale]/admin/series", "page");
+  revalidatePath("/[locale]/(public)/series", "page");
+  revalidatePath("/[locale]/(public)", "page");
+}
+
+export async function toggleLessonVisibility(id: string, newStatus: string) {
+  await guard();
+  const status = newStatus === "PUBLISHED" ? "PUBLISHED" : "DRAFT";
+  await prisma.lesson.update({ where: { id }, data: { status } });
+  revalidatePath("/[locale]/admin/lessons", "page");
+  revalidatePath("/[locale]/(public)/duruus", "page");
+}
+
+export async function toggleCategoryVisibility(id: string, newStatus: string) {
+  await guard();
+  // Categories don't have a status field — use a workaround via the icon field
+  // Actually categories always visible; skip for now
+  void id; void newStatus;
+}
