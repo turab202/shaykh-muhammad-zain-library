@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import { Languages, Plus, Save } from "lucide-react";
+import { Languages, Save } from "lucide-react";
 import enMessages from "@/i18n/messages/en.json";
 import arMessages from "@/i18n/messages/ar.json";
 import amMessages from "@/i18n/messages/am.json";
 import { deleteSiteContent, saveSiteContent } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { CreateDialog } from "@/components/admin/CreateDialog";
 import type { Locale } from "@/types/i18n";
 
 type Entry = {
@@ -73,23 +74,19 @@ export default async function SiteContentPage({ params }: { params: Promise<{ lo
         </div>
       </div>
 
-      <form action={saveSiteContent} className="space-y-4 border-b border-stone-200 dark:border-stone-800 pb-7">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-200">
-          <Plus className="h-4 w-4" aria-hidden="true" /> Add text entry
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field name="namespace" label="Section" placeholder="hero, about, footer" required />
-          <Field name="key" label="Text key" placeholder="newHeadline" required />
-        </div>
-        <div className="grid gap-3 lg:grid-cols-3">
-          <TextField id="new-en" name="en" label="English" required />
-          <TextField id="new-ar" name="ar" label="Arabic" dir="rtl" />
-          <TextField id="new-am" name="am" label="Amharic" />
-        </div>
-        <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-emerald-900 px-4 py-2 text-xs font-semibold text-amber-100 transition-colors hover:bg-emerald-800">
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add entry
-        </button>
-      </form>
+      <div className="flex justify-end">
+        <CreateDialog title="Add text entry" submitLabel="Add entry" action={saveSiteContent}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field name="namespace" label="Section" placeholder="hero, about, footer" required />
+            <Field name="key" label="Text key" placeholder="newHeadline" required />
+          </div>
+          <div className="grid gap-3 lg:grid-cols-3">
+            <TextField id="new-en" name="en" label="English" required />
+            <TextField id="new-ar" name="ar" label="Arabic" dir="rtl" />
+            <TextField id="new-am" name="am" label="Amharic" />
+          </div>
+        </CreateDialog>
+      </div>
 
       <div className="space-y-3">
         {[...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([namespace, items]) => (

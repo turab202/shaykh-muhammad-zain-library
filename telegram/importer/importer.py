@@ -359,9 +359,19 @@ async def run_live(
             err_str = str(e)
             if attempt == 0 and ("AuthKeyNotFound" in err_str or "authorization key" in err_str.lower()):
                 log.warning("Stale session key — creating fresh session...")
+                # Disconnect first to release the session file lock before deleting
+                try:
+                    await client.disconnect()
+                except Exception:
+                    pass
+                import asyncio
+                await asyncio.sleep(1)  # Give OS time to release the file handle
                 session_file = Path(session_path + ".session")
                 if session_file.exists():
-                    session_file.unlink()
+                    try:
+                        session_file.unlink()
+                    except PermissionError:
+                        log.warning("Could not delete session file (still locked) — will continue anyway")
                 client = TelegramClient(
                     session_path, api_id, api_hash,
                     connection=ConnectionTcpObfuscated,

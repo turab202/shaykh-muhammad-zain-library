@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { Eye } from "lucide-react";
 import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditLessonButton } from "@/components/admin/EditLessonButton";
@@ -57,7 +58,7 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
       </div>
 
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full text-xs min-w-[700px]">
+        <table className="w-full min-w-[1120px] text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>
               {["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((h) => (
@@ -78,17 +79,20 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
                 <td className="px-4 py-3">
                   <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${statusColor[l.status] ?? ""}`}>{l.status}</span>
                 </td>
-                <td className="px-4 py-3 flex items-center gap-2">
+                <td className="px-4 py-3">
+                  <div className="flex min-w-[390px] flex-wrap items-center gap-2">
                   {l.status !== "PUBLISHED" ? (
                     <form action={publishLesson.bind(null, l.id)} className="inline">
-                      <button type="submit" className="text-emerald-700 hover:underline cursor-pointer">Publish</button>
+                      <button type="submit" className="inline-flex min-h-8 items-center rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">Publish</button>
                     </form>
                   ) : (
                     <form action={unpublishLesson.bind(null, l.id)} className="inline">
-                      <button type="submit" className="text-amber-600 hover:underline cursor-pointer">Unpublish</button>
+                      <button type="submit" className="inline-flex min-h-8 items-center rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">Unpublish</button>
                     </form>
                   )}
-                  <Link href={`/duruus/${l.slug}`} className="text-blue-600 hover:underline">View</Link>
+                  <Link href={`/duruus/${l.slug}`} className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-blue-200 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" /> View
+                  </Link>
                   <EditLessonButton
                     lesson={{
                       id: l.id,
@@ -118,7 +122,8 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
                       lessonTitle: media.lesson?.title ?? null,
                     }))}
                   />
-                  <DeleteButton action={deleteLesson.bind(null, l.id)} label="Del" itemName={l.title} itemType="lesson" />
+                  <DeleteButton action={deleteLesson.bind(null, l.id)} label="Delete" itemName={l.title} itemType="lesson" />
+                  </div>
                 </td>
               </tr>
             ))}

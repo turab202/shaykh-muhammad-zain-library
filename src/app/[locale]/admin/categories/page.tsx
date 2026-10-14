@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { createCategory, deleteCategory } from "@/server/admin/actions";
+import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditCategoryButton } from "@/components/admin/EditCategoryButton";
 
@@ -18,29 +19,28 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
 
   return (
     <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("categories")}</h1>
-      </div>
-
-      {/* Create form */}
-      <form action={createCategory} className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200">Add Category</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field name="slug" label="Slug (e.g. hadith)" required />
-          <Field name="name" label="English Name" required />
-          <Field name="arName" label="Arabic Name (اسم)" />
-          <Field name="amName" label="Amharic Name" />
-          <Field name="icon" label="Lucide Icon Name (e.g. BookOpen)" />
-          <Field name="colorClass" label="Tailwind Color Class" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("categories")}</h1>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{categories.length} categories in the catalog</p>
         </div>
-        <FieldTextarea name="description" label="English Description" />
-        <FieldTextarea name="arDescription" label="Arabic Description" />
-        <button type="submit" className="px-4 py-2 bg-emerald-900 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 transition-colors cursor-pointer">Create Category</button>
-      </form>
+        <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field name="slug" label="Slug (e.g. hadith)" required />
+            <Field name="name" label="English Name" required />
+            <Field name="arName" label="Arabic Name (اسم)" />
+            <Field name="amName" label="Amharic Name" />
+            <Field name="icon" label="Lucide Icon Name (e.g. BookOpen)" />
+            <Field name="colorClass" label="Tailwind Color Class" />
+          </div>
+          <FieldTextarea name="description" label="English Description" />
+          <FieldTextarea name="arDescription" label="Arabic Description" />
+        </CreateDialog>
+      </div>
 
       {/* Table */}
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[640px] text-xs">
+        <table className="w-full min-w-[760px] text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>
               {["Slug", "Name", "Lessons", "Series", "Books", "Actions"].map((h: string) => (
@@ -58,7 +58,8 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).lessons}</td>
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).series}</td>
                 <td className="px-4 py-3 text-stone-500">{(c._count as { lessons: number; series: number; books: number }).books}</td>
-                <td className="px-4 py-3 flex items-center gap-1">
+                <td className="px-4 py-3">
+                  <div className="flex min-w-[150px] flex-wrap items-center gap-2">
                   <EditCategoryButton category={{
                     id: c.id,
                     slug: c.slug,
@@ -70,6 +71,7 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
                     colorClass: c.colorClass ?? null,
                   }} />
                   <DeleteButton action={deleteCategory.bind(null, c.id)} label="Delete" itemName={c.name} itemType="category" />
+                  </div>
                 </td>
               </tr>
             ))}

@@ -56,8 +56,11 @@ export function DeleteButton({
       <button
         type="button"
         onClick={openModal}
-        className="text-red-600 dark:text-red-400 hover:underline cursor-pointer text-xs"
+        aria-label={`Delete ${itemType}: ${itemName}`}
+        title={`Delete ${itemType}: ${itemName}`}
+        className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-[11px] font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
       >
+        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         {label}
       </button>
 
@@ -93,7 +96,7 @@ export function DeleteButton({
             <p className="text-sm text-stone-700 dark:text-stone-300">
               Are you sure you want to delete this {itemType}?
             </p>
-            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 break-words">
+            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 wrap-break-word">
               {itemName}
             </p>
             <p className="text-xs text-red-600 dark:text-red-400">

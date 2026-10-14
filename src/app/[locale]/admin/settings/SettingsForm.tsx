@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
-  Eye, EyeOff, Mail, Lock, UserPlus, Trash2, ShieldCheck,
-  CheckCircle2, AlertCircle, Loader2, User, KeyRound,
+  Eye, EyeOff, Mail, UserPlus, ShieldCheck,
+  CheckCircle2, AlertCircle, Loader2, KeyRound, X,
 } from "lucide-react";
 import {
   updateAdminEmail,
@@ -90,7 +90,7 @@ function PasswordField({
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? "Hide password" : "Show password"}
-          className="absolute inset-y-0 end-0 flex items-center px-3 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+          className="absolute inset-y-0 inset-e-0 flex items-center px-3 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
         >
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
@@ -205,6 +205,26 @@ export function PasswordForm() {
 export function AddAdminForm() {
   const [state, action, pending] = useActionState<CreateAdminState, FormData>(createAdmin, undefined);
   const [open, setOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousState = useRef(state);
+
+  function openDialog() {
+    previousState.current = state;
+    setSubmitted(false);
+    setOpen(true);
+    requestAnimationFrame(() => dialogRef.current?.showModal());
+  }
+
+  useEffect(() => {
+    if (state !== previousState.current) {
+      previousState.current = state;
+    }
+    if (state !== previousState.current || !state?.success) return;
+    if (open && submitted && !pending) {
+      dialogRef.current?.close();
+    }
+  }, [open, pending, state, submitted]);
 
   return (
     <SectionCard
@@ -215,40 +235,60 @@ export function AddAdminForm() {
       {!open ? (
         <button
           type="button"
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-900 dark:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors cursor-pointer"
+          onClick={openDialog}
+          className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-emerald-900 px-3.5 py-2 text-xs font-semibold text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
         >
           <UserPlus className="w-3.5 h-3.5" aria-hidden="true" />
           Add new admin
         </button>
       ) : (
-        <form action={action} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field id="name" name="name" label="Full name" required autoComplete="name" />
-            <Field id="newAdminEmail" name="email" label="Email address" type="email" required autoComplete="off" />
-            <PasswordField id="adminPassword" name="password" label="Password" autoComplete="new-password" required />
-            <PasswordField id="adminConfirmPassword" name="confirmPassword" label="Confirm password" autoComplete="new-password" required />
-          </div>
-          <SelectField
-            id="role" name="role" label="Role"
-            defaultValue="ADMIN"
-            options={[
-              { value: "ADMIN", label: "Admin — full access" },
-              { value: "EDITOR", label: "Editor — can manage content, not users" },
-            ]}
-          />
-          <StatusMessage state={state} />
-          <div className="flex items-center gap-3 pt-1">
-            <SubmitButton label="Create admin" pendingLabel="Creating…" pending={pending} />
+        <dialog
+          ref={dialogRef}
+          aria-labelledby="add-admin-dialog-title"
+          onClose={() => setOpen(false)}
+          onClick={(event) => { if (event.target === dialogRef.current) dialogRef.current?.close(); }}
+          className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-xl border border-stone-200 bg-white p-0 shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm dark:border-stone-700 dark:bg-stone-900"
+        >
+          <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4 dark:border-stone-800">
+            <h3 id="add-admin-dialog-title" className="text-sm font-semibold text-stone-900 dark:text-stone-100">Create admin account</h3>
             <button
               type="button"
-              onClick={() => setOpen(false)}
-              className="px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+              onClick={() => dialogRef.current?.close()}
+              aria-label="Close dialog"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:text-stone-400 dark:hover:bg-stone-800"
             >
-              Cancel
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
-        </form>
+          <form action={action} onSubmit={() => setSubmitted(true)} className="space-y-4 px-5 py-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field id="name" name="name" label="Full name" required autoComplete="name" />
+              <Field id="newAdminEmail" name="email" label="Email address" type="email" required autoComplete="off" />
+              <PasswordField id="adminPassword" name="password" label="Password" autoComplete="new-password" required />
+              <PasswordField id="adminConfirmPassword" name="confirmPassword" label="Confirm password" autoComplete="new-password" required />
+            </div>
+            <SelectField
+              id="role" name="role" label="Role"
+              defaultValue="ADMIN"
+              options={[
+                { value: "ADMIN", label: "Admin — full access" },
+                { value: "EDITOR", label: "Editor — can manage content, not users" },
+              ]}
+            />
+            {submitted && <StatusMessage state={state} />}
+            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-200 pt-4 dark:border-stone-800">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => { dialogRef.current?.close(); setSubmitted(false); }}
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-stone-300 px-3.5 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+              >
+                Cancel
+              </button>
+              <SubmitButton label="Create admin" pendingLabel="Creating…" pending={pending} />
+            </div>
+          </form>
+        </dialog>
       )}
     </SectionCard>
   );
@@ -303,7 +343,7 @@ function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
     : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400";
 
   return (
-    <li className="flex items-center gap-4 px-6 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors">
+    <li className="flex flex-wrap items-center gap-3 px-6 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/30 sm:flex-nowrap sm:gap-4">
       {/* Avatar */}
       <div className="w-8 h-8 rounded-full bg-emerald-900 dark:bg-emerald-800 text-amber-100 flex items-center justify-center text-xs font-bold shrink-0">
         {initials}

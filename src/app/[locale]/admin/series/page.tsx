@@ -3,7 +3,9 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { Eye } from "lucide-react";
 import { createSeries, deleteSeries, toggleSeriesVisibility } from "@/server/admin/actions";
+import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditSeriesButton } from "@/components/admin/EditSeriesButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
@@ -21,43 +23,45 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
 
   return (
     <div className="max-w-5xl space-y-6">
-      <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("series")}</h1>
-
-      <form action={createSeries} className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200">Add Series</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <F name="slug" label="Slug" required />
-          <F name="title" label="English Title" required />
-          <F name="arTitle" label="Arabic Title" />
-          <F name="amTitle" label="Amharic Title" />
-          <F name="order" label="Display Order" />
-          <div>
-            <label className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">Status</label>
-            <select name="status" className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none">
-              <option value="DRAFT">Draft</option>
-              <option value="PUBLISHED">Published</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">Category</label>
-            <select name="categoryId" className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none">
-              <option value="">— None —</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">Linked Book</label>
-            <select name="bookId" className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none">
-              <option value="">— None —</option>
-              {books.map((b) => <option key={b.id} value={b.id}>{b.title}</option>)}
-            </select>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("series")}</h1>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{seriesList.length} series in the catalog</p>
         </div>
-        <button type="submit" className="px-4 py-2 bg-emerald-900 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 transition-colors cursor-pointer">Create Series</button>
-      </form>
+        <CreateDialog title="Add Series" submitLabel="Create series" action={createSeries}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <F name="slug" label="Slug" required />
+            <F name="title" label="English Title" required />
+            <F name="arTitle" label="Arabic Title" />
+            <F name="amTitle" label="Amharic Title" />
+            <F name="order" label="Display Order" />
+            <div>
+              <label htmlFor="new-series-status" className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">Status</label>
+              <select id="new-series-status" name="status" className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                <option value="DRAFT">Draft</option>
+                <option value="PUBLISHED">Published</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="new-series-category" className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">Category</label>
+              <select id="new-series-category" name="categoryId" className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                <option value="">— None —</option>
+                {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="new-series-book" className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">Linked Book</label>
+              <select id="new-series-book" name="bookId" className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100">
+                <option value="">— None —</option>
+                {books.map((b) => <option key={b.id} value={b.id}>{b.title}</option>)}
+              </select>
+            </div>
+          </div>
+        </CreateDialog>
+      </div>
 
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[680px] text-xs">
+        <table className="w-full min-w-[900px] text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>)}</tr>
           </thead>
@@ -76,8 +80,11 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
                     action={toggleSeriesVisibility}
                   />
                 </td>
-                <td className="px-4 py-3 flex items-center gap-2">
-                  <Link href={`/series/${s.slug}`} className="text-blue-600 hover:underline">View</Link>
+                <td className="px-4 py-3">
+                  <div className="flex min-w-[300px] flex-wrap items-center gap-2">
+                  <Link href={`/series/${s.slug}`} className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-blue-200 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" /> View
+                  </Link>
                   <EditSeriesButton
                     series={{
                       id: s.id,
@@ -94,7 +101,8 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
                     categories={categories}
                     books={books}
                   />
-                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Del" itemName={s.title} itemType="series" />
+                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Delete" itemName={s.title} itemType="series" />
+                  </div>
                 </td>
               </tr>
             ))}
