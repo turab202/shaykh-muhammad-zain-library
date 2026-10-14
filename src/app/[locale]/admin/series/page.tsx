@@ -68,14 +68,15 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
                 <td className="px-4 py-3 font-medium text-stone-800 dark:text-stone-200 max-w-[200px] truncate">{s.title}</td>
                 <td className="px-4 py-3 text-stone-500">{s.category?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-stone-500">{(s._count as { lessons: number }).lessons}</td>
-                <td className="px-4 py-3"><span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${s.status === "PUBLISHED" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-stone-100 dark:bg-stone-800 text-stone-500"}`}>{s.status}</span></td>
-                <td className="px-4 py-3 flex items-center gap-2">
+                <td className="px-4 py-3">
                   <ToggleVisibilityButton
                     id={s.id}
                     currentStatus={s.status}
                     itemName={s.title}
                     action={toggleSeriesVisibility}
                   />
+                </td>
+                <td className="px-4 py-3 flex items-center gap-2">
                   <Link href={`/series/${s.slug}`} className="text-blue-600 hover:underline">View</Link>
                   <EditSeriesButton
                     series={{

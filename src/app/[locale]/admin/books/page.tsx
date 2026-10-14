@@ -63,18 +63,17 @@ export default async function AdminBooksPage({ params }: { params: Promise<{ loc
                 <td className="px-4 py-3 text-stone-500">{b.category?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-stone-500">{(b._count as { lessons: number }).lessons}</td>
                 <td className="px-4 py-3">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${b.status === "PUBLISHED" ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" : "bg-stone-100 dark:bg-stone-800 text-stone-500"}`}>{b.status}</span>
-                  {(b.media as {id:string}[]).length > 0 && (
-                    <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">PDF</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 flex items-center gap-2 flex-wrap">
                   <ToggleVisibilityButton
                     id={b.id}
                     currentStatus={b.status}
                     itemName={b.title}
                     action={toggleBookVisibility}
                   />
+                  {(b.media as {id:string}[]).length > 0 && (
+                    <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">PDF</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 flex items-center gap-2 flex-wrap">
                   <Link href={`/kutub/${b.slug}`} className="text-blue-600 hover:underline text-[11px]">View</Link>
                   <UploadPdfButton
                     bookId={b.id}
