@@ -207,21 +207,15 @@ export function AddAdminForm() {
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const previousState = useRef(state);
 
   function openDialog() {
-    previousState.current = state;
     setSubmitted(false);
     setOpen(true);
     requestAnimationFrame(() => dialogRef.current?.showModal());
   }
 
   useEffect(() => {
-    if (state !== previousState.current) {
-      previousState.current = state;
-    }
-    if (state !== previousState.current || !state?.success) return;
-    if (open && submitted && !pending) {
+    if (open && submitted && !pending && state?.success) {
       dialogRef.current?.close();
     }
   }, [open, pending, state, submitted]);

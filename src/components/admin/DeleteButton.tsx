@@ -96,7 +96,7 @@ export function DeleteButton({
             <p className="text-sm text-stone-700 dark:text-stone-300">
               Are you sure you want to delete this {itemType}?
             </p>
-            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 wrap-break-word">
+            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2 break-words">
               {itemName}
             </p>
             <p className="text-xs text-red-600 dark:text-red-400">
