@@ -65,6 +65,22 @@ model User {
   @@map("users")
 }
 
+// ─── Public site content ──────────────────────────────────
+// Overrides localized message strings without removing JSON fallbacks.
+
+model SiteContent {
+  id          String   @id @default(cuid())
+  namespace   String
+  key         String
+  translations Json    @default("{}")
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([namespace, key])
+  @@map("site_content")
+}
+
 // ─── Category ────────────────────────────────────────────
 // Translations stored as JSONB: { en?, ar?, am? }
 

@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 // Force dynamic so server action hashes never go stale after redeploy
 export const dynamic = "force-dynamic";
 import {
-  LayoutDashboard, Layers, BookOpen, FileText, Headphones, Upload, LogOut, Settings,
+  LayoutDashboard, Layers, BookOpen, FileText, Headphones, Upload, LogOut, Settings, Languages,
 } from "lucide-react";
 import { logout } from "@/server/auth/actions";
 
@@ -24,6 +24,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
     { href: "/admin/lessons", label: t("lessons"), icon: FileText },
     { href: "/admin/media", label: t("media"), icon: Headphones },
     { href: "/admin/import", label: t("imports"), icon: Upload },
+    { href: "/admin/site-content", label: "Website Content", icon: Languages },
     { href: "/admin/settings", label: t("settings"), icon: Settings },
   ];
 

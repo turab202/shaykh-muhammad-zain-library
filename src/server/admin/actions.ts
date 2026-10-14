@@ -520,6 +520,46 @@ export async function publishAllPending(): Promise<BulkPublishState> {
   return { published, skipped };
 }
 
+// ── Public website copy ──────────────────────────────────
+
+const SiteContentSchema = z.object({
+  namespace: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/).refine(
+    (value) => value !== "admin" && !["__proto__", "constructor", "prototype"].includes(value)
+  ),
+  key: z.string().min(1).max(160).regex(/^[a-zA-Z0-9_.-]+$/).refine(
+    (value) => !value.split(".").some((part) => ["__proto__", "constructor", "prototype"].includes(part))
+  ),
+  en: z.string().max(10000),
+  ar: z.string().max(10000),
+  am: z.string().max(10000),
+});
+
+export async function saveSiteContent(formData: FormData) {
+  await guard();
+  const data = SiteContentSchema.parse(Object.fromEntries(formData));
+  await prisma.siteContent.upsert({
+    where: { namespace_key: { namespace: data.namespace, key: data.key } },
+    update: { translations: { en: data.en, ar: data.ar, am: data.am }, isHidden: false },
+    create: {
+      namespace: data.namespace,
+      key: data.key,
+      translations: { en: data.en, ar: data.ar, am: data.am },
+    },
+  });
+  revalidatePath("/[locale]", "layout");
+}
+
+export async function deleteSiteContent(namespace: string, key: string) {
+  await guard();
+  const data = SiteContentSchema.pick({ namespace: true, key: true }).parse({ namespace, key });
+  await prisma.siteContent.upsert({
+    where: { namespace_key: data },
+    update: { isHidden: true },
+    create: { ...data, isHidden: true },
+  });
+  revalidatePath("/[locale]", "layout");
+}
+
 // ── Visibility Toggles ────────────────────────────────────
 
 export async function toggleBookVisibility(id: string, newStatus: string) {

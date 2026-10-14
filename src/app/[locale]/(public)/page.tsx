@@ -25,6 +25,7 @@ export default async function HomePage({ params }: Props) {
   const isRtl = isRtlLocale(locale as Locale);
 
   const tHero = await getTranslations({ locale, namespace: "hero" });
+  const tBrand = await getTranslations({ locale, namespace: "brand" });
   const tHome = await getTranslations({ locale, namespace: "home" });
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tActions = await getTranslations({ locale, namespace: "actions" });
@@ -53,7 +54,7 @@ export default async function HomePage({ params }: Props) {
               <span>{tHero("telegramNotice")}</span>
             </div>
             <h1 className="font-bold text-3xl sm:text-5xl lg:text-6xl text-emerald-950 dark:text-emerald-100 tracking-tight leading-tight mb-3">
-              مكتبة الشيخ محمد زين
+              {tBrand("arabic")}
             </h1>
             <h2 className="font-serif font-bold text-xl sm:text-2xl text-stone-800 dark:text-stone-200 tracking-normal mb-4">{tHero("tagline")}</h2>
             <p className="text-sm sm:text-base text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-8">{tHero("description")}</p>

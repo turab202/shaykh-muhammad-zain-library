@@ -8,6 +8,7 @@ import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditBookButton } from "@/components/admin/EditBookButton";
 import { UploadPdfButton } from "@/components/admin/UploadPdfButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
+import { UploadCoverButton } from "@/components/admin/UploadCoverButton";
 
 export default async function AdminBooksPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -53,11 +54,19 @@ export default async function AdminBooksPage({ params }: { params: Promise<{ loc
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden">
         <table className="w-full text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
-            <tr>{["Title", "Author", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>)}</tr>
+            <tr>{["Cover", "Title", "Author", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-            {books.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-stone-400">No books yet.</td></tr> : books.map((b) => (
+            {books.length === 0 ? <tr><td colSpan={7} className="px-4 py-6 text-center text-stone-400">No books yet.</td></tr> : books.map((b) => (
               <tr key={b.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
+                <td className="px-4 py-3">
+                  <UploadCoverButton
+                    bookId={b.id}
+                    bookSlug={b.slug}
+                    hasCover={!!b.coverImageKey}
+                    currentCoverUrl={b.coverImageKey ? `/api/media/b2/${b.coverImageKey.split("/").slice(3).join("/")}` : undefined}
+                  />
+                </td>
                 <td className="px-4 py-3 font-medium text-stone-800 dark:text-stone-200 max-w-[180px] truncate">{b.title}</td>
                 <td className="px-4 py-3 text-stone-500 italic max-w-[140px] truncate">{b.author ?? "—"}</td>
                 <td className="px-4 py-3 text-stone-500">{b.category?.name ?? "—"}</td>
