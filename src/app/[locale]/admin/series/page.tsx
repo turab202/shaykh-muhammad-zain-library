@@ -56,8 +56,8 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
         <button type="submit" className="px-4 py-2 bg-emerald-900 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 transition-colors cursor-pointer">Create Series</button>
       </form>
 
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden">
-        <table className="w-full text-xs">
+      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
+        <table className="w-full min-w-[680px] text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>)}</tr>
           </thead>

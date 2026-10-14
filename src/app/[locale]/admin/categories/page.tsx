@@ -39,8 +39,8 @@ export default async function AdminCategoriesPage({ params }: { params: Promise<
       </form>
 
       {/* Table */}
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-hidden">
-        <table className="w-full text-xs">
+      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
+        <table className="w-full min-w-[640px] text-xs">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
             <tr>
               {["Slug", "Name", "Lessons", "Series", "Books", "Actions"].map((h: string) => (

@@ -63,7 +63,7 @@ export default async function AdminMediaPage({ params }: { params: Promise<{ loc
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-emerald-700">{withAudio}</div>
           <div className="text-xs text-stone-500 mt-0.5 flex items-center justify-center gap-1">
