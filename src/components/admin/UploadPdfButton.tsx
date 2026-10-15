@@ -7,9 +7,10 @@ interface UploadPdfButtonProps {
   bookId: string;
   bookTitle: string;
   hasPdf: boolean;
+  compact?: boolean;
 }
 
-export function UploadPdfButton({ bookId, bookTitle, hasPdf }: UploadPdfButtonProps) {
+export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: UploadPdfButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus]   = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -58,8 +59,9 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf }: UploadPdfButtonPr
         type="button"
         disabled={status === "uploading"}
         onClick={() => inputRef.current?.click()}
-        title={`Upload PDF for ${bookTitle}`}
-        className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${
+        aria-label={`${hasPdf ? "Replace" : "Upload"} PDF for ${bookTitle}`}
+        title={`${hasPdf ? "Replace" : "Upload"} PDF for ${bookTitle}`}
+        className={`inline-flex items-center rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-8 justify-center" : "gap-1 px-2 py-1"} ${
           hasPdf
             ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700 hover:bg-amber-100"
             : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100"
@@ -74,7 +76,7 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf }: UploadPdfButtonPr
         ) : (
           <Upload className="w-3 h-3" />
         )}
-        {hasPdf ? "Replace PDF" : "Upload PDF"}
+        {!compact && (hasPdf ? "Replace PDF" : "Upload PDF")}
       </button>
       {message && (
         <span className={`text-[10px] max-w-[140px] leading-tight ${

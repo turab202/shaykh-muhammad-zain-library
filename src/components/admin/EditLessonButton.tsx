@@ -44,9 +44,10 @@ interface EditLessonButtonProps {
   seriesList: SeriesOption[];
   books: BookOption[];
   audioFiles: AudioOption[];
+  compact?: boolean;
 }
 
-export function EditLessonButton({ lesson, categories, seriesList, books, audioFiles }: EditLessonButtonProps) {
+export function EditLessonButton({ lesson, categories, seriesList, books, audioFiles, compact = false }: EditLessonButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -92,10 +93,12 @@ export function EditLessonButton({ lesson, categories, seriesList, books, audioF
         onClick={openModal}
         aria-label={`Edit ${lesson.title}`}
         title={`Edit ${lesson.title}`}
-        className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-stone-200 px-2.5 py-1.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+        className={compact
+          ? "inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+          : "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-stone-200 px-2.5 py-1.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"}
       >
         <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-        Edit
+        {!compact && "Edit"}
       </button>
 
       {open && (

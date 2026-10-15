@@ -8,6 +8,7 @@ interface ToggleVisibilityButtonProps {
   currentStatus: string; // "PUBLISHED" | "DRAFT" | "ARCHIVED"
   itemName: string;
   action: (id: string, newStatus: string) => Promise<void>;
+  compact?: boolean;
 }
 
 export function ToggleVisibilityButton({
@@ -15,6 +16,7 @@ export function ToggleVisibilityButton({
   currentStatus,
   itemName,
   action,
+  compact = false,
 }: ToggleVisibilityButtonProps) {
   const [status, setStatus] = useState(currentStatus);
   const [isPending, startTransition] = useTransition();
@@ -35,7 +37,8 @@ export function ToggleVisibilityButton({
       onClick={toggle}
       disabled={isPending}
       title={isVisible ? `Hide "${itemName}"` : `Show "${itemName}"`}
-      className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${
+      aria-label={isVisible ? `Hide ${itemName}` : `Show ${itemName}`}
+      className={`inline-flex items-center rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-8 justify-center" : "gap-1 px-2 py-1"} ${
         isVisible
           ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
           : "bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
@@ -48,7 +51,7 @@ export function ToggleVisibilityButton({
       ) : (
         <EyeOff className="w-3 h-3" />
       )}
-      {isVisible ? "Visible" : "Hidden"}
+      {!compact && (isVisible ? "Visible" : "Hidden")}
     </button>
   );
 }

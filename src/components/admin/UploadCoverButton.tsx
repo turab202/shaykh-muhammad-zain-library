@@ -8,6 +8,7 @@ interface UploadCoverButtonProps {
   bookSlug: string;
   hasCover: boolean;
   currentCoverUrl?: string;
+  compact?: boolean;
 }
 
 export function UploadCoverButton({
@@ -15,6 +16,7 @@ export function UploadCoverButton({
   bookSlug,
   hasCover,
   currentCoverUrl,
+  compact = false,
 }: UploadCoverButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus]   = useState<"idle" | "uploading" | "done" | "error">("idle");
@@ -59,7 +61,7 @@ export function UploadCoverButton({
   return (
     <div className="flex flex-col items-center gap-1.5">
       {/* Preview */}
-      <div className="relative w-12 h-16 rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 flex items-center justify-center cursor-pointer"
+      <div className={`relative w-12 h-16 rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 flex items-center justify-center cursor-pointer ${compact ? "hidden" : ""}`}
            onClick={() => inputRef.current?.click()}>
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -85,7 +87,9 @@ export function UploadCoverButton({
         type="button"
         disabled={status === "uploading"}
         onClick={() => inputRef.current?.click()}
-        className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors cursor-pointer disabled:opacity-60 ${
+        aria-label={`${hasCover ? "Change" : "Add"} cover for ${bookSlug}`}
+        title={`${hasCover ? "Change" : "Add"} cover for ${bookSlug}`}
+        className={`inline-flex items-center rounded text-[10px] font-medium transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-8 justify-center" : "gap-1 px-2 py-1"} ${
           hasCover
             ? "text-stone-500 hover:text-emerald-700 hover:bg-emerald-50"
             : "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100"
@@ -100,7 +104,7 @@ export function UploadCoverButton({
         ) : (
           <ImagePlus className="w-3 h-3" />
         )}
-        {hasCover ? "Change" : "Add Cover"}
+        {!compact && (hasCover ? "Change" : "Add Cover")}
       </button>
       {message && status === "error" && (
         <span className="text-[9px] text-red-500 max-w-[80px] text-center leading-tight">{message}</span>

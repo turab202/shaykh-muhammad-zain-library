@@ -61,29 +61,30 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
       </div>
 
       <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[900px] text-xs">
+        <table className="w-full min-w-[320px] table-fixed text-xs sm:min-w-[560px] lg:min-w-[900px]">
           <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
-            <tr>{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className="px-4 py-3 text-start font-semibold text-stone-600 dark:text-stone-400">{h}</th>)}</tr>
+            <tr>{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className={`px-2 py-3 text-start font-semibold text-stone-600 dark:text-stone-400 sm:px-4 ${h === "Order" ? "hidden sm:table-cell" : ["Category", "Lessons"].includes(h) ? "hidden lg:table-cell" : h === "Actions" ? "w-[112px] sm:w-auto" : h === "Status" ? "w-[64px] sm:w-auto" : ""}`}>{h}</th>)}</tr>
           </thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
             {seriesList.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-stone-400">No series yet.</td></tr> : seriesList.map((s) => (
               <tr key={s.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
-                <td className="px-4 py-3 font-mono text-stone-400">{s.order}</td>
-                <td className="px-4 py-3 font-medium text-stone-800 dark:text-stone-200 max-w-[200px] truncate">{s.title}</td>
-                <td className="px-4 py-3 text-stone-500">{s.category?.name ?? "—"}</td>
-                <td className="px-4 py-3 text-stone-500">{(s._count as { lessons: number }).lessons}</td>
-                <td className="px-4 py-3">
+                <td className="hidden px-4 py-3 font-mono text-stone-400 sm:table-cell">{s.order}</td>
+                <td className="max-w-[180px] truncate px-2 py-3 font-medium text-stone-800 dark:text-stone-200 sm:px-4">{s.title}</td>
+                <td className="hidden px-4 py-3 text-stone-500 lg:table-cell">{s.category?.name ?? "—"}</td>
+                <td className="hidden px-4 py-3 text-stone-500 lg:table-cell">{(s._count as { lessons: number }).lessons}</td>
+                <td className="w-[64px] px-2 py-3 sm:w-auto sm:px-4">
                   <ToggleVisibilityButton
                     id={s.id}
                     currentStatus={s.status}
                     itemName={s.title}
                     action={toggleSeriesVisibility}
+                    compact
                   />
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex min-w-[300px] flex-wrap items-center gap-2">
-                  <Link href={`/series/${s.slug}`} className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-blue-200 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
-                    <Eye className="h-3.5 w-3.5" aria-hidden="true" /> View
+                <td className="w-[112px] px-2 py-3 sm:w-auto sm:px-4">
+                  <div className="flex min-w-0 items-center justify-end gap-0 sm:justify-start sm:gap-2">
+                  <Link href={`/series/${s.slug}`} aria-label={`View ${s.title}`} title={`View ${s.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-blue-200 text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
+                    <Eye className="size-4" aria-hidden="true" />
                   </Link>
                   <EditSeriesButton
                     series={{
@@ -100,8 +101,9 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
                     }}
                     categories={categories}
                     books={books}
+                    compact
                   />
-                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Delete" itemName={s.title} itemType="series" />
+                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Delete" itemName={s.title} itemType="series" compact />
                   </div>
                 </td>
               </tr>
