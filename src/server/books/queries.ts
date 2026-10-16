@@ -79,7 +79,34 @@ export async function getPublishedBooks(locale: Locale, categoryId?: string): Pr
       media: { select: { storageKey: true, mediaType: true, filename: true, size: true } },
     },
   });
-  return rows.map((r) => toPublicBook(r, locale));
+
+  // Also count lessons that come via series (series.bookId = book.id)
+  // Many lessons have seriesId but not a direct bookId
+  const bookIds = rows.map((r) => r.id);
+  const seriesLessonCounts = bookIds.length
+    ? await prisma.series.findMany({
+        where: { bookId: { in: bookIds }, status: "PUBLISHED" },
+        select: {
+          bookId: true,
+          _count: { select: { lessons: { where: { status: "PUBLISHED" } } } },
+        },
+      })
+    : [];
+
+  // Build map: bookId → total lessons via series
+  const seriesCountMap = new Map<string, number>();
+  for (const s of seriesLessonCounts) {
+    if (!s.bookId) continue;
+    seriesCountMap.set(s.bookId, (seriesCountMap.get(s.bookId) ?? 0) + s._count.lessons);
+  }
+
+  return rows.map((r) => {
+    const book = toPublicBook(r, locale);
+    // Use the higher of direct count vs via-series count
+    const directCount = r._count?.lessons ?? 0;
+    const seriesCount = seriesCountMap.get(r.id) ?? 0;
+    return { ...book, lessonCount: Math.max(directCount, seriesCount) };
+  });
 }
 
 export async function getBookBySlug(slug: string, locale: Locale): Promise<PublicBook | null> {
@@ -92,5 +119,12 @@ export async function getBookBySlug(slug: string, locale: Locale): Promise<Publi
     },
   });
   if (!row) return null;
-  return toPublicBook(row, locale);
+
+  // Count lessons via series relationship (many lessons link via series, not direct bookId)
+  const seriesLessonCount = await prisma.lesson.count({
+    where: { status: "PUBLISHED", series: { bookId: row.id } },
+  });
+
+  const book = toPublicBook(row, locale);
+  return { ...book, lessonCount: Math.max(row._count?.lessons ?? 0, seriesLessonCount) };
 }

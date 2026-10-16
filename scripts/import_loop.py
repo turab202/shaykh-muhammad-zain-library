@@ -135,11 +135,7 @@ def main():
                 run(linker)
                 # Force-link any unlinked files (handles hash-suffix filenames)
                 run([py, str(ROOT / "scripts" / "force_link_all.py")])
-            # Move cursor backward by batch size
-            cursor = max(0, cursor - args.batch)
-            # Wait to let Telethon fully release the SQLite session lock
-            time.sleep(8)
-            # Move cursor backward by batch size
+            # Move cursor backward by batch size (only once)
             cursor = max(0, cursor - args.batch)
             # Wait to let Telethon fully release the SQLite session lock
             time.sleep(8)

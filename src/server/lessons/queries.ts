@@ -107,7 +107,10 @@ export async function getPublishedLessons(locale: Locale, filters?: LessonFilter
   if (filters?.sortBy === "oldest") orderBy = { publishedAt: "asc" };
   if (filters?.sortBy === "title") orderBy = { title: "asc" };
 
-  const rows = await prisma.lesson.findMany({ where, orderBy, include: INCLUDE });
+  // Limit to 500 per page to avoid massive payloads when no series filter is set
+  const take = filters?.take ?? (filters?.seriesId && filters.seriesId !== "all" ? undefined : 500);
+
+  const rows = await prisma.lesson.findMany({ where, orderBy, take, include: INCLUDE });
   return rows.map((r) => toPublicLesson(r as LessonRow, locale));
 }
 

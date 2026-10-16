@@ -169,6 +169,7 @@ export interface LessonFilters {
   bookId?: string;
   durationRange?: "all" | "short" | "medium" | "long";
   sortBy?: "newest" | "oldest" | "lesson_number" | "title";
+  take?: number;
 }
 
 export interface SearchResults {
