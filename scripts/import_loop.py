@@ -109,6 +109,11 @@ def main():
     max_failures = 5
     batch_num = 0
 
+    # Run force_link_all ONCE at startup to link any already-downloaded B2 files
+    if not args.no_media:
+        print("\nInitial B2 link pass (runs once at startup)...")
+        run([py, str(ROOT / "scripts" / "force_link_all.py")])
+
     while cursor > 0:
         batch_num += 1
 
@@ -133,8 +138,9 @@ def main():
             if not args.no_media:
                 print("\nLinking B2 files...")
                 run(linker)
-                # Force-link any unlinked files (handles hash-suffix filenames)
-                run([py, str(ROOT / "scripts" / "force_link_all.py")])
+                # Force-link only every 10 batches to avoid hammering B2
+                if batch_num % 10 == 0:
+                    run([py, str(ROOT / "scripts" / "force_link_all.py")])
             # Move cursor backward by batch size (only once)
             cursor = max(0, cursor - args.batch)
             # Wait to let Telethon fully release the SQLite session lock
@@ -152,6 +158,7 @@ def main():
     print(f"\nDone! Final: {get_stats()}")
     if not args.no_media:
         run(linker)
+        run([py, str(ROOT / "scripts" / "force_link_all.py")])
 
 if __name__ == "__main__":
     main()
