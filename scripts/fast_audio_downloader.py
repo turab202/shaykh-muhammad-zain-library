@@ -119,9 +119,71 @@ async def download_audio(limit: int):
 
     # Process messages in batches of 50 by message ID
     msg_ids_list = sorted(msg_ids_needed)
-    print(f"\nDownloading {len(msg_ids_list)} audio files...\n")
+    print(f"\nDownloading {len(msg_ids_list)} audio files...\n", flush=True)
 
-    # Fetch messages in chunks of 50 (Telegram API limit per request)
+    semaphore = asyncio.Semaphore(3)  # 3 concurrent downloads
+
+    async def download_one(msg):
+        nonlocal downloaded, failed, skipped
+        if msg is None:
+            skipped += 1
+            return
+
+        msg_id = msg.id
+        if msg_id not in msg_lookup:
+            skipped += 1
+            return
+
+        lesson_id, _, filename, slug = msg_lookup[msg_id]
+
+        if not msg.document and not msg.audio:
+            skipped += 1
+            return
+
+        doc = msg.document or msg.audio
+        if not doc:
+            skipped += 1
+            return
+
+        print(f"  ↓ [{downloaded+failed+skipped+1}/{len(msg_ids_list)}] msgId={msg_id} {str(filename)[:45]}", flush=True)
+
+        async with semaphore:
+            try:
+                with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                    tmp_path = tmp.name
+
+                await client.download_media(msg, tmp_path)
+
+                file_size = os.path.getsize(tmp_path)
+                duration = 0
+                try:
+                    audio_info = MutagenFile(tmp_path)
+                    if audio_info and hasattr(audio_info.info, 'length'):
+                        duration = int(audio_info.info.length)
+                except Exception:
+                    pass
+
+                fn = str(filename)
+                storage_key = storage.save(
+                    source_path=tmp_path,
+                    original_filename=fn,
+                    mime_type="audio/mpeg",
+                )
+                os.unlink(tmp_path)
+
+                if save_audio_record(lesson_id, fn, storage_key, file_size, duration):
+                    downloaded += 1
+                    print(f"    ✓ {fn[:40]} ({file_size//1024}KB, {duration}s)", flush=True)
+                else:
+                    failed += 1
+
+            except Exception as e:
+                print(f"    ✗ msgId={msg_id} Error: {e}", flush=True)
+                failed += 1
+                try: os.unlink(tmp_path)
+                except Exception: pass
+
+    # Fetch messages in chunks of 50, download concurrently within each chunk
     chunk_size = 50
     for i in range(0, len(msg_ids_list), chunk_size):
         chunk = msg_ids_list[i:i + chunk_size]
@@ -129,96 +191,26 @@ async def download_audio(limit: int):
         try:
             messages = await client.get_messages(entity, ids=chunk)
         except Exception as e:
-            print(f"  Error fetching chunk {i//chunk_size + 1}: {e}")
+            print(f"  Error fetching chunk {i//chunk_size + 1}: {e}", flush=True)
             failed += len(chunk)
             await asyncio.sleep(5)
             continue
 
-        for msg in messages:
-            if msg is None:
-                skipped += 1
-                continue
+        # Download all messages in this chunk concurrently
+        tasks = [download_one(msg) for msg in messages]
+        await asyncio.gather(*tasks)
 
-            msg_id = msg.id
-            if msg_id not in msg_lookup:
-                skipped += 1
-                continue
+        total_done = downloaded + failed + skipped
+        print(f"\n  ── Chunk {i//chunk_size + 1}: {downloaded} downloaded | {failed} failed | {skipped} skipped | {len(msg_ids_list)-total_done} remaining ──\n", flush=True)
 
-            lesson_id, _, filename, slug = msg_lookup[msg_id]
-
-            # Check if message has audio
-            if not msg.document and not msg.audio:
-                print(f"  skip msgId={msg_id}: no audio in message")
-                skipped += 1
-                continue
-
-            doc = msg.document or msg.audio
-            if not doc:
-                skipped += 1
-                continue
-
-            print(f"  ↓ msgId={msg_id} {str(filename)[:50]}")
-
-            try:
-                with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
-                    tmp_path = tmp.name
-
-                await client.download_media(msg, tmp_path)
-
-                # Get file info
-                file_size = os.path.getsize(tmp_path)
-                duration = 0
-                try:
-                    audio = MutagenFile(tmp_path)
-                    if audio and hasattr(audio.info, 'length'):
-                        duration = int(audio.info.length)
-                except Exception:
-                    pass
-
-                # Upload to B2
-                year = time.strftime('%Y')
-                fn = str(filename)
-                safe_fn = fn.replace(' ', '_')
-                # Use storage.save() which handles the key generation
-                storage_key = storage.save(
-                    source_path=tmp_path,
-                    original_filename=fn,
-                    mime_type="audio/mpeg",
-                )
-
-                os.unlink(tmp_path)
-
-                # Save to DB
-                if save_audio_record(lesson_id, fn, storage_key, file_size, duration):
-                    downloaded += 1
-                    print(f"    ✓ {storage_key[:55]} ({file_size//1024}KB, {duration}s)")
-                else:
-                    failed += 1
-
-            except Exception as e:
-                print(f"    ✗ Error: {e}")
-                failed += 1
-                try:
-                    os.unlink(tmp_path)
-                except Exception:
-                    pass
-
-            # Brief pause to avoid hitting Telegram rate limits
-            await asyncio.sleep(1.5)
-
-        # Progress report after each chunk
-        print(f"\n  Progress: {downloaded} downloaded, {failed} failed, {skipped} skipped")
-        print(f"  Remaining: {len(msg_ids_list) - i - len(chunk)}")
-
-        # Longer pause between chunks
+        # Brief pause between chunks
         if i + chunk_size < len(msg_ids_list):
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
 
     await client.disconnect()
 
-    print(f"\n{'='*55}")
-    print(f"DONE: {downloaded} downloaded, {failed} failed, {skipped} skipped")
-    print(f"Total audio lessons now: {downloaded + 608}")
+    print(f"\n{'='*55}", flush=True)
+    print(f"DONE: {downloaded} downloaded, {failed} failed, {skipped} skipped", flush=True)
 
 
 def main():
