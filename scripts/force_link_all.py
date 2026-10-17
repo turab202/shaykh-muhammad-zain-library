@@ -101,6 +101,14 @@ for b2_key, size in b2_files.items():
         no_match += 1
         continue
 
+    # Keep DB connection alive every 50 files
+    if (created + skipped + no_match) % 50 == 0:
+        try:
+            cur.execute("SELECT 1")
+        except Exception:
+            conn = connect()
+            cur = conn.cursor()
+
     # Create media record
     media_id = f"c{int(time.time()*1000):x}{secrets.token_urlsafe(8)}"[:25]
     try:
