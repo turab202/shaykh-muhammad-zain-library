@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { getSeriesBySlug } from "@/server/series/queries";
+import Image from "next/image";
 
 export const revalidate = 600;
 
@@ -50,7 +51,18 @@ export default async function SeriesDetailPage({ params }: Props) {
       <div className="bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/90 dark:border-stone-800/90 rounded-2xl overflow-hidden shadow-sm mb-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 sm:p-8 items-center">
           <div className="md:col-span-4 relative aspect-[4/3] rounded-xl overflow-hidden bg-emerald-900/10 dark:bg-emerald-400/10 flex items-center justify-center shadow-sm">
-            <Layers className="w-12 h-12 text-emerald-800/20 dark:text-emerald-400/20" aria-hidden="true" />
+            {series.coverImageUrl ? (
+              <Image
+                src={series.coverImageUrl}
+                alt={`${series.title} cover`}
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <Layers className="w-12 h-12 text-emerald-800/20 dark:text-emerald-400/20" aria-hidden="true" />
+            )}
           </div>
           <div className="md:col-span-8 flex flex-col justify-between">
             <div>

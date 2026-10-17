@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import { storageKeyToUrl } from "@/lib/media-url";
 import type { Locale } from "@/types/i18n";
 import type { PublicSeries } from "@/types/library";
 
@@ -32,7 +33,7 @@ function toPublicSeries(
     slug: row.slug,
     title: resolveJson(row.translations, locale) ?? row.title,
     description: resolveJson(row.descTranslations, locale) ?? row.description ?? undefined,
-    coverImageUrl: row.coverImageKey ?? undefined,
+    coverImageUrl: storageKeyToUrl(row.coverImageKey),
     categoryId: row.categoryId ?? undefined,
     categoryName: row.category ? (resolveJson(row.category.translations, locale) ?? row.category.name) : undefined,
     bookId: row.bookId ?? undefined,

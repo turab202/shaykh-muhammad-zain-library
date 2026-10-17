@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "@/i18n/navigation";
+import Image from "next/image";
 import { Layers, Clock, BookOpen } from "lucide-react";
 import type { PublicSeries } from "@/types/library";
 
@@ -23,12 +24,22 @@ export function SeriesCard({ series, duruusLabel }: SeriesCardProps) {
       href={`/series/${series.slug}`}
       className="group flex flex-col bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border border-stone-200/80 dark:border-stone-800/80 rounded-xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-sm transition-all"
     >
-      {/* Cover placeholder — replaced by real image once Media is wired */}
       <div className="relative aspect-video w-full bg-emerald-900/10 dark:bg-emerald-400/10 flex items-center justify-center overflow-hidden">
-        <Layers
-          className="w-10 h-10 text-emerald-800/30 dark:text-emerald-400/30 group-hover:scale-105 transition-transform duration-300"
-          aria-hidden="true"
-        />
+        {series.coverImageUrl ? (
+          <Image
+            src={series.coverImageUrl}
+            alt={`${series.title} cover`}
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            unoptimized
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <Layers
+            className="w-10 h-10 text-emerald-800/30 dark:text-emerald-400/30 group-hover:scale-105 transition-transform duration-300"
+            aria-hidden="true"
+          />
+        )}
         {/* Overlay badges */}
         <div className="absolute bottom-2.5 inset-x-3 flex items-center justify-between text-[11px] text-stone-600 dark:text-stone-400 font-medium">
           {series.categoryName && (
@@ -75,5 +86,4 @@ export function SeriesCard({ series, duruusLabel }: SeriesCardProps) {
     </Link>
   );
 }
-
 

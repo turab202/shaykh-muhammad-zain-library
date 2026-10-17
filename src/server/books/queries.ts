@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import { storageKeyToUrl } from "@/lib/media-url";
 import type { Locale } from "@/types/i18n";
 import type { PublicBook, TableOfContentsItem } from "@/types/library";
 
@@ -16,18 +17,6 @@ function parseToc(json: unknown, locale: Locale): TableOfContentsItem[] {
     title: resolveJson({ en: String(item.title ?? ""), ar: String(item.titleAr ?? "") }, locale) ?? String(item.title ?? ""),
     lessonId: item.lessonId ? String(item.lessonId) : undefined,
   }));
-}
-
-function storageKeyToUrl(key: string | undefined | null): string | undefined {
-  if (!key) return undefined;
-  if (key.startsWith("http://") || key.startsWith("https://")) return key;
-  // B2 key: s3://bucket/path → /api/media/b2/path (redirect to pre-signed URL)
-  // For PDFs we use the redirect (not presign JSON) since PDFs are opened in new tab
-  if (key.startsWith("s3://")) {
-    const objectKey = key.split("/").slice(3).join("/");
-    return `/api/media/b2/${objectKey}`;
-  }
-  return `/api/media/${key}`;
 }
 
 function toPublicBook(

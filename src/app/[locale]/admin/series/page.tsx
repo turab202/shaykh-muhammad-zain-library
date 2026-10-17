@@ -7,6 +7,7 @@ import { createSeries, deleteSeries, toggleSeriesVisibility } from "@/server/adm
 import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditSeriesButton } from "@/components/admin/EditSeriesButton";
+import { UploadSeriesCoverButton } from "@/components/admin/UploadSeriesCoverButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
 import { Layers, BookOpen, Eye, Clock3 } from "lucide-react";
@@ -109,10 +110,11 @@ function SeriesStatus({ status }: { status: string }) {
   return <span className={`rounded-full px-2 py-1 text-[9px] font-semibold ${styles}`}>{status === "ARCHIVED" ? "Hidden" : status === "PUBLISHED" ? "Published" : "Draft"}</span>;
 }
 
-function SeriesActions({ item, categories, books }: { item: { id: string; slug: string; title: string; translations: unknown; description: string | null; descTranslations: unknown; order: number; status: string; categoryId: string | null; bookId: string | null }; categories: { id: string; name: string }[]; books: { id: string; title: string }[] }) {
+function SeriesActions({ item, categories, books }: { item: { id: string; slug: string; title: string; translations: unknown; description: string | null; descTranslations: unknown; order: number; status: string; categoryId: string | null; bookId: string | null; coverImageKey: string | null }; categories: { id: string; name: string }[]; books: { id: string; title: string }[] }) {
   return <div className="flex items-center gap-1.5">
     <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} compact />
     <Link href={`/series/${item.slug}`} aria-label={`View ${item.title}`} title={`View ${item.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
+    <UploadSeriesCoverButton seriesId={item.id} seriesSlug={item.slug} hasCover={!!item.coverImageKey} compact />
     <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} compact />
     <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" compact />
   </div>;
