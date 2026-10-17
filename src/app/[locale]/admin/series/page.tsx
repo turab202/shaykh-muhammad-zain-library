@@ -3,32 +3,35 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { Eye } from "lucide-react";
 import { createSeries, deleteSeries, toggleSeriesVisibility } from "@/server/admin/actions";
 import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditSeriesButton } from "@/components/admin/EditSeriesButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
+import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
+import { Layers, BookOpen, Eye, Clock3 } from "lucide-react";
 
-export default async function AdminSeriesPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AdminSeriesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
   try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
+  const query = (await searchParams).q?.trim() ?? "";
 
-  const [seriesList, categories, books] = await Promise.all([
-    prisma.series.findMany({ orderBy: { order: "asc" }, include: { category: { select: { name: true } }, _count: { select: { lessons: true } } } }),
+  const [seriesList, categories, books, total, published, drafts, linkedBooks] = await Promise.all([
+    prisma.series.findMany({ where: query ? { OR: [{ title: { contains: query, mode: "insensitive" } }, { slug: { contains: query, mode: "insensitive" } }] } : undefined, orderBy: { order: "asc" }, include: { category: { select: { name: true } }, _count: { select: { lessons: true } } } }),
     prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     prisma.book.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    prisma.series.count(),
+    prisma.series.count({ where: { status: "PUBLISHED" } }),
+    prisma.series.count({ where: { status: "DRAFT" } }),
+    prisma.series.count({ where: { bookId: { not: null } } }),
   ]);
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("series")}</h1>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{seriesList.length} series in the catalog</p>
-        </div>
-        <CreateDialog title="Add Series" submitLabel="Create series" action={createSeries}>
+    <div className="mx-auto max-w-360 space-y-4">
+      <AdminPageHeading title={t("series")} description={`Organize lessons into collections · ${total} series`} icon={Layers}
+        action={
+          <CreateDialog title="Add Series" submitLabel="Create series" action={createSeries} triggerClassName="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-800 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <F name="slug" label="Slug" required />
             <F name="title" label="English Title" required />
@@ -57,62 +60,62 @@ export default async function AdminSeriesPage({ params }: { params: Promise<{ lo
               </select>
             </div>
           </div>
-        </CreateDialog>
+          </CreateDialog>
+        }
+      />
+
+      <AdminSummaryGrid items={[
+        { label: "Total series", value: total, icon: Layers },
+        { label: "Published", value: published, icon: Eye },
+        { label: "Draft", value: drafts, icon: Clock3, tone: "blue" },
+        { label: "Linked to a book", value: linkedBooks, icon: BookOpen, tone: "amber" },
+      ]} />
+
+      <form method="get" className="flex flex-col gap-2 sm:flex-row">
+        <input name="q" defaultValue={query} placeholder="Search series title or slug..." className="h-10 min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+        <button className="h-10 rounded-md border border-stone-200 bg-white px-4 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Search</button>
+      </form>
+
+      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 md:block">
+        <div className="overflow-x-auto"><table className="w-full min-w-200 text-left text-xs">
+          <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((heading) => <th key={heading} className="px-3 py-2.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+            {seriesList.map((item) => <tr key={item.id} className="transition-colors hover:bg-stone-50/80 dark:hover:bg-stone-800/30">
+              <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{item.order}</td>
+              <td className="max-w-72 px-3 py-3"><p className="truncate text-[11px] font-semibold text-stone-800 dark:text-stone-100" title={item.title}>{item.title}</p><p className="mt-0.5 truncate font-mono text-[9px] text-stone-400">{item.slug}</p></td>
+              <td className="px-3 py-3 text-[10px] text-stone-500">{item.category?.name ?? "—"}</td>
+              <td className="px-3 py-3 text-[10px] tabular-nums text-stone-600 dark:text-stone-300">{item._count.lessons}</td>
+              <td className="px-3 py-3"><SeriesStatus status={item.status} /></td>
+              <td className="px-3 py-2"><SeriesActions item={item} categories={categories} books={books} /></td>
+            </tr>)}
+            {seriesList.length === 0 && <tr><td colSpan={6} className="px-4 py-12 text-center text-xs text-stone-500">{query ? "No series match your search." : "No series yet."}</td></tr>}
+          </tbody>
+        </table></div>
       </div>
 
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[320px] table-fixed text-xs sm:min-w-[560px] lg:min-w-[900px]">
-          <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
-            <tr>{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((h) => <th key={h} className={`px-2 py-3 text-start font-semibold text-stone-600 dark:text-stone-400 sm:px-4 ${h === "Order" ? "hidden sm:table-cell" : ["Category", "Lessons"].includes(h) ? "hidden lg:table-cell" : h === "Actions" ? "w-[112px] sm:w-auto" : h === "Status" ? "w-[64px] sm:w-auto" : ""}`}>{h}</th>)}</tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-            {seriesList.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-center text-stone-400">No series yet.</td></tr> : seriesList.map((s) => (
-              <tr key={s.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
-                <td className="hidden px-4 py-3 font-mono text-stone-400 sm:table-cell">{s.order}</td>
-                <td className="max-w-[180px] truncate px-2 py-3 font-medium text-stone-800 dark:text-stone-200 sm:px-4">{s.title}</td>
-                <td className="hidden px-4 py-3 text-stone-500 lg:table-cell">{s.category?.name ?? "—"}</td>
-                <td className="hidden px-4 py-3 text-stone-500 lg:table-cell">{(s._count as { lessons: number }).lessons}</td>
-                <td className="w-[64px] px-2 py-3 sm:w-auto sm:px-4">
-                  <ToggleVisibilityButton
-                    id={s.id}
-                    currentStatus={s.status}
-                    itemName={s.title}
-                    action={toggleSeriesVisibility}
-                    compact
-                  />
-                </td>
-                <td className="w-[112px] px-2 py-3 sm:w-auto sm:px-4">
-                  <div className="flex min-w-0 items-center justify-end gap-0 sm:justify-start sm:gap-2">
-                  <Link href={`/series/${s.slug}`} aria-label={`View ${s.title}`} title={`View ${s.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-blue-200 text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
-                    <Eye className="size-4" aria-hidden="true" />
-                  </Link>
-                  <EditSeriesButton
-                    series={{
-                      id: s.id,
-                      slug: s.slug,
-                      title: s.title,
-                      translations: (s.translations as Record<string, string>) ?? {},
-                      description: s.description ?? null,
-                      descTranslations: (s.descTranslations as Record<string, string>) ?? {},
-                      order: s.order,
-                      status: s.status,
-                      categoryId: s.categoryId ?? null,
-                      bookId: s.bookId ?? null,
-                    }}
-                    categories={categories}
-                    books={books}
-                    compact
-                  />
-                  <DeleteButton action={deleteSeries.bind(null, s.id)} label="Delete" itemName={s.title} itemType="series" compact />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-2.5 md:hidden">
+        {seriesList.map((item) => <article key={item.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-xs font-semibold text-stone-800 dark:text-stone-100">{item.title}</p><p className="mt-1 truncate font-mono text-[9px] text-stone-500">{item.slug} · order {item.order}</p></div><SeriesActions item={item} categories={categories} books={books} /></div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-stone-100 pt-2.5 dark:border-stone-800"><span className="text-[10px] text-stone-500">{item.category?.name ?? "Uncategorized"}</span><span className="text-[10px] text-stone-500">{item._count.lessons} lessons</span><SeriesStatus status={item.status} /></div>
+        </article>)}
+        {seriesList.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No series match your search." : "No series yet."}</p>}
       </div>
     </div>
   );
+}
+
+function SeriesStatus({ status }: { status: string }) {
+  const styles = status === "PUBLISHED" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200" : status === "ARCHIVED" ? "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200" : "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200";
+  return <span className={`rounded-full px-2 py-1 text-[9px] font-semibold ${styles}`}>{status === "ARCHIVED" ? "Hidden" : status === "PUBLISHED" ? "Published" : "Draft"}</span>;
+}
+
+function SeriesActions({ item, categories, books }: { item: { id: string; slug: string; title: string; translations: unknown; description: string | null; descTranslations: unknown; order: number; status: string; categoryId: string | null; bookId: string | null }; categories: { id: string; name: string }[]; books: { id: string; title: string }[] }) {
+  return <div className="flex items-center gap-1.5">
+    <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} compact />
+    <Link href={`/series/${item.slug}`} aria-label={`View ${item.title}`} title={`View ${item.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
+    <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} compact />
+    <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" compact />
+  </div>;
 }
 
 function F({ name, label, required }: { name: string; label: string; required?: boolean }) {

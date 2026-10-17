@@ -29,8 +29,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
-      <div className="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center gap-3">
+    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+      <div className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 dark:border-stone-800 sm:px-5">
         <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center shrink-0">
           <Icon className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
         </div>
@@ -39,7 +39,7 @@ function SectionCard({
           {description && <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">{description}</p>}
         </div>
       </div>
-      <div className="px-6 py-5">{children}</div>
+      <div className="px-4 py-4 sm:px-5 sm:py-5">{children}</div>
     </div>
   );
 }
@@ -314,7 +314,7 @@ export function AdminUserList({
       {users.length === 0 ? (
         <p className="text-sm text-stone-400">No admin users found.</p>
       ) : (
-        <ul className="divide-y divide-stone-100 dark:divide-stone-800 -mx-6">
+        <ul className="-mx-4 divide-y divide-stone-100 dark:divide-stone-800 sm:-mx-5">
           {users.map((u) => (
             <AdminUserRow key={u.id} user={u} isSelf={u.id === currentUserId} />
           ))}
@@ -337,7 +337,7 @@ function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
     : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400";
 
   return (
-    <li className="flex flex-wrap items-center gap-3 px-6 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/30 sm:flex-nowrap sm:gap-4">
+    <li className="flex flex-wrap items-center gap-2 px-4 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/30 sm:flex-nowrap sm:gap-4 sm:px-5">
       {/* Avatar */}
       <div className="w-8 h-8 rounded-full bg-emerald-900 dark:bg-emerald-800 text-amber-100 flex items-center justify-center text-xs font-bold shrink-0">
         {initials}

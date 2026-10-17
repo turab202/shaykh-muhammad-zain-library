@@ -9,9 +9,10 @@ interface CreateDialogProps {
   submitLabel: string;
   action: (formData: FormData) => Promise<void>;
   children: ReactNode;
+  triggerClassName?: string;
 }
 
-export function CreateDialog({ title, submitLabel, action, children }: CreateDialogProps) {
+export function CreateDialog({ title, submitLabel, action, children, triggerClassName }: CreateDialogProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,7 +50,7 @@ export function CreateDialog({ title, submitLabel, action, children }: CreateDia
       <button
         type="button"
         onClick={openDialog}
-        className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-emerald-900 px-3.5 py-2 text-xs font-semibold text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+        className={triggerClassName ?? "inline-flex min-h-9 items-center gap-2 rounded-lg bg-emerald-900 px-3.5 py-2 text-xs font-semibold text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"}
       >
         <Plus className="h-4 w-4" aria-hidden="true" />
         {title}

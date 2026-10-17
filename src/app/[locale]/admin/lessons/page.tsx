@@ -3,18 +3,26 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { Eye, EyeOff } from "lucide-react";
 import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditLessonButton } from "@/components/admin/EditLessonButton";
+import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
+import { FileText, Eye, Clock3, Archive, EyeOff } from "lucide-react";
 
-export default async function AdminLessonsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function AdminLessonsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
   try { await requireSession(); } catch { redirect(`/${locale}/login`); }
   const t = await getTranslations({ locale, namespace: "admin" });
+  const query = (await searchParams).q?.trim() ?? "";
 
-  const [lessons, categories, seriesList, books, audioFiles] = await Promise.all([
+  const [lessons, categories, seriesList, books, audioFiles, total, published, drafts, archived] = await Promise.all([
     prisma.lesson.findMany({
+      where: query ? { OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { slug: { contains: query, mode: "insensitive" } },
+        { series: { is: { title: { contains: query, mode: "insensitive" } } } },
+        { category: { is: { name: { contains: query, mode: "insensitive" } } } },
+      ] } : undefined,
       orderBy: [{ seriesId: "asc" }, { lessonNumber: "asc" }],
       include: {
         series: { select: { title: true, slug: true } },
@@ -42,99 +50,76 @@ export default async function AdminLessonsPage({ params }: { params: Promise<{ l
         lesson: { select: { title: true } },
       },
     }),
+    prisma.lesson.count(),
+    prisma.lesson.count({ where: { status: "PUBLISHED" } }),
+    prisma.lesson.count({ where: { status: "DRAFT" } }),
+    prisma.lesson.count({ where: { status: "ARCHIVED" } }),
   ]);
 
-  const statusColor: Record<string, string> = {
-    PUBLISHED: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
-    DRAFT: "bg-stone-100 dark:bg-stone-800 text-stone-500",
-    ARCHIVED: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400",
-  };
+  const editorAudioFiles = audioFiles.map((media) => ({
+    id: media.id,
+    filename: media.filename,
+    size: media.size,
+    duration: media.duration,
+    lessonId: media.lessonId,
+    lessonTitle: media.lesson?.title ?? null,
+  }));
+
+  function LessonActions({ lesson }: { lesson: (typeof lessons)[number] }) {
+    return <div className="flex items-center gap-1.5">
+      {lesson.status !== "PUBLISHED" ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Publish ${lesson.title}`} title={`Publish ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"><Eye className="size-4" aria-hidden="true" /></button></form> : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Unpublish ${lesson.title}`} title={`Unpublish ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"><EyeOff className="size-4" aria-hidden="true" /></button></form>}
+      <Link href={`/duruus/${lesson.slug}`} aria-label={`View ${lesson.title}`} title={`View ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
+      <EditLessonButton lesson={{ id: lesson.id, slug: lesson.slug, title: lesson.title, translations: (lesson.translations as Record<string, string>) ?? {}, description: lesson.description ?? null, descTranslations: (lesson.descTranslations as Record<string, string>) ?? {}, lessonNumber: lesson.lessonNumber ?? null, duration: lesson.duration ?? null, status: lesson.status, publishedAt: lesson.publishedAt?.toISOString() ?? null, categoryId: lesson.categoryId ?? null, seriesId: lesson.seriesId ?? null, bookId: lesson.bookId ?? null, audioMediaId: lesson.media[0]?.id ?? null }} categories={categories} seriesList={seriesList} books={books} audioFiles={editorAudioFiles} compact />
+      <DeleteButton action={deleteLesson.bind(null, lesson.id)} itemName={lesson.title} itemType="lesson" compact />
+    </div>;
+  }
 
   return (
-    <div className="max-w-6xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("lessons")}</h1>
-        <span className="text-sm text-stone-500">{lessons.length} total</span>
+    <div className="mx-auto max-w-360 space-y-4">
+      <AdminPageHeading title={t("lessons")} description={`Manage lesson metadata and publication · ${total} lessons`} icon={FileText} />
+      <AdminSummaryGrid items={[
+        { label: "Total lessons", value: total, icon: FileText },
+        { label: "Published", value: published, icon: Eye },
+        { label: "Draft", value: drafts, icon: Clock3, tone: "blue" },
+        { label: "Archived", value: archived, icon: Archive, tone: "amber" },
+      ]} />
+      <form method="get" className="flex flex-col gap-2 sm:flex-row">
+        <input name="q" defaultValue={query} placeholder="Search lesson title, series, or category..." className="h-10 min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+        <button className="h-10 rounded-md border border-stone-200 bg-white px-4 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Search</button>
+      </form>
+
+      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
+        <div className="overflow-x-auto"><table className="w-full min-w-225 text-left text-xs">
+          <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((heading) => <th key={heading} className="px-3 py-2.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+            {lessons.map((lesson) => <tr key={lesson.id} className="transition-colors hover:bg-stone-50/80 dark:hover:bg-stone-800/30">
+              <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{lesson.lessonNumber ?? "—"}</td>
+              <td className="max-w-80 px-3 py-3"><p className="truncate text-[11px] font-semibold text-stone-800 dark:text-stone-100" title={lesson.title}>{lesson.title}</p><p className="mt-0.5 truncate text-[9px] text-stone-400">{lesson.slug}</p></td>
+              <td className="max-w-44 truncate px-3 py-3 text-[10px] text-stone-500">{lesson.series?.title ?? "—"}</td>
+              <td className="px-3 py-3 text-[10px] text-stone-500">{lesson.category?.name ?? "—"}</td>
+              <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{lesson.duration ? `${Math.floor(lesson.duration / 60)}m` : "—"}</td>
+              <td className="px-3 py-3"><LessonStatus status={lesson.status} /></td>
+              <td className="px-3 py-2"><LessonActions lesson={lesson} /></td>
+            </tr>)}
+            {lessons.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-xs text-stone-500">{query ? "No lessons match your search." : "No lessons yet."}</td></tr>}
+          </tbody>
+        </table></div>
       </div>
 
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[320px] table-fixed text-xs sm:min-w-[520px] lg:min-w-[900px]">
-          <thead className="bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-800">
-            <tr>
-              {["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((h) => (
-                <th key={h} className={`px-2 py-3 text-start font-semibold text-stone-600 dark:text-stone-400 sm:px-4 ${h === "#" ? "hidden sm:table-cell" : ["Series", "Category", "Duration"].includes(h) ? "hidden lg:table-cell" : h === "Actions" ? "w-[144px] sm:w-auto" : h === "Status" ? "w-[64px] sm:w-auto" : ""}`}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-            {lessons.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-stone-400">No lessons yet. Run <code className="bg-stone-100 dark:bg-stone-800 px-1 rounded">npm run db:seed</code> to add sample data.</td></tr>
-            ) : lessons.map((l) => (
-              <tr key={l.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
-                <td className="hidden px-4 py-3 font-mono text-stone-400 sm:table-cell">{l.lessonNumber ?? "—"}</td>
-                <td className="max-w-[160px] truncate px-2 py-3 font-medium text-stone-800 dark:text-stone-200 sm:max-w-[220px] sm:px-4">{l.title}</td>
-                <td className="hidden max-w-[150px] truncate px-4 py-3 text-stone-500 lg:table-cell">{l.series?.title ?? "—"}</td>
-                <td className="hidden px-4 py-3 text-stone-500 lg:table-cell">{l.category?.name ?? "—"}</td>
-                <td className="hidden px-4 py-3 font-mono text-stone-400 lg:table-cell">{l.duration ? `${Math.floor(l.duration / 60)}m` : "—"}</td>
-                <td className="w-[64px] px-2 py-3 sm:w-auto sm:px-4">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${statusColor[l.status] ?? ""}`}>{l.status}</span>
-                </td>
-                <td className="w-[144px] px-2 py-3 sm:w-auto sm:px-4">
-                  <div className="flex min-w-0 items-center justify-end gap-0 sm:justify-start sm:gap-2">
-                  {l.status !== "PUBLISHED" ? (
-                    <form action={publishLesson.bind(null, l.id)} className="inline">
-                      <button type="submit" aria-label={`Publish ${l.title}`} title={`Publish ${l.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
-                        <Eye className="size-4" aria-hidden="true" />
-                      </button>
-                    </form>
-                  ) : (
-                    <form action={unpublishLesson.bind(null, l.id)} className="inline">
-                      <button type="submit" aria-label={`Unpublish ${l.title}`} title={`Unpublish ${l.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
-                        <EyeOff className="size-4" aria-hidden="true" />
-                      </button>
-                    </form>
-                  )}
-                  <Link href={`/duruus/${l.slug}`} aria-label={`View ${l.title}`} title={`View ${l.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-blue-200 text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40">
-                    <Eye className="size-4" aria-hidden="true" />
-                  </Link>
-                  <EditLessonButton
-                    lesson={{
-                      id: l.id,
-                      slug: l.slug,
-                      title: l.title,
-                      translations: (l.translations as Record<string, string>) ?? {},
-                      description: l.description ?? null,
-                      descTranslations: (l.descTranslations as Record<string, string>) ?? {},
-                      lessonNumber: l.lessonNumber ?? null,
-                      duration: l.duration ?? null,
-                      status: l.status,
-                      publishedAt: l.publishedAt ? l.publishedAt.toISOString() : null,
-                      categoryId: l.categoryId ?? null,
-                      seriesId: l.seriesId ?? null,
-                      bookId: l.bookId ?? null,
-                      audioMediaId: l.media[0]?.id ?? null,
-                    }}
-                    categories={categories}
-                    seriesList={seriesList}
-                    books={books}
-                    audioFiles={audioFiles.map((media) => ({
-                      id: media.id,
-                      filename: media.filename,
-                      size: media.size,
-                      duration: media.duration,
-                      lessonId: media.lessonId,
-                      lessonTitle: media.lesson?.title ?? null,
-                    }))}
-                    compact
-                  />
-                  <DeleteButton action={deleteLesson.bind(null, l.id)} label="Delete" itemName={l.title} itemType="lesson" compact />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="space-y-2.5 lg:hidden">
+        {lessons.map((lesson) => <article key={lesson.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-xs font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-[9px] text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-stone-500"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
+          <div className="mt-3 flex justify-end border-t border-stone-100 pt-2 dark:border-stone-800"><LessonActions lesson={lesson} /></div>
+        </article>)}
+        {lessons.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No lessons match your search." : "No lessons yet."}</p>}
       </div>
     </div>
   );
 }
+
+function LessonStatus({ status }: { status: string }) {
+  const className = status === "PUBLISHED" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200" : status === "ARCHIVED" ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200" : "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200";
+  return <span className={`whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold ${className}`}>{status === "PUBLISHED" ? "Published" : status === "ARCHIVED" ? "Archived" : "Draft"}</span>;
+}
+

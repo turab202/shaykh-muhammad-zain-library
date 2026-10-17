@@ -3,11 +3,12 @@ import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import {
-  Send, CheckCircle, XCircle, Clock, AlertCircle,
+  Send, CheckCircle, Clock, AlertCircle,
   Headphones, BookOpen, RefreshCw, ExternalLink,
 } from "lucide-react";
 import { ImportReviewForm } from "./ImportReviewForm";
 import { PublishAllButton } from "./PublishAllButton";
+import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
 
 export const revalidate = 60;
 
@@ -35,30 +36,22 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
   const publishedLessons = await prisma.lesson.count({ where: { status: "PUBLISHED" } });
 
   return (
-    <div className="max-w-5xl space-y-8">
-
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Send className="w-5 h-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">{t("importTitle")}</h1>
-        </div>
-        <p className="text-xs text-stone-500 dark:text-stone-400 max-w-2xl">{t("importSubtitle")}</p>
-      </div>
+    <div className="mx-auto max-w-360 space-y-4">
+      <AdminPageHeading title={t("importTitle")} description={t("importSubtitle")} icon={Send} />
 
       {/* Role explanation */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 sm:grid-cols-2">
         {/* GitHub handles: bulk import */}
-        <div className="p-4 bg-stone-900 dark:bg-stone-950 border border-stone-700 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <ExternalLink className="w-4 h-4 text-white" aria-hidden="true" />
-            <span className="text-xs font-bold text-white uppercase tracking-wider">GitHub Actions</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-700 text-white font-semibold ml-auto">Automated</span>
+        <div className="border-b border-stone-200 p-4 dark:border-stone-800 sm:border-b-0 sm:border-e">
+          <div className="mb-2 flex items-center gap-2">
+            <ExternalLink className="size-4 text-stone-500" aria-hidden="true" />
+            <span className="text-xs font-bold text-stone-800 dark:text-stone-100">GitHub Actions</span>
+            <span className="ms-auto rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">Automated</span>
           </div>
-          <p className="text-xs text-stone-300 leading-relaxed mb-3">
+          <p className="mb-3 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
             Runs daily at 3am UTC. Downloads audio files from Telegram, uploads to B2 storage, and records metadata. No manual action needed.
           </p>
-          <ul className="text-xs text-stone-400 space-y-1 mb-4">
+          <ul className="mb-4 space-y-1 text-[10px] text-stone-500 dark:text-stone-400">
             <li>✓ Download audio from @SheikhMuhammedZain</li>
             <li>✓ Upload to Backblaze B2</li>
             <li>✓ Import PDF books</li>
@@ -68,7 +61,7 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
             href="https://github.com/turab202/shaykh-muhammad-zain-library/actions/workflows/import-telegram.yml"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-stone-900 text-xs font-semibold rounded-lg hover:bg-stone-100 transition-colors"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
           >
             <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
             Run workflow manually
@@ -76,16 +69,16 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
         </div>
 
         {/* Admin handles: review & quality */}
-        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="p-4">
+          <div className="mb-2 flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
             <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">Your Role (Admin)</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-semibold ml-auto">Manual</span>
+            <span className="ms-auto rounded-full bg-amber-100 px-2 py-1 text-[9px] font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">Manual</span>
           </div>
-          <p className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed mb-3">
+          <p className="mb-3 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
             Review imported messages, fix metadata, approve content for publication.
           </p>
-          <ul className="text-xs text-emerald-700 dark:text-emerald-400 space-y-1">
+          <ul className="space-y-1 text-[10px] text-stone-500 dark:text-stone-400">
             <li>✓ Review & approve pending messages</li>
             <li>✓ Fix lesson titles and series assignments</li>
             <li>✓ Manage categories, series, books</li>
@@ -95,16 +88,15 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
         </div>
       </div>
 
-      {/* Progress stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Stat icon={<Headphones className="w-4 h-4" />} label="Published Lessons" value={publishedLessons} color="text-emerald-600 dark:text-emerald-400" />
-        <Stat icon={<Headphones className="w-4 h-4" />} label="With B2 Audio" value={audioCount} color="text-emerald-600 dark:text-emerald-400" />
-        <Stat icon={<BookOpen className="w-4 h-4" />} label="PDFs in B2" value={pdfCount} color="text-amber-600 dark:text-amber-400" />
-        <Stat icon={<Clock className="w-4 h-4" />} label="Awaiting Review" value={pending.length} color="text-orange-500 dark:text-orange-400" />
-      </div>
+      <AdminSummaryGrid items={[
+        { icon: Headphones, label: "Published lessons", value: publishedLessons },
+        { icon: Headphones, label: "B2 audio files", value: audioCount, tone: "blue" },
+        { icon: BookOpen, label: "PDFs in B2", value: pdfCount, tone: "amber" },
+        { icon: Clock, label: "Awaiting review", value: pending.length, tone: pending.length ? "red" : "green" },
+      ]} />
 
       {/* Architecture note */}
-      <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-200">
+      <div className="border-s-2 border-amber-400 bg-amber-50/70 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
         <div className="flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
           <span>
@@ -117,7 +109,7 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
       {/* Bulk publish */}
       {pending.length > 0 && (
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <RefreshCw className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
             <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
               Bulk Publish — {pending.length} message{pending.length !== 1 ? "s" : ""} pending review
@@ -170,12 +162,12 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
       {processed.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200 mb-3">{t("recentActivity")}</h2>
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl divide-y divide-stone-100 dark:divide-stone-800">
+          <div className="divide-y divide-stone-100 overflow-hidden rounded-lg border border-stone-200 bg-white dark:divide-stone-800 dark:border-stone-800 dark:bg-stone-900">
             {processed.map((msg) => {
               const meta = msg.suggestedMetadata as Record<string, unknown>;
               const rejected = meta?.rejected as boolean | undefined;
               return (
-                <div key={msg.id} className="px-5 py-3 flex items-center justify-between gap-4 text-xs">
+                <div key={msg.id} className="flex items-center justify-between gap-3 px-4 py-3 text-xs sm:px-5">
                   <div className="min-w-0">
                     <span className="font-medium text-stone-800 dark:text-stone-200 truncate block">
                       {msg.audioFilename?.slice(0, 60) ?? msg.caption?.slice(0, 60) ?? `Message #${msg.messageId}`}
@@ -199,14 +191,3 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
   );
 }
 
-function Stat({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
-  return (
-    <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-4 flex items-center gap-3">
-      <div className={color}>{icon}</div>
-      <div>
-        <div className="text-lg font-bold text-stone-900 dark:text-stone-100">{value.toLocaleString()}</div>
-        <div className="text-[11px] text-stone-500">{label}</div>
-      </div>
-    </div>
-  );
-}
