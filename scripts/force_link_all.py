@@ -19,10 +19,13 @@ s3 = boto3.client("s3",
     aws_secret_access_key=os.environ["B2_APPLICATION_KEY"],
     region_name=REGION, config=Config(signature_version="s3v4"))
 
-# List all audio files in B2
-r = s3.list_objects_v2(Bucket=BUCKET, Prefix="audio/")
-b2_files = {f["Key"]: f["Size"] for f in r.get("Contents", [])
-            if f["Key"].lower().endswith(".mp3")}
+# List ALL audio files in B2 (paginate through all results)
+b2_files = {}
+paginator = s3.get_paginator("list_objects_v2")
+for page in paginator.paginate(Bucket=BUCKET, Prefix="audio/"):
+    for obj in page.get("Contents", []):
+        if obj["Key"].lower().endswith(".mp3"):
+            b2_files[obj["Key"]] = obj["Size"]
 print(f"Total B2 audio: {len(b2_files)}")
 
 conn = connect()
