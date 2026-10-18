@@ -30,9 +30,9 @@ export default async function AdminLayout({ children, params }: { children: Reac
   ];
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-stone-50 dark:bg-stone-950">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-stone-50 dark:bg-stone-950">
       {/* Sidebar */}
-      <aside className="hidden w-44 shrink-0 flex-col border-e border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 md:flex">
+      <aside className="hidden w-44 shrink-0 flex-col border-e border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:flex">
         <div className="border-b border-stone-200 px-3 py-3 dark:border-stone-800">
           <Link href="/" className="group flex items-center gap-2.5">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
@@ -68,7 +68,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
           <AdminBreadcrumb items={navItems.map(({ href, label }) => ({ href, label }))} />
           <Link href="/" className="shrink-0 whitespace-nowrap text-xs font-medium text-emerald-800 hover:underline dark:text-emerald-300">Public site ↗</Link>
         </header>
-        <nav aria-label="Admin navigation" className="flex gap-1 overflow-x-auto border-b border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-900 md:hidden">
+        <nav aria-label="Admin navigation" className="sticky top-0 z-30 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-900 lg:hidden">
           {navItems.map(({ href, label, icon: Icon }) => (
             <AdminNavigationLink key={href} href={href} mobile>
               <Icon className="size-4" aria-hidden="true" />
@@ -76,13 +76,13 @@ export default async function AdminLayout({ children, params }: { children: Reac
             </AdminNavigationLink>
           ))}
           <form action={logout} className="shrink-0">
-            <button type="submit" className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-400">
+            <button type="submit" className="flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
               <LogOut className="w-4 h-4" aria-hidden="true" />
               Sign out
             </button>
           </form>
         </nav>
-        <main className="flex-1 min-w-0 p-4 sm:p-6 overflow-auto">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

@@ -35,10 +35,10 @@ export function BookTabs({
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex border-b border-stone-200 dark:border-stone-800 mb-6">
+      <div className="mb-6 flex border-b border-stone-200 dark:border-stone-800">
         <button
           onClick={() => setTab("audios")}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-px ${
+          className={`-mb-px flex min-h-11 flex-1 items-center justify-center border-b-2 px-2 py-3 text-xs font-semibold transition-colors sm:px-5 sm:text-sm ${
             tab === "audios"
               ? "border-emerald-800 text-emerald-800 dark:border-emerald-400 dark:text-emerald-400"
               : "border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
@@ -58,7 +58,7 @@ export function BookTabs({
         {pdfUrl && (
           <button
             onClick={() => setTab("kitabs")}
-            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-px ${
+            className={`-mb-px flex min-h-11 flex-1 items-center justify-center border-b-2 px-2 py-3 text-xs font-semibold transition-colors sm:px-5 sm:text-sm ${
               tab === "kitabs"
                 ? "border-amber-700 text-amber-800 dark:border-amber-400 dark:text-amber-400"
                 : "border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"

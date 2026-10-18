@@ -16,6 +16,7 @@ import {
   List,
   MoreHorizontal,
   Search,
+  SlidersHorizontal,
 } from "lucide-react";
 import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -68,6 +69,8 @@ export function BooksManagement({
   const [status, setStatus] = useState<StatusFilter>("all");
   const [sort, setSort] = useState<SortOption>("newest");
   const [view, setView] = useState<ViewMode>("list");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [isPending, startTransition] = useTransition();
@@ -187,7 +190,30 @@ export function BooksManagement({
       </section>
 
       <section aria-label="Search and filters" className="space-y-2.5">
-        <label className="relative block">
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            aria-label="Search books"
+            aria-expanded={mobileSearchOpen}
+            aria-controls="books-admin-search"
+            onClick={() => setMobileSearchOpen((open) => !open)}
+            className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileSearchOpen || query ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+          >
+            <Search className="size-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label="Book filters"
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="books-admin-filters"
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileFiltersOpen || categoryId !== "all" || status !== "all" || sort !== "newest" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+          >
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            {(categoryId !== "all" || status !== "all" || sort !== "newest") && <span className="absolute -end-1 -top-1 size-2.5 rounded-full bg-emerald-700 ring-2 ring-white dark:ring-stone-900" />}
+          </button>
+        </div>
+        <label id="books-admin-search" className={`${mobileSearchOpen ? "block" : "hidden"} relative md:block`}>
           <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search books</span>
           <input
@@ -197,7 +223,7 @@ export function BooksManagement({
             className="h-10 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </label>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <div id="books-admin-filters" className={`${mobileFiltersOpen ? "grid" : "hidden"} grid-cols-2 gap-2 md:flex md:flex-wrap`}>
           <FilterSelect label="Category" value={categoryId} onChange={(value) => updateFilter(setCategoryId, value)}>
             <option value="all">All Categories</option>
             {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
@@ -218,6 +244,11 @@ export function BooksManagement({
             <ViewButton label="Grid view" selected={view === "grid"} onClick={() => setView("grid")}><Grid2X2 className="size-4" aria-hidden="true" /></ViewButton>
             <ViewButton label="List view" selected={view === "list"} onClick={() => setView("list")}><List className="size-4" aria-hidden="true" /></ViewButton>
           </div>
+          {mobileFiltersOpen && (categoryId !== "all" || status !== "all" || sort !== "newest") && (
+            <button type="button" onClick={() => { setCategoryId("all"); setStatus("all"); setSort("newest"); }} className="col-span-2 min-h-11 text-start text-xs font-medium text-stone-600 dark:text-stone-300 md:hidden">
+              Clear filters
+            </button>
+          )}
         </div>
       </section>
 

@@ -12,6 +12,7 @@ export default async function SeriesPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "catalog" });
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
+  const tActions = await getTranslations({ locale, namespace: "actions" });
 
   const [series, categories] = await Promise.all([
     getPublishedSeries(locale as Locale),
@@ -40,6 +41,8 @@ export default async function SeriesPage({ params }: Props) {
         duruusLabel={tCat("duruusCount")}
         allCategoriesLabel={t("allCategories")}
         searchPlaceholder={t("searchSeries")}
+        filterLabel={tActions("filter")}
+        clearFiltersLabel={tActions("clearFilters")}
         noResultsLabel={t("noResults")}
       />
     </div>

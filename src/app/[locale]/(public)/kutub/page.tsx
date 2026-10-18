@@ -13,6 +13,7 @@ export default async function KutubPage({ params }: Props) {
   const tNav = await getTranslations({ locale, namespace: "nav" });
   const tCat = await getTranslations({ locale, namespace: "categories" });
   const tBook = await getTranslations({ locale, namespace: "book" });
+  const tActions = await getTranslations({ locale, namespace: "actions" });
 
   const [books, categories] = await Promise.all([
     getPublishedBooks(locale as Locale),
@@ -42,6 +43,8 @@ export default async function KutubPage({ params }: Props) {
         pdfLabel={tBook("pdfAvailable")}
         allCategoriesLabel={t("allCategories")}
         searchPlaceholder={t("searchBooks")}
+        filterLabel={tActions("filter")}
+        clearFiltersLabel={tActions("clearFilters")}
         noResultsLabel={t("noResults")}
       />
     </div>

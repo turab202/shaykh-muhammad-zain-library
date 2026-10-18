@@ -11,8 +11,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-      <div className="w-full max-w-sm bg-white rounded-xl shadow p-8">
+    <div className="flex min-h-[100svh] items-center justify-center bg-zinc-50 px-4 py-6">
+      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow sm:p-8">
         <h1 className="text-xl font-semibold mb-6 text-zinc-900">
           Admin Sign In
         </h1>
@@ -31,7 +31,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="min-h-11 w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
             />
             {state?.errors?.email && (
               <p className="mt-1 text-xs text-red-600">
@@ -54,12 +54,12 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                className="min-h-11 w-full rounded-lg border border-zinc-300 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600"
+                className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-zinc-400 hover:text-zinc-600"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -90,7 +90,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+            className="min-h-11 w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
           >
             {pending ? "Signing in…" : "Sign in"}
           </button>
@@ -99,5 +99,4 @@ export default function LoginPage() {
     </div>
   );
 }
-
 

@@ -7,7 +7,7 @@ import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/act
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditLessonButton } from "@/components/admin/EditLessonButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
-import { FileText, Eye, Clock3, Archive, EyeOff } from "lucide-react";
+import { FileText, Eye, Clock3, Archive, EyeOff, Search } from "lucide-react";
 
 export default async function AdminLessonsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
@@ -65,12 +65,15 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
     lessonTitle: media.lesson?.title ?? null,
   }));
 
-  function LessonActions({ lesson }: { lesson: (typeof lessons)[number] }) {
-    return <div className="flex items-center gap-1.5">
-      {lesson.status !== "PUBLISHED" ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Publish ${lesson.title}`} title={`Publish ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"><Eye className="size-4" aria-hidden="true" /></button></form> : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Unpublish ${lesson.title}`} title={`Unpublish ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"><EyeOff className="size-4" aria-hidden="true" /></button></form>}
-      <Link href={`/duruus/${lesson.slug}`} aria-label={`View ${lesson.title}`} title={`View ${lesson.title}`} className="inline-flex size-8 items-center justify-center rounded-md border border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
-      <EditLessonButton lesson={{ id: lesson.id, slug: lesson.slug, title: lesson.title, translations: (lesson.translations as Record<string, string>) ?? {}, description: lesson.description ?? null, descTranslations: (lesson.descTranslations as Record<string, string>) ?? {}, lessonNumber: lesson.lessonNumber ?? null, duration: lesson.duration ?? null, status: lesson.status, publishedAt: lesson.publishedAt?.toISOString() ?? null, categoryId: lesson.categoryId ?? null, seriesId: lesson.seriesId ?? null, bookId: lesson.bookId ?? null, audioMediaId: lesson.media[0]?.id ?? null }} categories={categories} seriesList={seriesList} books={books} audioFiles={editorAudioFiles} compact />
-      <DeleteButton action={deleteLesson.bind(null, lesson.id)} itemName={lesson.title} itemType="lesson" compact />
+  function LessonActions({ lesson, mobile = false }: { lesson: (typeof lessons)[number]; mobile?: boolean }) {
+    const actionClass = mobile
+      ? "inline-flex min-h-11 items-center justify-center rounded-md border px-3 text-[11px] font-medium"
+      : "inline-flex size-8 items-center justify-center rounded-md border";
+    return <div className={`flex flex-wrap items-center gap-1.5 ${mobile ? "[&_button]:min-h-11" : ""}`}>
+      {lesson.status !== "PUBLISHED" ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Publish ${lesson.title}`} title={`Publish ${lesson.title}`} className={`${actionClass} border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300`}>{mobile ? "Publish" : <Eye className="size-4" aria-hidden="true" />}</button></form> : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Unpublish ${lesson.title}`} title={`Unpublish ${lesson.title}`} className={`${actionClass} border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300`}>{mobile ? "Unpublish" : <EyeOff className="size-4" aria-hidden="true" />}</button></form>}
+      <Link href={`/duruus/${lesson.slug}`} aria-label={`View ${lesson.title}`} title={`View ${lesson.title}`} className={`${actionClass} border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800`}>{mobile ? "View" : <Eye className="size-4" aria-hidden="true" />}</Link>
+      <EditLessonButton lesson={{ id: lesson.id, slug: lesson.slug, title: lesson.title, translations: (lesson.translations as Record<string, string>) ?? {}, description: lesson.description ?? null, descTranslations: (lesson.descTranslations as Record<string, string>) ?? {}, lessonNumber: lesson.lessonNumber ?? null, duration: lesson.duration ?? null, status: lesson.status, publishedAt: lesson.publishedAt?.toISOString() ?? null, categoryId: lesson.categoryId ?? null, seriesId: lesson.seriesId ?? null, bookId: lesson.bookId ?? null, audioMediaId: lesson.media[0]?.id ?? null }} categories={categories} seriesList={seriesList} books={books} audioFiles={editorAudioFiles} compact={!mobile} />
+      <DeleteButton action={deleteLesson.bind(null, lesson.id)} itemName={lesson.title} itemType="lesson" compact={!mobile} />
     </div>;
   }
 
@@ -83,9 +86,15 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         { label: "Draft", value: drafts, icon: Clock3, tone: "blue" },
         { label: "Archived", value: archived, icon: Archive, tone: "amber" },
       ]} />
-      <form method="get" className="flex flex-col gap-2 sm:flex-row">
-        <input name="q" defaultValue={query} placeholder="Search lesson title, series, or category..." className="h-10 min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
-        <button className="h-10 rounded-md border border-stone-200 bg-white px-4 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Search</button>
+      <form method="get" role="search" className="flex min-w-0 gap-2">
+        <label className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+          <span className="sr-only">Search lessons</span>
+          <input name="q" defaultValue={query} placeholder="Search lesson title, series, or category..." className="min-h-11 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+        </label>
+        <button type="submit" aria-label="Search lessons" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+          <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
+        </button>
       </form>
 
       <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
@@ -110,7 +119,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         {lessons.map((lesson) => <article key={lesson.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-xs font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-[9px] text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-stone-500"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
-          <div className="mt-3 flex justify-end border-t border-stone-100 pt-2 dark:border-stone-800"><LessonActions lesson={lesson} /></div>
+          <div className="mt-3 flex flex-wrap justify-end border-t border-stone-100 pt-2 dark:border-stone-800"><LessonActions lesson={lesson} mobile /></div>
         </article>)}
         {lessons.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No lessons match your search." : "No lessons yet."}</p>}
       </div>
@@ -122,4 +131,3 @@ function LessonStatus({ status }: { status: string }) {
   const className = status === "PUBLISHED" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200" : status === "ARCHIVED" ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200" : "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200";
   return <span className={`whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold ${className}`}>{status === "PUBLISHED" ? "Published" : status === "ARCHIVED" ? "Archived" : "Draft"}</span>;
 }
-

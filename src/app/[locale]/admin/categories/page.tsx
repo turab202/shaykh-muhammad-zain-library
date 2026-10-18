@@ -7,7 +7,7 @@ import { CreateDialog } from "@/components/admin/CreateDialog";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditCategoryButton } from "@/components/admin/EditCategoryButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
-import { Layers, BookOpen, FileText } from "lucide-react";
+import { Layers, BookOpen, FileText, Search } from "lucide-react";
 
 export default async function AdminCategoriesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
@@ -53,12 +53,18 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         { label: "Books assigned", value: bookCount, icon: BookOpen, tone: "green" },
       ]} />
 
-      <form method="get" className="flex flex-col gap-2 sm:flex-row">
-        <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="h-10 min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
-        <button className="h-10 rounded-md border border-stone-200 bg-white px-4 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Search</button>
+      <form method="get" role="search" className="flex min-w-0 gap-2">
+        <label className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+          <span className="sr-only">Search categories</span>
+          <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="min-h-11 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+        </label>
+        <button aria-label="Search categories" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+          <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
+        </button>
       </form>
 
-      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 md:block">
+      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-180 text-left text-xs">
             <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">
@@ -79,9 +85,9 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         </div>
       </div>
 
-      <div className="space-y-2.5 md:hidden">
+      <div className="space-y-2.5 lg:hidden">
         {categories.map((category) => <article key={category.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
-          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-xs font-semibold text-stone-800 dark:text-stone-100">{category.name}</h2><p className="mt-1 truncate font-mono text-[10px] text-stone-500">{category.slug}</p></div><CategoryActions category={category} /></div>
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-xs font-semibold text-stone-800 dark:text-stone-100">{category.name}</h2><p className="mt-1 truncate font-mono text-[10px] text-stone-500">{category.slug}</p></div><CategoryActions category={category} mobile /></div>
           <div className="mt-3 grid grid-cols-3 gap-2 border-t border-stone-100 pt-2.5 dark:border-stone-800"><MiniCount label="Lessons" value={category._count.lessons} /><MiniCount label="Series" value={category._count.series} /><MiniCount label="Books" value={category._count.books} /></div>
         </article>)}
         {categories.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No categories match your search." : "No categories yet."}</p>}
@@ -90,8 +96,8 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
   );
 }
 
-function CategoryActions({ category }: { category: { id: string; slug: string; name: string; translations: unknown; description: string | null; descTranslations: unknown; icon: string | null; colorClass: string | null } }) {
-  return <div className="flex items-center gap-1.5"><EditCategoryButton category={{ ...category, translations: category.translations as Record<string, string>, descTranslations: category.descTranslations as Record<string, string> }} compact /><DeleteButton action={deleteCategory.bind(null, category.id)} itemName={category.name} itemType="category" compact /></div>;
+function CategoryActions({ category, mobile = false }: { category: { id: string; slug: string; name: string; translations: unknown; description: string | null; descTranslations: unknown; icon: string | null; colorClass: string | null }; mobile?: boolean }) {
+  return <div className={`flex items-center gap-1.5 ${mobile ? "[&_button]:min-h-11" : ""}`}><EditCategoryButton category={{ ...category, translations: category.translations as Record<string, string>, descTranslations: category.descTranslations as Record<string, string> }} compact={!mobile} /><DeleteButton action={deleteCategory.bind(null, category.id)} itemName={category.name} itemType="category" compact={!mobile} /></div>;
 }
 
 function MiniCount({ label, value }: { label: string; value: number }) {

@@ -14,6 +14,7 @@ import {
   Languages,
   Pencil,
   Search,
+  SlidersHorizontal,
   Save,
   X,
 } from "lucide-react";
@@ -50,6 +51,7 @@ export function SiteContentManager({
 }) {
   const [search, setSearch] = useState("");
   const [namespace, setNamespace] = useState("all");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [activeLocale, setActiveLocale] = useState<Locale>("en");
   const [selectedKey, setSelectedKey] = useState<string | null>(entries[0] ? entryId(entries[0]) : null);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(() => new Set());
@@ -151,26 +153,34 @@ export function SiteContentManager({
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_270px]">
         <section className="min-w-0 space-y-3" aria-label="Translation entries">
           <div className="flex flex-col gap-2 rounded-lg border border-stone-200 bg-white p-2.5 dark:border-stone-800 dark:bg-stone-900 lg:flex-row lg:items-center">
-            <label className="relative min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <label className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
               <span className="sr-only">Search translation entries</span>
-              <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search translation keys or content..." className="h-9 w-full rounded-md border border-stone-200 bg-stone-50 ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100" />
-            </label>
+              <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search translation keys or content..." className="min-h-11 w-full rounded-md border border-stone-200 bg-stone-50 ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100" />
+              </label>
+              <button type="button" aria-label="Filter translations" aria-expanded={mobileFiltersOpen} aria-controls="translation-mobile-filters" onClick={() => setMobileFiltersOpen((open) => !open)} className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden ${mobileFiltersOpen || namespace !== "all" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}>
+                <SlidersHorizontal className="size-4" aria-hidden="true" />
+                {namespace !== "all" && <span className="absolute -end-1 -top-1 size-2.5 rounded-full bg-emerald-700 ring-2 ring-white dark:ring-stone-900" />}
+              </button>
+            </div>
+            <div id="translation-mobile-filters" className={`${mobileFiltersOpen ? "flex" : "hidden"} flex-wrap items-center gap-2 lg:flex`} aria-label="Translation filters">
             <div className="flex flex-wrap items-center gap-1" aria-label="Translation status language">
               {locales.map(({ id, label, shortLabel }) => (
-                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`h-8 rounded-md px-2.5 text-[11px] font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
+                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`min-h-11 rounded-md px-2.5 text-[11px] font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
                   {shortLabel}
                 </button>
               ))}
             </div>
             <label className="relative">
               <span className="sr-only">Filter by group</span>
-              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="h-9 min-w-36 appearance-none rounded-md border border-stone-200 bg-white ps-3 pe-8 text-xs text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="min-h-11 min-w-36 appearance-none rounded-md border border-stone-200 bg-white ps-3 pe-8 text-xs text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
                 <option value="all">All groups</option>
                 {groups.map((group) => <option key={group} value={group}>{groupLabel(group)}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute inset-e-2.5 top-1/2 size-3.5 -translate-y-1/2 text-stone-400" aria-hidden="true" />
             </label>
+            </div>
             <CreateDialog title="Add text entry" submitLabel="Add entry" action={saveAction}>
               <div className="grid gap-3 sm:grid-cols-2">
                 <NewField name="namespace" label="Group" placeholder="hero, about, footer" required />

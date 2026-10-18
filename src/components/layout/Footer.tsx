@@ -185,7 +185,7 @@ export function Footer() {
 
           <div className="mt-4 divide-y divide-stone-200/80 dark:divide-stone-800/80 border-y border-stone-200/80 dark:border-stone-800/80">
             <details>
-              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+              <summary className="flex min-h-11 cursor-pointer items-center py-3 text-xs font-semibold uppercase tracking-wider text-stone-900 dark:text-stone-200">
                 {tFooter("catalog")}
               </summary>
               <ul className="pb-3 flex flex-col gap-2">
@@ -197,7 +197,7 @@ export function Footer() {
             </details>
 
             <details>
-              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+              <summary className="flex min-h-11 cursor-pointer items-center py-3 text-xs font-semibold uppercase tracking-wider text-stone-900 dark:text-stone-200">
                 {tFooter("collections")}
               </summary>
               <ul className="pb-3 flex flex-col gap-2">
@@ -209,7 +209,7 @@ export function Footer() {
             </details>
 
             <details>
-              <summary className="py-3 font-semibold text-stone-900 dark:text-stone-200 text-xs tracking-wider uppercase cursor-pointer">
+              <summary className="flex min-h-11 cursor-pointer items-center py-3 text-xs font-semibold uppercase tracking-wider text-stone-900 dark:text-stone-200">
                 {tFooter("archive")}
               </summary>
               <ul className="pb-3 flex flex-col gap-2">
@@ -249,5 +249,4 @@ export function Footer() {
     </footer>
   );
 }
-
 

@@ -19,8 +19,8 @@ function LoginForm() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-[var(--bg-parchment)]">
-      <div className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl shadow border border-stone-200 dark:border-stone-800 p-8">
+    <div className="flex min-h-[100svh] items-center justify-center bg-stone-50 px-4 py-6 dark:bg-[var(--bg-parchment)]">
+      <div className="w-full max-w-sm rounded-xl border border-stone-200 bg-white p-6 shadow dark:border-stone-800 dark:bg-stone-900 sm:p-8">
         {/* Library name */}
         <div className="text-center mb-6">
           <h1 className="font-serif font-bold text-lg text-emerald-950 dark:text-emerald-100">
@@ -43,7 +43,7 @@ function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              className="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+              className="min-h-11 w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
             />
             {state?.errors?.email && (
               <p className="mt-1 text-xs text-red-600">{state.errors.email[0]}</p>
@@ -60,7 +60,7 @@ function LoginForm() {
               type="password"
               autoComplete="current-password"
               required
-              className="w-full rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-2 text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+              className="min-h-11 w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
             />
             {state?.errors?.password && (
               <p className="mt-1 text-xs text-red-600">{state.errors.password[0]}</p>
@@ -74,7 +74,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-lg bg-emerald-900 hover:bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-amber-100 disabled:opacity-50 transition-colors cursor-pointer"
+            className="min-h-11 w-full rounded-lg bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-amber-100 transition-colors hover:bg-emerald-800 disabled:opacity-50"
           >
             {pending ? "Signing in…" : "Sign in"}
           </button>

@@ -46,6 +46,7 @@ export default async function DuruusPage({ params }: Props) {
         seriesList={seriesList}
         labels={{
           searchPlaceholder: tCatalog("searchSeries"),
+          filter: tActions("filter"),
           allCategories: tCatalog("allCategories"),
           allSeries: tCatalog("allSeries"),
           sortLessonNumber: tCatalog("sortLessonNumber"),

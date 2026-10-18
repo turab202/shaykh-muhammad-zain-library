@@ -55,7 +55,7 @@ export function MobileNav({
 
       {/* Drawer — opens from the start edge (left in LTR, right in RTL) */}
       <div
-        className={`fixed inset-y-0 ${isRtl ? "end-0" : "start-0"} w-4/5 max-w-sm bg-[var(--bg-parchment)] dark:bg-[var(--bg-parchment)] border-e border-stone-200 dark:border-stone-800 p-6 flex flex-col justify-between shadow-2xl`}
+        className={`fixed inset-y-0 ${isRtl ? "end-0" : "start-0"} w-4/5 max-w-sm overflow-y-auto overscroll-contain bg-[var(--bg-parchment)] dark:bg-[var(--bg-parchment)] border-e border-stone-200 dark:border-stone-800 p-6 flex flex-col justify-between shadow-2xl`}
         role="dialog"
         aria-modal="true"
       >
@@ -74,7 +74,7 @@ export function MobileNav({
             <button
               onClick={onClose}
               aria-label={tCommon("close")}
-              className="p-1.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 rounded-md transition-colors"
+              className="flex size-11 items-center justify-center rounded-md text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
             >
               <X className="w-5 h-5" />
             </button>
@@ -105,7 +105,7 @@ export function MobileNav({
                   key={link.href}
                   href={link.href as Parameters<typeof Link>[0]["href"]}
                   onClick={onClose}
-                  className={`px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex min-h-11 items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 font-semibold"
                       : "text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800/60"
@@ -132,7 +132,7 @@ export function MobileNav({
                 <button
                   key={l.code}
                   onClick={() => handleLocaleChange(l.code)}
-                  className={`px-2 py-1 rounded text-[11px] font-medium transition-colors ${
+                  className={`min-h-11 rounded px-2 py-1 text-[11px] font-medium transition-colors ${
                     locale === l.code
                       ? "bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm"
                       : "text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200"
@@ -154,7 +154,7 @@ export function MobileNav({
               aria-label={
                 theme === "dark" ? tCommon("lightMode") : tCommon("darkMode")
               }
-              className="p-1.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 transition-colors hover:bg-stone-200 dark:hover:bg-stone-700"
+              className="flex size-11 items-center justify-center rounded-md bg-stone-100 text-stone-700 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -179,5 +179,3 @@ export function MobileNav({
     </div>
   );
 }
-
-

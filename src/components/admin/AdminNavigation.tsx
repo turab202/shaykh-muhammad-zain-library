@@ -11,7 +11,13 @@ export function AdminNavigationLink({ href, children, mobile = false }: { href: 
     <Link
       href={href as Parameters<typeof Link>[0]["href"]}
       aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-xs font-medium transition-colors ${mobile ? "shrink-0" : "w-full"} ${active ? "bg-emerald-800 text-white shadow-sm dark:bg-emerald-700" : "text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"}`}
+      className={[
+        "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-xs font-medium transition-colors",
+        mobile ? "min-h-11 shrink-0 whitespace-nowrap" : "w-full",
+        active
+          ? "bg-emerald-800 text-white shadow-sm dark:bg-emerald-700"
+          : "text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100",
+      ].join(" ")}
     >
       {children}
     </Link>

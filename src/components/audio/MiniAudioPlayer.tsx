@@ -80,7 +80,7 @@ export function MiniAudioPlayer() {
           <button
             onClick={togglePlay}
             aria-label={isPlaying ? tActions("pause") : tActions("play")}
-            className="w-9 h-9 shrink-0 rounded-full bg-emerald-900 dark:bg-emerald-700 text-amber-100 flex items-center justify-center hover:bg-emerald-800 dark:hover:bg-emerald-600 transition-colors shadow-sm cursor-pointer"
+            className="size-11 shrink-0 rounded-full bg-emerald-900 text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-700 dark:hover:bg-emerald-600 sm:size-9"
           >
             {isPlaying ? (
               <Pause className="w-4 h-4 fill-current" aria-hidden="true" />
@@ -161,7 +161,7 @@ export function MiniAudioPlayer() {
             href={`/duruus/${currentLesson.slug}`}
             title={tActions("listen")}
             aria-label={tActions("listen")}
-            className="p-1.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors"
+            className="inline-flex size-11 items-center justify-center text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 sm:size-8"
           >
             <Maximize2 className="w-4 h-4" aria-hidden="true" />
           </Link>
@@ -171,7 +171,7 @@ export function MiniAudioPlayer() {
             onClick={closeMiniPlayer}
             title={tCommon("close")}
             aria-label={tCommon("close")}
-            className="p-1.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors cursor-pointer"
+            className="inline-flex size-11 items-center justify-center text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 sm:size-8"
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -186,5 +186,4 @@ function fmt(s: number): string {
   const sec = Math.floor(s % 60);
   return `${m}:${String(sec).padStart(2, "0")}`;
 }
-
 

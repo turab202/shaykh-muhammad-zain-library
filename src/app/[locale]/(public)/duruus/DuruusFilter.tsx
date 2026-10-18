@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Link } from "@/i18n/navigation";
 import {
   Search,
+  SlidersHorizontal,
   X,
   BookOpen,
   Layers,
@@ -18,6 +19,7 @@ import type { PublicLesson, PublicCategory, PublicSeries } from "@/types/library
 
 interface DuruusFilterLabels {
   searchPlaceholder: string;
+  filter: string;
   allCategories: string;
   allSeries: string;
   sortLessonNumber: string;
@@ -61,6 +63,8 @@ export function DuruusFilter({
   const [seriesId, setSeriesId] = useState("all");
   const [sortBy, setSortBy] = useState<SortKey>("lesson_number");
   const [viewMode, setViewMode] = useState<ViewMode>("grouped");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Series filtered by selected category
   const availableSeries = useMemo(
@@ -116,7 +120,7 @@ export function DuruusFilter({
   }, [filteredLessons, seriesList]);
 
   const hasActiveFilters =
-    query || categoryId !== "all" || seriesId !== "all";
+    query || categoryId !== "all" || seriesId !== "all" || sortBy !== "lesson_number";
 
   const currentCategory =
     categoryId !== "all" ? categories.find((c) => c.id === categoryId) : null;
@@ -157,8 +161,77 @@ export function DuruusFilter({
       )}
 
       {/* Filter bar */}
-      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border border-stone-200 dark:border-stone-800 rounded-xl p-4 sm:p-5 mb-8 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+      <div className="mb-8 rounded-xl border border-stone-200 bg-[var(--bg-surface-elevated)] p-3 shadow-sm dark:border-stone-800 dark:bg-[var(--bg-surface)] sm:p-5">
+        <div className="mb-2 flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            aria-label={labels.searchPlaceholder}
+            aria-expanded={mobileSearchOpen}
+            aria-controls="duruus-mobile-search"
+            onClick={() => setMobileSearchOpen((open) => !open)}
+            className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileSearchOpen || query ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-300 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+          >
+            <Search className="size-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label={labels.filter}
+            aria-expanded={mobileFiltersOpen}
+            aria-controls="duruus-mobile-filters"
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileFiltersOpen || categoryId !== "all" || seriesId !== "all" || sortBy !== "lesson_number" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-300 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+          >
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            {(categoryId !== "all" || seriesId !== "all" || sortBy !== "lesson_number") && <span className="absolute -end-1 -top-1 size-2.5 rounded-full bg-emerald-700 ring-2 ring-[var(--bg-surface-elevated)]" />}
+          </button>
+          <span className="ms-auto text-xs text-stone-500 dark:text-stone-400">
+            {labels.showingPrefix}{filteredLessons.length}
+          </span>
+        </div>
+
+        <label id="duruus-mobile-search" className={`${mobileSearchOpen ? "block" : "hidden"} relative mb-2 md:hidden`}>
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+          <span className="sr-only">{labels.searchPlaceholder}</span>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={labels.searchPlaceholder}
+            className="min-h-11 w-full rounded-lg border border-stone-300 bg-white py-2 ps-9 pe-3 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-emerald-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+          />
+        </label>
+
+        <div id="duruus-mobile-filters" className={`${mobileFiltersOpen ? "grid" : "hidden"} mb-2 grid-cols-2 gap-2 md:hidden`}>
+          <label>
+            <span className="sr-only">{labels.allCategories}</span>
+            <select value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setSeriesId("all"); }} className="min-h-11 w-full rounded-lg border border-stone-300 bg-white px-2 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
+              <option value="all">{labels.allCategories}</option>
+              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+          </label>
+          <label>
+            <span className="sr-only">{labels.allSeries}</span>
+            <select value={seriesId} onChange={(e) => setSeriesId(e.target.value)} className="min-h-11 w-full rounded-lg border border-stone-300 bg-white px-2 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
+              <option value="all">{labels.allSeries}</option>
+              {availableSeries.map((series) => <option key={series.id} value={series.id}>{series.title}</option>)}
+            </select>
+          </label>
+          <label className="col-span-2">
+            <span className="sr-only">{labels.sortTitle}</span>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="min-h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
+              <option value="lesson_number">{labels.sortLessonNumber}</option>
+              <option value="newest">{labels.sortNewest}</option>
+              <option value="oldest">{labels.sortOldest}</option>
+              <option value="title">{labels.sortTitle}</option>
+            </select>
+          </label>
+          <div className="col-span-2 flex items-center justify-between">
+            <ViewModeButtons viewMode={viewMode} onChange={setViewMode} labels={labels} />
+            {hasActiveFilters && <button type="button" onClick={resetFilters} className="min-h-11 px-2 text-xs font-medium text-stone-600 dark:text-stone-300">{labels.clearFilters}</button>}
+          </div>
+        </div>
+
+        <div className="hidden grid-cols-1 gap-3 md:grid md:grid-cols-12 md:items-center">
           {/* Search */}
           <div className="md:col-span-4 relative">
             <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2 text-stone-400" aria-hidden="true" />
@@ -167,7 +240,7 @@ export function DuruusFilter({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={labels.searchPlaceholder}
-              className="w-full ps-9 pe-3 py-2 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-800"
+              className="min-h-11 w-full rounded-lg border border-stone-300 bg-white py-2 ps-9 pe-3 text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-emerald-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </div>
 
@@ -179,7 +252,7 @@ export function DuruusFilter({
                 setCategoryId(e.target.value);
                 setSeriesId("all");
               }}
-              className="w-full py-2 px-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
+              className="min-h-11 w-full cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
             >
               <option value="all">{labels.allCategories}</option>
               {categories.map((c) => (
@@ -195,7 +268,7 @@ export function DuruusFilter({
             <select
               value={seriesId}
               onChange={(e) => setSeriesId(e.target.value)}
-              className="w-full py-2 px-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
+              className="min-h-11 w-full cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
             >
               <option value="all">{labels.allSeries}</option>
               {availableSeries.map((s) => (
@@ -211,7 +284,7 @@ export function DuruusFilter({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="flex-1 py-2 px-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-xs text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
+              className="min-h-11 min-w-0 flex-1 cursor-pointer rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs text-stone-700 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
             >
               <option value="lesson_number">{labels.sortLessonNumber}</option>
               <option value="newest">{labels.sortNewest}</option>
@@ -252,7 +325,7 @@ export function DuruusFilter({
 
         {/* Active filters info */}
         {hasActiveFilters && (
-          <div className="flex items-center justify-between pt-3 mt-3 border-t border-stone-200/60 dark:border-stone-800/60 text-xs">
+          <div className="hidden items-center justify-between pt-3 mt-3 border-t border-stone-200/60 text-xs dark:border-stone-800/60 md:flex">
             <span className="text-stone-500">
               {labels.showingPrefix}
               {filteredLessons.length}
@@ -349,5 +422,37 @@ export function DuruusFilter({
         </div>
       )}
     </>
+  );
+}
+
+function ViewModeButtons({
+  viewMode,
+  onChange,
+  labels,
+}: {
+  viewMode: ViewMode;
+  onChange: (mode: ViewMode) => void;
+  labels: DuruusFilterLabels;
+}) {
+  return (
+    <div role="group" aria-label="Lesson view" className="flex items-center rounded-lg border border-stone-200 bg-stone-100 p-0.5 dark:border-stone-700 dark:bg-stone-800">
+      {(["grouped", "row", "card"] as ViewMode[]).map((mode) => {
+        const Icon = mode === "grouped" ? FolderOpen : mode === "row" ? List : Grid3X3;
+        const label = mode === "grouped" ? labels.viewBySeries : mode === "row" ? labels.viewList : labels.viewGrid;
+        return (
+          <button
+            key={mode}
+            type="button"
+            aria-pressed={viewMode === mode}
+            onClick={() => onChange(mode)}
+            title={label}
+            aria-label={label}
+            className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-md transition-colors ${viewMode === mode ? "bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-stone-100" : "text-stone-500 hover:text-stone-800 dark:hover:text-stone-200"}`}
+          >
+            <Icon className="size-3.5" aria-hidden="true" />
+          </button>
+        );
+      })}
+    </div>
   );
 }

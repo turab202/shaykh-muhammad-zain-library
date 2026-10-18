@@ -103,7 +103,7 @@ export function Header() {
               onClick={() => setIsSearchOpen(true)}
               aria-label={tSearch("quick")}
               aria-haspopup="dialog"
-              className="flex items-center gap-2 px-2 py-1.5 md:px-2.5 text-xs text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800/80 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-md border border-stone-200/80 dark:border-stone-700/60 transition-colors cursor-pointer"
+              className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border border-stone-200/80 bg-stone-100 px-2 py-1.5 text-xs text-stone-500 transition-colors hover:bg-stone-200 dark:border-stone-700/60 dark:bg-stone-800/80 dark:text-stone-400 dark:hover:bg-stone-800 md:min-w-0 md:px-2.5"
             >
               <Search className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden md:inline">
@@ -120,7 +120,7 @@ export function Header() {
                 onClick={() => setIsLangDropdownOpen((v) => !v)}
                 aria-label={tCommon("languageSelect")}
                 aria-expanded={isLangDropdownOpen}
-                className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800/80 rounded-md transition-colors cursor-pointer"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800/80 dark:hover:text-stone-100"
               >
                 <Globe className="w-4 h-4" />
               </button>
@@ -163,7 +163,7 @@ export function Header() {
               aria-label={
                 theme === "dark" ? tCommon("lightMode") : tCommon("darkMode")
               }
-              className="p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800/80 rounded-md transition-colors cursor-pointer"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800/80 dark:hover:text-stone-100"
             >
               {theme === "dark" ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -177,7 +177,7 @@ export function Header() {
               onClick={() => setIsMobileMenuOpen((v) => !v)}
               aria-label="Open menu"
               aria-expanded={isMobileMenuOpen}
-              className="lg:hidden p-2 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 rounded-md transition-colors cursor-pointer"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-md p-2 text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100 lg:hidden"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -208,5 +208,4 @@ export function Header() {
     </>
   );
 }
-
 

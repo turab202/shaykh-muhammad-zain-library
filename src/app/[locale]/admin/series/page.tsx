@@ -11,7 +11,7 @@ import { UploadSeriesCoverButton } from "@/components/admin/UploadSeriesCoverBut
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
 import { storageKeyToUrl } from "@/lib/media-url";
-import { Layers, BookOpen, Eye, Clock3 } from "lucide-react";
+import { Layers, BookOpen, Eye, Clock3, Search } from "lucide-react";
 
 export default async function AdminSeriesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
@@ -73,12 +73,18 @@ export default async function AdminSeriesPage({ params, searchParams }: { params
         { label: "Linked to a book", value: linkedBooks, icon: BookOpen, tone: "amber" },
       ]} />
 
-      <form method="get" className="flex flex-col gap-2 sm:flex-row">
-        <input name="q" defaultValue={query} placeholder="Search series title or slug..." className="h-10 min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
-        <button className="h-10 rounded-md border border-stone-200 bg-white px-4 text-xs font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Search</button>
+      <form method="get" role="search" className="flex min-w-0 gap-2">
+        <label className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+          <span className="sr-only">Search series</span>
+          <input name="q" defaultValue={query} placeholder="Search series title or slug..." className="min-h-11 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+        </label>
+        <button type="submit" aria-label="Search series" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+          <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
+        </button>
       </form>
 
-      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 md:block">
+      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto"><table className="w-full min-w-200 text-left text-xs">
           <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["Order", "Title", "Category", "Lessons", "Status", "Actions"].map((heading) => <th key={heading} className="px-3 py-2.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
@@ -95,7 +101,7 @@ export default async function AdminSeriesPage({ params, searchParams }: { params
         </table></div>
       </div>
 
-      <div className="space-y-2.5 md:hidden">
+      <div className="space-y-2.5 lg:hidden">
         {seriesList.map((item) => <article key={item.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-xs font-semibold text-stone-800 dark:text-stone-100">{item.title}</p><p className="mt-1 truncate font-mono text-[9px] text-stone-500">{item.slug} · order {item.order}</p></div><SeriesActions item={item} categories={categories} books={books} /></div>
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-stone-100 pt-2.5 dark:border-stone-800"><span className="text-[10px] text-stone-500">{item.category?.name ?? "Uncategorized"}</span><span className="text-[10px] text-stone-500">{item._count.lessons} lessons</span><SeriesStatus status={item.status} /></div>
