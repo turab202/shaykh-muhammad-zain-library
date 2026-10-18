@@ -123,7 +123,7 @@ jobs:
           pip install mutagen -q
           # Use fast concurrent downloader — 3x faster than import_loop
           LIMIT=${{ github.event.inputs.batch == '5' && '2000' || github.event.inputs.batch }}
-          python scripts/fast_audio_downloader.py --limit ${LIMIT:-2000}
+          python scripts/fast_audio_downloader.py --session 1 --limit ${LIMIT:-2000}
 
       - name: Run audio import — new messages mode (check for new lessons daily)
         if: ${{ steps.strategy.outputs.mode == 'new_messages' || github.event_name == 'schedule' }}
@@ -141,7 +141,7 @@ jobs:
         run: |
           pip install mutagen -q
           echo "Checking for new lessons from Telegram..."
-          python scripts/fast_audio_downloader.py --limit 50
+          python scripts/fast_audio_downloader.py --session 1 --limit 50
 
       - name: Fix audio durations from B2 metadata
         if: ${{ github.event.inputs.no_media != 'true' }}
