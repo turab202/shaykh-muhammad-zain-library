@@ -10,6 +10,7 @@ import { EditSeriesButton } from "@/components/admin/EditSeriesButton";
 import { UploadSeriesCoverButton } from "@/components/admin/UploadSeriesCoverButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
+import { storageKeyToUrl } from "@/lib/media-url";
 import { Layers, BookOpen, Eye, Clock3 } from "lucide-react";
 
 export default async function AdminSeriesPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
@@ -111,12 +112,12 @@ function SeriesStatus({ status }: { status: string }) {
 }
 
 function SeriesActions({ item, categories, books }: { item: { id: string; slug: string; title: string; translations: unknown; description: string | null; descTranslations: unknown; order: number; status: string; categoryId: string | null; bookId: string | null; coverImageKey: string | null }; categories: { id: string; name: string }[]; books: { id: string; title: string }[] }) {
-  return <div className="flex items-center gap-1.5">
-    <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} compact />
-    <Link href={`/series/${item.slug}`} aria-label={`View ${item.title}`} title={`View ${item.title}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
-    <UploadSeriesCoverButton seriesId={item.id} seriesSlug={item.slug} hasCover={!!item.coverImageKey} compact />
-    <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} compact />
-    <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" compact />
+  return <div className="flex flex-wrap items-center gap-1.5">
+    <UploadSeriesCoverButton seriesId={item.id} seriesSlug={item.slug} hasCover={!!item.coverImageKey} currentCoverUrl={storageKeyToUrl(item.coverImageKey)} thumbnailSize="table" />
+    <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} />
+    <Link href={`/series/${item.slug}`} className="inline-flex min-h-8 items-center rounded-md border border-stone-200 px-2.5 py-1.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">View</Link>
+    <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} />
+    <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" />
   </div>;
 }
 

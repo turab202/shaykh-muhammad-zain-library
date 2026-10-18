@@ -64,7 +64,7 @@ export function DeleteButton({
           ? "inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
           : "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-[11px] font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
       >
-        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+        {compact && <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
         {!compact && label}
       </button>
 
@@ -133,5 +133,4 @@ export function DeleteButton({
     </>
   );
 }
-
 

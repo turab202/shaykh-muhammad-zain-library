@@ -12,7 +12,6 @@ import {
   Folder,
   Globe2,
   Languages,
-  MoreHorizontal,
   Pencil,
   Search,
   Save,
@@ -217,8 +216,8 @@ export function SiteContentManager({
                         <td className="whitespace-nowrap px-3 py-2.5 text-[9px] text-stone-500 dark:text-stone-400">{formatDate(entry.updatedAt)}</td>
                         <td className="px-3 py-2.5">
                           <div className="flex items-center gap-1">
-                            <button type="button" aria-label={`Edit ${entry.key}`} title="Edit translation" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="inline-flex size-7 items-center justify-center rounded text-stone-500 hover:bg-white hover:text-emerald-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-emerald-300"><Pencil className="size-3.5" aria-hidden="true" /></button>
-                            <button type="button" aria-label={`More actions for ${entry.key}`} title="More actions" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="inline-flex size-7 items-center justify-center rounded text-stone-500 hover:bg-white hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"><MoreHorizontal className="size-4" aria-hidden="true" /></button>
+                            <button type="button" aria-label={`Edit ${entry.key}`} title="Edit translation" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="rounded px-2 py-1 text-[10px] font-medium text-stone-600 hover:bg-white hover:text-emerald-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-emerald-300">Edit</button>
+                            <button type="button" aria-label={`View details for ${entry.key}`} title="View entry details" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="rounded px-2 py-1 text-[10px] font-medium text-stone-600 hover:bg-white hover:text-stone-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100">Details</button>
                           </div>
                         </td>
                       </tr>

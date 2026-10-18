@@ -67,7 +67,7 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: 
             : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100"
         }`}
       >
-        {status === "uploading" ? (
+        {compact && (status === "uploading" ? (
           <Loader className="w-3 h-3 animate-spin" />
         ) : status === "done" ? (
           <CheckCircle className="w-3 h-3" />
@@ -75,7 +75,7 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: 
           <XCircle className="w-3 h-3" />
         ) : (
           <Upload className="w-3 h-3" />
-        )}
+        ))}
         {!compact && (hasPdf ? "Replace PDF" : "Upload PDF")}
       </button>
       {message && (
@@ -88,5 +88,4 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: 
     </div>
   );
 }
-
 

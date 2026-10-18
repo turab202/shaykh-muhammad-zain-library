@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
-import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
   BookOpen,
@@ -349,10 +348,13 @@ function Heading({ children }: { children: ReactNode }) {
 }
 
 function CoverThumb({ book, size }: { book: BookEntry; size: "table" | "card" }) {
-  const dimensions = size === "table" ? "h-12 w-9" : "h-[86px] w-[62px]";
-  return <div className={`relative ${dimensions} flex items-center justify-center overflow-hidden rounded-md border border-stone-200 bg-stone-100 dark:border-stone-700 dark:bg-stone-800`}>
-    {book.coverUrl ? <Image src={book.coverUrl} alt={`${book.title} cover`} fill sizes={size === "table" ? "36px" : "62px"} unoptimized className="object-cover" /> : <BookOpen className="size-5 text-stone-400 dark:text-stone-500" aria-hidden="true" />}
-  </div>;
+  return <UploadCoverButton
+    bookId={book.id}
+    bookSlug={book.slug}
+    hasCover={!!book.coverUrl}
+    currentCoverUrl={book.coverUrl ?? undefined}
+    thumbnailSize={size}
+  />;
 }
 
 function CategoryBadge({ name, id }: { name: string | null; id: string | null }) {
@@ -381,16 +383,15 @@ function BookActions({ book, categories, deleteAction, visibilityAction }: { boo
 
 function BookActionMenu({ book, categories, deleteAction, visibilityAction, mobile = false }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void>; mobile?: boolean }) {
   const coverKey = book.coverUrl ? book.coverUrl.split("/api/media/b2/")[1] : undefined;
-  const actionButtonSize = mobile ? "[&_button]:size-11 [&_button]:min-h-11 [&_button]:min-w-11" : "";
   return <details className={`relative ${mobile ? "absolute inset-e-2 top-2" : ""}`}>
     <summary aria-label={`More actions for ${book.title}`} title="More actions" className={`${mobile ? "size-11" : "size-8"} inline-flex cursor-pointer list-none items-center justify-center rounded-md border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800`}><MoreHorizontal className="size-4" aria-hidden="true" /></summary>
-    <div className={`absolute ${mobile ? "inset-e-0 top-12 grid min-w-52 grid-cols-4" : "inset-e-0 top-9 grid min-w-40 grid-cols-4"} z-30 gap-1 rounded-md border border-stone-200 bg-white p-2 shadow-lg dark:border-stone-700 dark:bg-stone-900 ${actionButtonSize}`}>
-      {mobile && <Link href={`/kutub/${book.slug}`} aria-label={`View ${book.title}`} title="View book" className="inline-flex size-8 items-center justify-center rounded-md border border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>}
-      {mobile && <EditBookButton book={toEditableBook(book)} categories={categories} compact />}
-      <UploadPdfButton bookId={book.id} bookTitle={book.title} hasPdf={book.hasPdf} compact />
-      <UploadCoverButton bookId={book.id} bookSlug={book.slug} hasCover={!!book.coverUrl} currentCoverUrl={book.coverUrl ?? undefined} compact />
-      <ToggleVisibilityButton id={book.id} currentStatus={book.status} itemName={book.title} action={visibilityAction} compact />
-      <DeleteButton action={deleteAction.bind(null, book.id)} itemName={book.title} itemType="book" compact />
+    <div className={`absolute ${mobile ? "inset-e-0 top-12" : "inset-e-0 top-9"} z-30 flex min-w-44 flex-col gap-1 rounded-md border border-stone-200 bg-white p-2 shadow-lg dark:border-stone-700 dark:bg-stone-900`}>
+      {mobile && <Link href={`/kutub/${book.slug}`} className="rounded px-2.5 py-1.5 text-[11px] font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">View book</Link>}
+      {mobile && <EditBookButton book={toEditableBook(book)} categories={categories} />}
+      <UploadPdfButton bookId={book.id} bookTitle={book.title} hasPdf={book.hasPdf} />
+      <UploadCoverButton bookId={book.id} bookSlug={book.slug} hasCover={!!book.coverUrl} currentCoverUrl={book.coverUrl ?? undefined} />
+      <ToggleVisibilityButton id={book.id} currentStatus={book.status} itemName={book.title} action={visibilityAction} />
+      <DeleteButton action={deleteAction.bind(null, book.id)} itemName={book.title} itemType="book" />
     </div>
     {coverKey && <span className="sr-only">Cover: {coverKey}</span>}
   </details>;

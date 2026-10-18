@@ -84,7 +84,7 @@ export function EditSeriesButton({ series, categories, books, compact = false }:
           ? "inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
           : "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-stone-200 px-2.5 py-1.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"}
       >
-        <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+        {compact && <Pencil className="h-3.5 w-3.5" aria-hidden="true" />}
         {!compact && "Edit"}
       </button>
 
@@ -288,5 +288,4 @@ function ModalTextarea({
     </div>
   );
 }
-
 

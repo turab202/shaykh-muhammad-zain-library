@@ -44,14 +44,14 @@ export function ToggleVisibilityButton({
           : "bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
       }`}
     >
-      {isPending ? (
+      {compact && (isPending ? (
         <Loader className="w-3 h-3 animate-spin" />
       ) : isVisible ? (
         <Eye className="w-3 h-3" />
       ) : (
         <EyeOff className="w-3 h-3" />
-      )}
-      {!compact && (isVisible ? "Visible" : "Hidden")}
+      ))}
+      {!compact && (isVisible ? "Hide" : "Publish")}
     </button>
   );
 }
