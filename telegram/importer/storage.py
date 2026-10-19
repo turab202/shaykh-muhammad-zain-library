@@ -80,53 +80,95 @@ class S3Storage:
         access_key_id: str,
         secret_access_key: str,
         bucket_name: str,
-        public_url: str = "",  # CDN/public URL prefix — leave empty for private
+        public_url: str = "",
     ):
         self.bucket = bucket_name
         self.public_url = public_url.rstrip("/")
         self._endpoint_url = endpoint_url
+        self._access_key_id = access_key_id
+        self._secret_access_key = secret_access_key
 
+        # Verify boto3 is available
         try:
             import boto3
-            from botocore.config import Config
-            # B2 requires the real region derived from the endpoint hostname
-            # e.g. "s3.us-east-005.backblazeb2.com" → "us-east-005"
-            region = "auto"
-            if endpoint_url:
-                host = endpoint_url.replace("https://", "").replace("http://", "")
-                parts = host.split(".")
-                if len(parts) >= 2:
-                    region = parts[1]  # "us-east-005"
-            self._s3 = boto3.client(
-                "s3",
-                endpoint_url=endpoint_url,
-                aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key,
-                region_name=region,
-                config=Config(signature_version="s3v4"),
-            )
         except ImportError:
             raise ImportError("boto3 is required for cloud storage. Run: pip install boto3")
 
+        # Build a lightweight client just for exists() and get_presigned_url()
+        from botocore.config import Config
+        region = "auto"
+        if endpoint_url:
+            host = endpoint_url.replace("https://", "").replace("http://", "")
+            parts = host.split(".")
+            if len(parts) >= 2:
+                region = parts[1]
+        self._region = region
+        self._s3 = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
+            region_name=region,
+            config=Config(signature_version="s3v4", connect_timeout=30, read_timeout=60),
+        )
+
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
-        import logging
+        import logging, time, boto3
         from boto3.s3.transfer import TransferConfig
+        from botocore.config import Config as BotoConfig
         log = logging.getLogger(__name__)
         key = _object_key(original_filename, mime_type, message_date)
         size_kb = os.path.getsize(source_path) // 1024
         log.info("  ☁ Uploading to B2: %s (%s KB)", key, size_kb)
-        # Use single-part upload for files under 100MB to avoid multipart timeouts
+
+        # Derive region from endpoint
+        region = "auto"
+        if self._endpoint_url:
+            host = self._endpoint_url.replace("https://", "").replace("http://", "")
+            parts = host.split(".")
+            if len(parts) >= 2:
+                region = parts[1]
+
         config = TransferConfig(
-            multipart_threshold=100 * 1024 * 1024,
+            multipart_threshold=50 * 1024 * 1024,
+            multipart_chunksize=10 * 1024 * 1024,
             max_concurrency=1,
         )
-        self._s3.upload_file(
-            source_path, self.bucket, key,
-            ExtraArgs={"ContentType": mime_type, "CacheControl": "public, max-age=31536000"},
-            Config=config,
-        )
-        log.info("  ✓ Uploaded to B2: %s", key)
+
+        # Retry up to 5 times with exponential backoff for SSL/connection errors
+        last_error = None
+        for attempt in range(5):
+            try:
+                # Create fresh client each retry (clears any bad connection state)
+                s3 = boto3.client(
+                    "s3",
+                    endpoint_url=self._endpoint_url,
+                    aws_access_key_id=self._access_key_id,
+                    aws_secret_access_key=self._secret_access_key,
+                    region_name=region,
+                    config=BotoConfig(
+                        signature_version="s3v4",
+                        connect_timeout=60,
+                        read_timeout=300,
+                        retries={"max_attempts": 3, "mode": "standard"},
+                    ),
+                )
+                s3.upload_file(
+                    source_path, self.bucket, key,
+                    ExtraArgs={"ContentType": mime_type, "CacheControl": "public, max-age=31536000"},
+                    Config=config,
+                )
+                log.info("  ✓ Uploaded to B2: %s", key)
+                break
+            except Exception as e:
+                last_error = e
+                wait = min(2 ** attempt, 30)  # 1, 2, 4, 8, 16, max 30s
+                log.warning("  ⚠ B2 upload attempt %d/5 failed (%s) — retry in %ds",
+                            attempt + 1, type(e).__name__, wait)
+                time.sleep(wait)
+        else:
+            raise last_error
         if self.public_url:
             return f"{self.public_url}/{key}"
         return f"s3://{self.bucket}/{key}"
