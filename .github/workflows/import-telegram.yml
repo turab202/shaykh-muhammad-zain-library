@@ -1,10 +1,10 @@
 name: Import from Telegram
 
 on:
-  # Run automatically every day at 3am UTC
+  # Run every 4 hours automatically until all audio is done
   schedule:
-    - cron: "0 3 * * *"
-  # Allow manual trigger
+    - cron: "0 */4 * * *"
+  # Also allow manual trigger
   workflow_dispatch:
     inputs:
       batch:
