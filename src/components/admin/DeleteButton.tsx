@@ -32,9 +32,11 @@ export function DeleteButton({
 }: DeleteButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   function openModal() {
+    setError("");
     setOpen(true);
     // Use requestAnimationFrame so the element is rendered before we call showModal
     requestAnimationFrame(() => dialogRef.current?.showModal());
@@ -47,8 +49,13 @@ export function DeleteButton({
 
   function handleConfirm() {
     startTransition(async () => {
-      await action();
-      closeModal();
+      setError("");
+      try {
+        await action();
+        closeModal();
+      } catch (actionError) {
+        setError(actionError instanceof Error ? actionError.message : "Unable to delete this item.");
+      }
     });
   }
 
@@ -61,8 +68,8 @@ export function DeleteButton({
         aria-label={`Delete ${itemType}: ${itemName}`}
         title={`Delete ${itemType}: ${itemName}`}
         className={compact
-          ? "inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
-          : "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-red-200 px-2.5 py-1.5 text-[11px] font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
+          ? "inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
+          : "inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
       >
         {compact && <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
         {!compact && label}
@@ -106,6 +113,7 @@ export function DeleteButton({
             <p className="text-xs text-red-600 dark:text-red-400">
               This action cannot be undone.
             </p>
+            {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">{error}</p>}
           </div>
 
           {/* Footer */}
@@ -114,7 +122,7 @@ export function DeleteButton({
               type="button"
               onClick={closeModal}
               disabled={isPending}
-              className="px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-xs font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer disabled:opacity-60"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 disabled:opacity-60"
             >
               Cancel
             </button>
@@ -122,7 +130,7 @@ export function DeleteButton({
               type="button"
               onClick={handleConfirm}
               disabled={isPending}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
               {isPending ? "Deleting…" : "Yes, delete"}
@@ -133,4 +141,3 @@ export function DeleteButton({
     </>
   );
 }
-

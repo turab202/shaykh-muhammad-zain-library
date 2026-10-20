@@ -67,8 +67,8 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
 
   function LessonActions({ lesson, mobile = false }: { lesson: (typeof lessons)[number]; mobile?: boolean }) {
     const actionClass = mobile
-      ? "inline-flex min-h-11 items-center justify-center rounded-md border px-3 text-[11px] font-medium"
-      : "inline-flex size-8 items-center justify-center rounded-md border";
+      ? "inline-flex min-h-11 items-center justify-center rounded-lg border px-3 text-sm font-medium"
+      : "inline-flex size-10 items-center justify-center rounded-lg border";
     return <div className={`flex flex-wrap items-center gap-1.5 ${mobile ? "[&_button]:min-h-11" : ""}`}>
       {lesson.status !== "PUBLISHED" ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Publish ${lesson.title}`} title={`Publish ${lesson.title}`} className={`${actionClass} border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300`}>{mobile ? "Publish" : <Eye className="size-4" aria-hidden="true" />}</button></form> : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Unpublish ${lesson.title}`} title={`Unpublish ${lesson.title}`} className={`${actionClass} border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300`}>{mobile ? "Unpublish" : <EyeOff className="size-4" aria-hidden="true" />}</button></form>}
       <Link href={`/duruus/${lesson.slug}`} aria-label={`View ${lesson.title}`} title={`View ${lesson.title}`} className={`${actionClass} border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800`}>{mobile ? "View" : <Eye className="size-4" aria-hidden="true" />}</Link>
@@ -78,7 +78,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
   }
 
   return (
-    <div className="mx-auto max-w-360 space-y-4">
+    <div className="mx-auto max-w-360 space-y-6">
       <AdminPageHeading title={t("lessons")} description={`Manage lesson metadata and publication · ${total} lessons`} icon={FileText} />
       <AdminSummaryGrid items={[
         { label: "Total lessons", value: total, icon: FileText },
@@ -90,36 +90,36 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         <label className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search lessons</span>
-          <input name="q" defaultValue={query} placeholder="Search lesson title, series, or category..." className="min-h-11 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+          <input name="q" defaultValue={query} placeholder="Search lesson title, series, or category..." className="min-h-12 w-full rounded-xl border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
         </label>
-        <button type="submit" aria-label="Search lessons" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+        <button type="submit" aria-label="Search lessons" className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
           <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
         </button>
       </form>
 
       <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto"><table className="w-full min-w-225 text-left text-xs">
-          <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((heading) => <th key={heading} className="px-3 py-2.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
+          <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((heading) => <th key={heading} className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
             {lessons.map((lesson) => <tr key={lesson.id} className="transition-colors hover:bg-stone-50/80 dark:hover:bg-stone-800/30">
-              <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{lesson.lessonNumber ?? "—"}</td>
-              <td className="max-w-80 px-3 py-3"><p className="truncate text-[11px] font-semibold text-stone-800 dark:text-stone-100" title={lesson.title}>{lesson.title}</p><p className="mt-0.5 truncate text-[9px] text-stone-400">{lesson.slug}</p></td>
-              <td className="max-w-44 truncate px-3 py-3 text-[10px] text-stone-500">{lesson.series?.title ?? "—"}</td>
-              <td className="px-3 py-3 text-[10px] text-stone-500">{lesson.category?.name ?? "—"}</td>
-              <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{lesson.duration ? `${Math.floor(lesson.duration / 60)}m` : "—"}</td>
-              <td className="px-3 py-3"><LessonStatus status={lesson.status} /></td>
-              <td className="px-3 py-2"><LessonActions lesson={lesson} /></td>
+              <td className="px-4 py-4 font-mono text-sm text-stone-500">{lesson.lessonNumber ?? "—"}</td>
+              <td className="max-w-80 px-4 py-4"><p className="truncate text-sm font-semibold text-stone-800 dark:text-stone-100" title={lesson.title}>{lesson.title}</p><p className="mt-1 truncate text-xs text-stone-500">{lesson.slug}</p></td>
+              <td className="max-w-44 truncate px-4 py-4 text-sm text-stone-600 dark:text-stone-300">{lesson.series?.title ?? "—"}</td>
+              <td className="px-4 py-4 text-sm text-stone-600 dark:text-stone-300">{lesson.category?.name ?? "—"}</td>
+              <td className="px-4 py-4 font-mono text-sm text-stone-600 dark:text-stone-300">{lesson.duration ? `${Math.floor(lesson.duration / 60)}m` : "—"}</td>
+              <td className="px-4 py-4"><LessonStatus status={lesson.status} /></td>
+              <td className="px-4 py-3"><LessonActions lesson={lesson} /></td>
             </tr>)}
             {lessons.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-xs text-stone-500">{query ? "No lessons match your search." : "No lessons yet."}</td></tr>}
           </tbody>
         </table></div>
       </div>
 
-      <div className="space-y-2.5 lg:hidden">
-        {lessons.map((lesson) => <article key={lesson.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
-          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-xs font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-[9px] text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-stone-500"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
-          <div className="mt-3 flex flex-wrap justify-end border-t border-stone-100 pt-2 dark:border-stone-800"><LessonActions lesson={lesson} mobile /></div>
+      <div className="space-y-3 lg:hidden">
+        {lessons.map((lesson) => <article key={lesson.id} className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-base font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-xs text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-2 text-sm text-stone-600 dark:text-stone-400"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
+          <div className="mt-4 flex flex-wrap justify-end border-t border-stone-100 pt-3 dark:border-stone-800"><LessonActions lesson={lesson} mobile /></div>
         </article>)}
         {lessons.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No lessons match your search." : "No lessons yet."}</p>}
       </div>
@@ -129,5 +129,5 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
 
 function LessonStatus({ status }: { status: string }) {
   const className = status === "PUBLISHED" ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200" : status === "ARCHIVED" ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200" : "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-200";
-  return <span className={`whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold ${className}`}>{status === "PUBLISHED" ? "Published" : status === "ARCHIVED" ? "Archived" : "Draft"}</span>;
+  return <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}>{status === "PUBLISHED" ? "Published" : status === "ARCHIVED" ? "Archived" : "Draft"}</span>;
 }

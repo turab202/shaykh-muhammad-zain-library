@@ -28,10 +28,10 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
   ]);
 
   return (
-    <div className="mx-auto max-w-360 space-y-4">
+    <div className="mx-auto max-w-360 space-y-6">
       <AdminPageHeading title={t("categories")} description={`Organize lessons, series, and books · ${categoryCount} categories`} icon={Layers}
         action={
-          <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory} triggerClassName="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-800 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
+          <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory} triggerClassName="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field name="slug" label="Slug (e.g. hadith)" required />
             <Field name="name" label="English Name" required />
@@ -57,27 +57,27 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         <label className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search categories</span>
-          <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="min-h-11 w-full rounded-md border border-stone-200 bg-white ps-9 pe-3 text-xs text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+          <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="min-h-12 w-full rounded-xl border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
         </label>
-        <button aria-label="Search categories" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+        <button type="submit" aria-label="Search categories" className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
           <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
         </button>
       </form>
 
       <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-180 text-left text-xs">
+          <table className="w-full min-w-180 text-left text-sm">
             <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">
-              {(["Slug", "Name", "Lessons", "Series", "Books", "Actions"]).map((heading) => <th key={heading} className="px-3 py-2.5 text-[9px] font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}
+              {(["Slug", "Name", "Lessons", "Series", "Books", "Actions"]).map((heading) => <th key={heading} className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}
             </tr></thead>
             <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
               {categories.map((category) => <tr key={category.id} className="transition-colors hover:bg-stone-50/80 dark:hover:bg-stone-800/30">
-                <td className="px-3 py-3 font-mono text-[10px] text-stone-500">{category.slug}</td>
-                <td className="px-3 py-3 text-[11px] font-semibold text-stone-800 dark:text-stone-100">{category.name}</td>
-                <td className="px-3 py-3 text-[10px] tabular-nums text-stone-600 dark:text-stone-300">{category._count.lessons}</td>
-                <td className="px-3 py-3 text-[10px] tabular-nums text-stone-600 dark:text-stone-300">{category._count.series}</td>
-                <td className="px-3 py-3 text-[10px] tabular-nums text-stone-600 dark:text-stone-300">{category._count.books}</td>
-                <td className="px-3 py-2"><CategoryActions category={category} /></td>
+                <td className="px-4 py-4 font-mono text-xs text-stone-500">{category.slug}</td>
+                <td className="px-4 py-4 text-sm font-semibold text-stone-800 dark:text-stone-100">{category.name}</td>
+                <td className="px-4 py-4 text-sm tabular-nums text-stone-600 dark:text-stone-300">{category._count.lessons}</td>
+                <td className="px-4 py-4 text-sm tabular-nums text-stone-600 dark:text-stone-300">{category._count.series}</td>
+                <td className="px-4 py-4 text-sm tabular-nums text-stone-600 dark:text-stone-300">{category._count.books}</td>
+                <td className="px-4 py-3"><CategoryActions category={category} /></td>
               </tr>)}
               {categories.length === 0 && <tr><td colSpan={6} className="px-4 py-12 text-center text-xs text-stone-500">{query ? "No categories match your search." : "No categories yet."}</td></tr>}
             </tbody>
@@ -85,10 +85,10 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         </div>
       </div>
 
-      <div className="space-y-2.5 lg:hidden">
-        {categories.map((category) => <article key={category.id} className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900">
-          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-xs font-semibold text-stone-800 dark:text-stone-100">{category.name}</h2><p className="mt-1 truncate font-mono text-[10px] text-stone-500">{category.slug}</p></div><CategoryActions category={category} mobile /></div>
-          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-stone-100 pt-2.5 dark:border-stone-800"><MiniCount label="Lessons" value={category._count.lessons} /><MiniCount label="Series" value={category._count.series} /><MiniCount label="Books" value={category._count.books} /></div>
+      <div className="space-y-3 lg:hidden">
+        {categories.map((category) => <article key={category.id} className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-base font-semibold text-stone-800 dark:text-stone-100">{category.name}</h2><p className="mt-1 truncate font-mono text-xs text-stone-500">{category.slug}</p></div><CategoryActions category={category} mobile /></div>
+          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-stone-100 pt-3 dark:border-stone-800"><MiniCount label="Lessons" value={category._count.lessons} /><MiniCount label="Series" value={category._count.series} /><MiniCount label="Books" value={category._count.books} /></div>
         </article>)}
         {categories.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No categories match your search." : "No categories yet."}</p>}
       </div>
@@ -101,14 +101,14 @@ function CategoryActions({ category, mobile = false }: { category: { id: string;
 }
 
 function MiniCount({ label, value }: { label: string; value: number }) {
-  return <div><p className="text-[9px] text-stone-500">{label}</p><p className="mt-0.5 text-xs font-semibold tabular-nums text-stone-800 dark:text-stone-200">{value}</p></div>;
+  return <div><p className="text-xs text-stone-500">{label}</p><p className="mt-1 text-sm font-semibold tabular-nums text-stone-800 dark:text-stone-200">{value}</p></div>;
 }
 
 function Field({ name, label, required }: { name: string; label: string; required?: boolean }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">{label}{required && " *"}</label>
-      <input id={name} name={name} required={required} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700" />
+      <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{label}{required && " *"}</label>
+      <input id={name} name={name} required={required} className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
     </div>
   );
 }
@@ -116,8 +116,8 @@ function Field({ name, label, required }: { name: string; label: string; require
 function FieldTextarea({ name, label }: { name: string; label: string }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1">{label}</label>
-      <textarea id={name} name={name} rows={2} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-700 resize-none" />
+      <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{label}</label>
+      <textarea id={name} name={name} rows={3} className="w-full resize-y rounded-lg border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100" />
     </div>
   );
 }

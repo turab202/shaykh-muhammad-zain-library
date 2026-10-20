@@ -75,8 +75,8 @@ export function EditBookButton({ book, categories, compact = false }: EditBookBu
         aria-label={`Edit ${book.title}`}
         title={`Edit ${book.title}`}
         className={compact
-          ? "inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-stone-200 text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
-          : "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-stone-200 px-2.5 py-1.5 text-[11px] font-medium text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"}
+          ? "inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+          : "inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"}
       >
         {compact && <Pencil className="h-3.5 w-3.5" aria-hidden="true" />}
         {!compact && "Edit"}
@@ -185,4 +185,3 @@ function MT({ name, label, defaultValue }: { name: string; label: string; defaul
     </div>
   );
 }
-
