@@ -121,12 +121,10 @@ jobs:
           STORAGE_PROVIDER: B2
         run: |
           pip install mutagen -q
-          # Use fast concurrent downloader — 3x faster than import_loop
-          LIMIT=${{ github.event.inputs.batch == '5' && '2000' || github.event.inputs.batch }}
-          python scripts/fast_audio_downloader.py --session 1 --limit ${LIMIT:-2000}
+          python scripts/fast_audio_downloader.py --session 1 --limit 500
 
       - name: Run audio import — new messages mode (check for new lessons daily)
-        if: ${{ steps.strategy.outputs.mode == 'new_messages' || github.event_name == 'schedule' }}
+        if: ${{ steps.strategy.outputs.mode == 'new_messages' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
