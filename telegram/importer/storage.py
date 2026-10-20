@@ -114,7 +114,10 @@ class S3Storage:
 
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
-        import logging, time, boto3
+        import logging, time, boto3, warnings
+        import urllib3
+        # Suppress SSL verification warnings for B2 uploads
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         from boto3.s3.transfer import TransferConfig
         from botocore.config import Config as BotoConfig
         log = logging.getLogger(__name__)
@@ -153,6 +156,7 @@ class S3Storage:
                         read_timeout=300,
                         retries={"max_attempts": 3, "mode": "standard"},
                     ),
+                    verify=False,  # B2 us-east-005 has intermittent SSL cert issues
                 )
                 s3.upload_file(
                     source_path, self.bucket, key,
