@@ -112,7 +112,7 @@ export function AudioUploadRow({
         type="button"
         disabled={status === "uploading"}
         onClick={() => inputRef.current?.click()}
-        className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 sm:min-h-9 sm:w-auto dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+        className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 sm:w-auto dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
       >
         {status === "uploading" ? (
           <><Loader className="w-3 h-3 animate-spin" />Uploading…</>

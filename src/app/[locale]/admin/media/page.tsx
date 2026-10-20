@@ -46,7 +46,7 @@ export default async function AdminMediaPage({ params }: { params: Promise<{ loc
   }
 
   return (
-    <div className="mx-auto max-w-360 space-y-4">
+    <div className="mx-auto max-w-360 space-y-6">
       <AdminPageHeading title="Audio Coverage" description="Upload audio for published lessons that do not have a recording yet." icon={Headphones}
         action={<a href="https://github.com/turab202/shaykh-muhammad-zain-library/actions" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50 sm:w-auto dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">Bulk import workflow <span aria-hidden="true">↗</span></a>} />
 
@@ -67,12 +67,12 @@ export default async function AdminMediaPage({ params }: { params: Promise<{ loc
         <div className="space-y-3">
           {Array.from(bySeries.entries()).map(([seriesTitle, seriesLessons]) => (
             <div key={seriesTitle} className="overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-              <div className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/50">
+              <div className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-5 py-4 dark:border-stone-800 dark:bg-stone-950/50">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="size-4 text-emerald-800 dark:text-emerald-300" />
-                  <span className="text-sm font-semibold text-stone-800 dark:text-stone-200">{seriesTitle}</span>
+                  <BookOpen className="size-5 text-emerald-800 dark:text-emerald-300" />
+                  <span className="text-base font-semibold text-stone-800 dark:text-stone-200">{seriesTitle}</span>
                 </div>
-                <span className="text-xs text-stone-500">{seriesLessons.length} missing</span>
+                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">{seriesLessons.length} missing</span>
               </div>
               <div className="divide-y divide-stone-100 dark:divide-stone-800">
                 {seriesLessons.map((lesson) => (

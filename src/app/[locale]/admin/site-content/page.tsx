@@ -26,9 +26,9 @@ export default async function SiteContentPage({ params }: { params: Promise<{ lo
   } catch (error) {
     console.error("Unable to load website content. Apply the site-content database migration.", error);
     return (
-      <div className="max-w-3xl space-y-4">
-        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Website Content</h1>
-        <div role="alert" className="border-s-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+      <div className="mx-auto max-w-360 space-y-6">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Website Content</h1>
+        <div role="alert" className="rounded-r-xl border-s-4 border-amber-500 bg-amber-50 px-5 py-4 text-sm leading-relaxed text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
           Website content storage is not available yet. Apply the pending database migration with <code className="font-mono">npx prisma migrate deploy</code>, then reload this page.
         </div>
       </div>

@@ -29,17 +29,17 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-      <div className="flex items-center gap-3 border-b border-stone-100 px-4 py-3 dark:border-stone-800 sm:px-5">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+      <div className="flex items-center gap-4 border-b border-stone-100 px-5 py-4 dark:border-stone-800 sm:px-6">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40">
+          <Icon className="size-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-stone-900 dark:text-stone-100">{title}</h2>
-          {description && <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">{description}</p>}
+          <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100">{title}</h2>
+          {description && <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{description}</p>}
         </div>
       </div>
-      <div className="px-4 py-4 sm:px-5 sm:py-5">{children}</div>
+      <div className="px-5 py-5 sm:px-6 sm:py-6">{children}</div>
     </div>
   );
 }
@@ -56,15 +56,15 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1.5">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
         {label}{required && <span className="text-red-500 ms-0.5">*</span>}
       </label>
       <input
         id={id} name={name} type={type} defaultValue={defaultValue}
         required={required} autoComplete={autoComplete}
-        className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:border-emerald-700 transition-colors placeholder:text-stone-400"
+        className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors placeholder:text-stone-400 focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
       />
-      {hint && <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-1">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{hint}</p>}
     </div>
   );
 }
@@ -77,20 +77,20 @@ function PasswordField({
   const [show, setShow] = useState(false);
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1.5">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">
         {label}{required && <span className="text-red-500 ms-0.5">*</span>}
       </label>
       <div className="relative">
         <input
           id={id} name={name} type={show ? "text" : "password"}
           autoComplete={autoComplete} required={required}
-          className="w-full px-3 py-2 pe-10 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:border-emerald-700 transition-colors"
+          className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pe-12 text-sm text-stone-900 transition-colors focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? "Hide password" : "Show password"}
-          className="absolute inset-y-0 inset-e-0 flex items-center px-3 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+          className="absolute inset-y-0 inset-e-0 flex min-w-11 items-center justify-center text-stone-500 transition-colors hover:text-stone-700 dark:hover:text-stone-200"
         >
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
@@ -108,10 +108,10 @@ function SelectField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-medium text-stone-600 dark:text-stone-400 mb-1.5">{label}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{label}</label>
       <select
         id={id} name={name} defaultValue={defaultValue}
-        className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-sm text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700 transition-colors"
+        className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
       >
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -134,16 +134,16 @@ function StatusMessage({ state }: { state: AnyFormState }) {
 
   if (state.success) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs text-emerald-800 dark:text-emerald-300">
-        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+      <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+        <CheckCircle2 className="size-5 shrink-0" aria-hidden="true" />
         {state.success}
       </div>
     );
   }
   if (allErrors.length > 0) {
     return (
-      <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-700 dark:text-red-400">
-        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400">
+        <AlertCircle className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
         <ul className="space-y-0.5">
           {allErrors.map((e, i) => <li key={i}>{e}</li>)}
         </ul>
@@ -158,7 +158,7 @@ function SubmitButton({ label, pendingLabel, pending }: { label: string; pending
     <button
       type="submit"
       disabled={pending}
-      className="flex items-center gap-2 px-4 py-2 bg-emerald-900 dark:bg-emerald-800 text-amber-100 rounded-lg text-xs font-semibold hover:bg-emerald-800 dark:hover:bg-emerald-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-800 dark:hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />}
       {pending ? (pendingLabel ?? "Saving…") : label}
@@ -337,7 +337,7 @@ function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
     : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400";
 
   return (
-    <li className="flex flex-wrap items-center gap-2 px-4 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/30 sm:flex-nowrap sm:gap-4 sm:px-5">
+    <li className="flex flex-wrap items-center gap-3 px-5 py-4 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/30 sm:flex-nowrap sm:gap-4 sm:px-6">
       {/* Avatar */}
       <div className="w-8 h-8 rounded-full bg-emerald-900 dark:bg-emerald-800 text-amber-100 flex items-center justify-center text-xs font-bold shrink-0">
         {initials}
@@ -349,7 +349,7 @@ function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
             {user.name ?? "(no name)"}
           </span>
           {isSelf && (
-            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400">
+            <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600 dark:bg-stone-800 dark:text-stone-300">
               You
             </span>
           )}
@@ -357,7 +357,7 @@ function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolean }) {
         <p className="text-xs text-stone-400 dark:text-stone-500 truncate">{user.email}</p>
       </div>
       {/* Role badge */}
-      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded shrink-0 ${roleColor}`}>
+      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${roleColor}`}>
         {user.role}
       </span>
       {/* Joined date */}

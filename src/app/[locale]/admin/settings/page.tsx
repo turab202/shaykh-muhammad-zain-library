@@ -36,18 +36,18 @@ export default async function SettingsPage({
   const isAdmin = currentUser.role === "ADMIN";
 
   return (
-    <div className="mx-auto max-w-360 space-y-5">
+    <div className="mx-auto max-w-360 space-y-8">
       <AdminPageHeading title="Settings" description="Manage your account and admin users" icon={Settings}
         action={<div className="flex min-w-0 items-center gap-2 rounded-md border border-stone-200 bg-white px-3 py-2 dark:border-stone-800 dark:bg-stone-900">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200">{(currentUser.name ?? currentUser.email)[0].toUpperCase()}</div>
-          <span className="hidden max-w-40 truncate text-xs font-medium text-stone-700 dark:text-stone-300 sm:inline">{currentUser.name ?? currentUser.email}</span>
-          <span className="rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">{currentUser.role}</span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200">{(currentUser.name ?? currentUser.email)[0].toUpperCase()}</div>
+          <span className="hidden max-w-56 truncate text-sm font-medium text-stone-700 dark:text-stone-300 sm:inline">{currentUser.name ?? currentUser.email}</span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">{currentUser.role}</span>
         </div>}
       />
 
       {/* ── Account section ─────────────────────────────── */}
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-4">
+        <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
           Your Account
         </h2>
         <div className="space-y-4">
@@ -59,9 +59,9 @@ export default async function SettingsPage({
       {/* ── Admin management section (ADMIN only) ──────── */}
       {isAdmin && (
         <div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-stone-400" aria-hidden="true" />
-            <h2 className="text-xs font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+          <div className="mb-4 flex items-center gap-3">
+            <Shield className="size-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
               Admin Management
             </h2>
           </div>
