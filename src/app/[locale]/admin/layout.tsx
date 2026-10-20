@@ -30,32 +30,32 @@ export default async function AdminLayout({ children, params }: { children: Reac
   ];
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-stone-50 dark:bg-stone-950">
+    <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 lg:flex-row">
       {/* Sidebar */}
-      <aside className="hidden w-44 shrink-0 flex-col border-e border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:flex">
-        <div className="border-b border-stone-200 px-3 py-3 dark:border-stone-800">
+      <aside className="hidden w-64 shrink-0 flex-col border-e border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:sticky lg:top-0 lg:flex lg:h-screen">
+        <div className="border-b border-stone-200 px-5 py-5 dark:border-stone-800">
           <Link href="/" className="group flex items-center gap-2.5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
               <BookOpen className="size-5" aria-hidden="true" />
             </div>
             <span className="min-w-0">
-              <span className="block truncate text-[11px] font-bold text-stone-800 transition-colors group-hover:text-emerald-800 dark:text-stone-100 dark:group-hover:text-emerald-300">مكتبة الشيخ محمد زين</span>
-              <span className="mt-0.5 block truncate text-[9px] text-stone-500 dark:text-stone-400">Islamic Digital Library</span>
+              <span className="block truncate text-sm font-bold text-stone-800 transition-colors group-hover:text-emerald-800 dark:text-stone-100 dark:group-hover:text-emerald-300">مكتبة الشيخ محمد زين</span>
+              <span className="mt-1 block truncate text-xs text-stone-500 dark:text-stone-400">Islamic Digital Library</span>
             </span>
           </Link>
         </div>
-        <nav className="flex-1 space-y-1 p-2">
+        <nav aria-label="Admin navigation" className="flex-1 space-y-1 overflow-y-auto p-4">
           {navItems.map(({ href, label, icon: Icon }) => (
             <AdminNavigationLink key={href} href={href}>
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
+              <Icon className="size-5 shrink-0" aria-hidden="true" />
               <span className="truncate">{label}</span>
             </AdminNavigationLink>
           ))}
         </nav>
-        <div className="p-3 border-t border-stone-200 dark:border-stone-800">
+        <div className="border-t border-stone-200 p-4 dark:border-stone-800">
           <form action={logout}>
-            <button type="submit" className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-700 dark:hover:text-red-400 transition-colors cursor-pointer">
-              <LogOut className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <button type="submit" className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-stone-400 dark:hover:bg-red-950/20 dark:hover:text-red-400">
+              <LogOut className="size-5 shrink-0" aria-hidden="true" />
               Sign out
             </button>
           </form>
@@ -64,9 +64,9 @@ export default async function AdminLayout({ children, params }: { children: Reac
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 sm:px-6">
+        <header className="flex min-h-16 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 sm:px-7">
           <AdminBreadcrumb items={navItems.map(({ href, label }) => ({ href, label }))} />
-          <Link href="/" className="shrink-0 whitespace-nowrap text-xs font-medium text-emerald-800 hover:underline dark:text-emerald-300">Public site ↗</Link>
+          <Link href="/" className="inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 hover:underline dark:text-emerald-300 dark:hover:bg-emerald-950/40">Public site ↗</Link>
         </header>
         <nav aria-label="Admin navigation" className="sticky top-0 z-30 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-900 lg:hidden">
           {navItems.map(({ href, label, icon: Icon }) => (
@@ -76,13 +76,13 @@ export default async function AdminLayout({ children, params }: { children: Reac
             </AdminNavigationLink>
           ))}
           <form action={logout} className="shrink-0">
-            <button type="submit" className="flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
-              <LogOut className="w-4 h-4" aria-hidden="true" />
+            <button type="submit" className="flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
+              <LogOut className="size-5" aria-hidden="true" />
               Sign out
             </button>
           </form>
         </nav>
-        <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-7 xl:p-8">{children}</main>
       </div>
     </div>
   );
