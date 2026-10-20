@@ -114,60 +114,23 @@ class S3Storage:
 
     def save(self, source_path: str, original_filename: str, mime_type: str,
              message_date: Optional[datetime] = None) -> str:
-        import logging, time, boto3, warnings
+        import logging, time, warnings
         import urllib3
-        # Suppress SSL verification warnings for B2 uploads
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        from boto3.s3.transfer import TransferConfig
-        from botocore.config import Config as BotoConfig
         log = logging.getLogger(__name__)
         key = _object_key(original_filename, mime_type, message_date)
         size_kb = os.path.getsize(source_path) // 1024
         log.info("  ☁ Uploading to B2: %s (%s KB)", key, size_kb)
 
-        # Derive region from endpoint
-        region = "auto"
-        if self._endpoint_url:
-            host = self._endpoint_url.replace("https://", "").replace("http://", "")
-            parts = host.split(".")
-            if len(parts) >= 2:
-                region = parts[1]
-
-        config = TransferConfig(
-            multipart_threshold=50 * 1024 * 1024,
-            multipart_chunksize=10 * 1024 * 1024,
-            max_concurrency=1,
-        )
-
-        # Retry up to 5 times with exponential backoff for SSL/connection errors
         last_error = None
         for attempt in range(5):
             try:
-                # Create fresh client each retry (clears any bad connection state)
-                s3 = boto3.client(
-                    "s3",
-                    endpoint_url=self._endpoint_url,
-                    aws_access_key_id=self._access_key_id,
-                    aws_secret_access_key=self._secret_access_key,
-                    region_name=region,
-                    config=BotoConfig(
-                        signature_version="s3v4",
-                        connect_timeout=60,
-                        read_timeout=300,
-                        retries={"max_attempts": 3, "mode": "standard"},
-                    ),
-                    verify=False,  # B2 us-east-005 has intermittent SSL cert issues
-                )
-                s3.upload_file(
-                    source_path, self.bucket, key,
-                    ExtraArgs={"ContentType": mime_type, "CacheControl": "public, max-age=31536000"},
-                    Config=config,
-                )
+                self._upload_with_requests(source_path, key, mime_type)
                 log.info("  ✓ Uploaded to B2: %s", key)
                 break
             except Exception as e:
                 last_error = e
-                wait = min(2 ** attempt, 30)  # 1, 2, 4, 8, 16, max 30s
+                wait = min(2 ** attempt, 30)
                 log.warning("  ⚠ B2 upload attempt %d/5 failed (%s) — retry in %ds",
                             attempt + 1, type(e).__name__, wait)
                 time.sleep(wait)
@@ -195,6 +158,46 @@ class S3Storage:
             return True
         except Exception:
             return False
+
+    def _upload_with_requests(self, source_path: str, key: str, mime_type: str):
+        """Upload using requests library — bypasses boto3/botocore HTTP issues."""
+        import requests
+        from requests_aws4auth import AWS4Auth
+
+        region = "auto"
+        if self._endpoint_url:
+            host = self._endpoint_url.replace("https://", "").replace("http://", "")
+            parts = host.split(".")
+            if len(parts) >= 2:
+                region = parts[1]
+
+        auth = AWS4Auth(
+            self._access_key_id,
+            self._secret_access_key,
+            region,
+            "s3",
+        )
+
+        url = f"{self._endpoint_url}/{self.bucket}/{key}"
+        file_size = os.path.getsize(source_path)
+
+        with open(source_path, "rb") as f:
+            response = requests.put(
+                url,
+                data=f,
+                auth=auth,
+                headers={
+                    "Content-Type": mime_type,
+                    "Content-Length": str(file_size),
+                    "Cache-Control": "public, max-age=31536000",
+                },
+                verify=False,
+                timeout=(30, 300),  # connect 30s, read 300s
+                stream=False,
+            )
+
+        if response.status_code not in (200, 201, 204):
+            raise Exception(f"B2 upload failed: HTTP {response.status_code} — {response.text[:200]}")
 
 
 # ── Factory ───────────────────────────────────────────────────────────────────
