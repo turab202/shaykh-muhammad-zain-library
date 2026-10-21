@@ -50,7 +50,7 @@ export function CreateDialog({ title, submitLabel, action, children, triggerClas
       <button
         type="button"
         onClick={openDialog}
-        className={triggerClassName ?? "inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"}
+        className={triggerClassName ?? "inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"}
       >
         <Plus className="h-4 w-4" aria-hidden="true" />
         {title}
@@ -72,7 +72,7 @@ export function CreateDialog({ title, submitLabel, action, children, triggerClas
               type="button"
               onClick={closeDialog}
               aria-label="Close dialog"
-              className="inline-flex size-11 items-center justify-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+              className="inline-flex size-9 items-center justify-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -92,14 +92,14 @@ export function CreateDialog({ title, submitLabel, action, children, triggerClas
                 type="button"
                 onClick={closeDialog}
                 disabled={isPending}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-stone-300 px-3.5 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60"
+                className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-emerald-900 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 disabled:opacity-60"
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 {isPending ? "Saving…" : submitLabel}

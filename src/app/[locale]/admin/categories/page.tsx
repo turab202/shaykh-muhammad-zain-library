@@ -31,7 +31,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
     <div className="mx-auto max-w-360 space-y-6">
       <AdminPageHeading title={t("categories")} description={`Organize lessons, series, and books · ${categoryCount} categories`} icon={Layers}
         action={
-          <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory} triggerClassName="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
+          <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory} triggerClassName="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field name="slug" label="Slug (e.g. hadith)" required />
             <Field name="name" label="English Name" required />
@@ -57,9 +57,9 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         <label className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search categories</span>
-          <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="min-h-12 w-full rounded-xl border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+          <input name="q" defaultValue={query} placeholder="Search category name or slug..." className="min-h-10 w-full rounded-lg border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
         </label>
-        <button type="submit" aria-label="Search categories" className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-stone-200 bg-white px-4 text-sm font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
+        <button type="submit" aria-label="Search categories" className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-stone-200 bg-white px-3 text-sm font-medium text-stone-700 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800">
           <Search className="size-4 sm:hidden" aria-hidden="true" /><span className="hidden sm:inline">Search</span>
         </button>
       </form>
@@ -97,7 +97,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
 }
 
 function CategoryActions({ category, mobile = false }: { category: { id: string; slug: string; name: string; translations: unknown; description: string | null; descTranslations: unknown; icon: string | null; colorClass: string | null }; mobile?: boolean }) {
-  return <div className={`flex items-center gap-1.5 ${mobile ? "[&_button]:min-h-11" : ""}`}><EditCategoryButton category={{ ...category, translations: category.translations as Record<string, string>, descTranslations: category.descTranslations as Record<string, string> }} compact={!mobile} /><DeleteButton action={deleteCategory.bind(null, category.id)} itemName={category.name} itemType="category" compact={!mobile} /></div>;
+  return <div className={`flex items-center gap-1.5 ${mobile ? "[&_button]:min-h-10" : ""}`}><EditCategoryButton category={{ ...category, translations: category.translations as Record<string, string>, descTranslations: category.descTranslations as Record<string, string> }} compact={!mobile} /><DeleteButton action={deleteCategory.bind(null, category.id)} itemName={category.name} itemType="category" compact={!mobile} /></div>;
 }
 
 function MiniCount({ label, value }: { label: string; value: number }) {

@@ -36,22 +36,22 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
   const publishedLessons = await prisma.lesson.count({ where: { status: "PUBLISHED" } });
 
   return (
-    <div className="mx-auto max-w-360 space-y-6">
-      <AdminPageHeading title={t("importTitle")} description={t("importSubtitle")} icon={Send} />
+    <div className="mx-auto max-w-360 space-y-4">
+      <AdminPageHeading title={t("importTitle")} description={t("importSubtitle")} icon={Send} compact />
 
       {/* Role explanation */}
       <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 sm:grid-cols-2">
         {/* GitHub handles: bulk import */}
         <div className="border-b border-stone-200 p-4 dark:border-stone-800 sm:border-b-0 sm:border-e">
-          <div className="mb-3 flex items-center gap-3">
-            <ExternalLink className="size-5 text-stone-500" aria-hidden="true" />
-            <span className="text-base font-bold text-stone-800 dark:text-stone-100">GitHub Actions</span>
-            <span className="ms-auto rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">Automated</span>
+          <div className="mb-2 flex items-center gap-2">
+            <ExternalLink className="size-4 text-stone-500" aria-hidden="true" />
+            <span className="text-xs font-bold text-stone-800 dark:text-stone-100">GitHub Actions</span>
+            <span className="ms-auto rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">Automated</span>
           </div>
-          <p className="mb-4 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+          <p className="mb-3 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
             Runs daily at 3am UTC. Downloads audio files from Telegram, uploads to B2 storage, and records metadata. No manual action needed.
           </p>
-          <ul className="mb-5 space-y-2 text-sm text-stone-600 dark:text-stone-400">
+          <ul className="mb-4 space-y-1 text-[10px] text-stone-500 dark:text-stone-400">
             <li>✓ Download audio from @SheikhMuhammedZain</li>
             <li>✓ Upload to Backblaze B2</li>
             <li>✓ Import PDF books</li>
@@ -61,7 +61,7 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
             href="https://github.com/turab202/shaykh-muhammad-zain-library/actions/workflows/import-telegram.yml"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800"
           >
             <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
             Run workflow manually
@@ -70,15 +70,15 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
 
         {/* Admin handles: review & quality */}
         <div className="p-4">
-          <div className="mb-3 flex items-center gap-3">
-            <CheckCircle className="size-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-            <span className="text-base font-bold text-emerald-900 dark:text-emerald-300">Your role</span>
-            <span className="ms-auto rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">Manual</span>
+          <div className="mb-2 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+            <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">Your Role (Admin)</span>
+            <span className="ms-auto rounded-full bg-amber-100 px-2 py-1 text-[9px] font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">Manual</span>
           </div>
-          <p className="mb-4 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+          <p className="mb-3 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
             Review imported messages, fix metadata, approve content for publication.
           </p>
-          <ul className="space-y-2 text-sm text-stone-600 dark:text-stone-400">
+          <ul className="space-y-1 text-[10px] text-stone-500 dark:text-stone-400">
             <li>✓ Review & approve pending messages</li>
             <li>✓ Fix lesson titles and series assignments</li>
             <li>✓ Manage categories, series, books</li>
@@ -88,7 +88,7 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
         </div>
       </div>
 
-      <AdminSummaryGrid items={[
+      <AdminSummaryGrid compact items={[
         { icon: Headphones, label: "Published lessons", value: publishedLessons },
         { icon: Headphones, label: "B2 audio files", value: audioCount, tone: "blue" },
         { icon: BookOpen, label: "PDFs in B2", value: pdfCount, tone: "amber" },
@@ -96,9 +96,9 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
       ]} />
 
       {/* Architecture note */}
-      <div className="rounded-e-xl border-s-4 border-amber-400 bg-amber-50/70 px-4 py-4 text-sm leading-relaxed text-amber-950 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-100">
+      <div className="border-s-2 border-amber-400 bg-amber-50/70 px-3 py-2.5 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
         <div className="flex items-start gap-2">
-          <AlertCircle className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
           <span>
             <strong>Data integrity:</strong> Raw Telegram source data is never overwritten.
             Suggested metadata is stored separately. Human review required before publication.
@@ -108,14 +108,14 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
 
       {/* Bulk publish */}
       {pending.length > 0 && (
-        <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-800 dark:bg-emerald-950/20">
-          <div className="flex flex-wrap items-center gap-3">
-            <RefreshCw className="size-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-            <p className="text-base font-semibold text-emerald-950 dark:text-emerald-100">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <RefreshCw className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+            <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-200">
               Bulk Publish — {pending.length} message{pending.length !== 1 ? "s" : ""} pending review
             </p>
           </div>
-          <p className="text-sm leading-relaxed text-emerald-900 dark:text-emerald-200">
+          <p className="text-xs text-emerald-800 dark:text-emerald-300">
             Auto-publishes all pending messages with confidence ≥ 60%.
             Low-confidence messages stay in the inbox for manual review.
           </p>
@@ -125,10 +125,10 @@ export default async function AdminImportPage({ params }: { params: Promise<{ lo
 
       {/* Pending review */}
       {pending.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-emerald-300 bg-white px-6 py-12 text-center dark:border-emerald-900 dark:bg-stone-900">
-          <CheckCircle className="mx-auto mb-3 size-10 text-emerald-500" aria-hidden="true" />
-          <p className="text-base font-semibold text-stone-800 dark:text-stone-100">Inbox is empty — no messages awaiting review.</p>
-          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+        <div className="p-8 text-center border border-dashed border-stone-300 dark:border-stone-700 rounded-xl">
+          <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" aria-hidden="true" />
+          <p className="text-sm font-medium text-stone-700 dark:text-stone-300">Inbox is empty — no messages awaiting review.</p>
+          <p className="text-xs text-stone-400 mt-1">
             GitHub Actions runs daily and will populate this inbox automatically.
           </p>
         </div>

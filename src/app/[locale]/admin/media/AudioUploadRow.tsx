@@ -94,7 +94,7 @@ export function AudioUploadRow({
           target="_blank"
           rel="noopener noreferrer"
           title="Open in Telegram to download"
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 sm:size-8 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-md text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 sm:size-8 dark:hover:bg-stone-800 dark:hover:text-stone-200"
         >
           <ExternalLink className="w-3.5 h-3.5" />
         </a>
@@ -112,7 +112,7 @@ export function AudioUploadRow({
         type="button"
         disabled={status === "uploading"}
         onClick={() => inputRef.current?.click()}
-        className="flex min-h-11 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 sm:w-auto dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
+        className="flex min-h-10 w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:opacity-60 sm:min-h-9 sm:w-auto dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300"
       >
         {status === "uploading" ? (
           <><Loader className="w-3 h-3 animate-spin" />Uploading…</>

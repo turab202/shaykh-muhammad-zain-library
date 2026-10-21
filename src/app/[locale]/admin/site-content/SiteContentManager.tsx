@@ -157,9 +157,9 @@ export function SiteContentManager({
               <label className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
               <span className="sr-only">Search translation entries</span>
-              <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search translation keys or content..." className="min-h-12 w-full rounded-xl border border-stone-200 bg-stone-50 ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100" />
+              <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search translation keys or content..." className="min-h-10 w-full rounded-lg border border-stone-200 bg-stone-50 ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100" />
               </label>
-              <button type="button" aria-label="Filter translations" aria-expanded={mobileFiltersOpen} aria-controls="translation-mobile-filters" onClick={() => setMobileFiltersOpen((open) => !open)} className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden ${mobileFiltersOpen || namespace !== "all" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}>
+              <button type="button" aria-label="Filter translations" aria-expanded={mobileFiltersOpen} aria-controls="translation-mobile-filters" onClick={() => setMobileFiltersOpen((open) => !open)} className={`relative inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden ${mobileFiltersOpen || namespace !== "all" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}>
                 <SlidersHorizontal className="size-4" aria-hidden="true" />
                 {namespace !== "all" && <span className="absolute -end-1 -top-1 size-2.5 rounded-full bg-emerald-700 ring-2 ring-white dark:ring-stone-900" />}
               </button>
@@ -167,14 +167,14 @@ export function SiteContentManager({
             <div id="translation-mobile-filters" className={`${mobileFiltersOpen ? "flex" : "hidden"} flex-wrap items-center gap-2 lg:flex`} aria-label="Translation filters">
             <div className="flex flex-wrap items-center gap-1" aria-label="Translation status language">
               {locales.map(({ id, label, shortLabel }) => (
-                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`min-h-11 min-w-12 rounded-lg px-3 text-sm font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
+                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`min-h-10 min-w-10 rounded-lg px-2.5 text-sm font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
                   {shortLabel}
                 </button>
               ))}
             </div>
             <label className="relative">
               <span className="sr-only">Filter by group</span>
-              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="min-h-11 min-w-40 appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-8 text-sm text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="min-h-10 min-w-40 appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-8 text-sm text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
                 <option value="all">All groups</option>
                 {groups.map((group) => <option key={group} value={group}>{groupLabel(group)}</option>)}
               </select>
@@ -226,7 +226,7 @@ export function SiteContentManager({
                         <td className="whitespace-nowrap px-4 py-3 text-xs text-stone-500 dark:text-stone-400">{formatDate(entry.updatedAt)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <button type="button" aria-label={`Edit ${entry.key}`} title="Edit translation" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="min-h-10 rounded-lg px-3 py-2 text-xs font-medium text-stone-600 hover:bg-white hover:text-emerald-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-emerald-300">Edit</button>
+                            <button type="button" aria-label={`Edit ${entry.key}`} title="Edit translation" onClick={(event) => { event.stopPropagation(); setSelectedKey(id); }} className="min-h-9 rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-white hover:text-emerald-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-emerald-300">Edit</button>
                           </div>
                         </td>
                       </tr>
@@ -276,8 +276,8 @@ export function SiteContentManager({
                 <EditorField id="edit-ar" name="ar" label="Arabic (العربية)" value={selected.translations.ar} dir="rtl" maxLength={500} />
                 <EditorField id="edit-am" name="am" label="Amharic (አማርኛ)" value={selected.translations.am} maxLength={500} />
                 <div className="flex gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-3 text-xs leading-relaxed text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"><CircleHelp className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> This entry will be updated for all languages.</div>
-                <button type="submit" disabled={isPending} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 disabled:opacity-60 dark:bg-emerald-700 dark:hover:bg-emerald-600"><Save className="size-4" aria-hidden="true" /> {isPending ? "Saving..." : "Save changes"}</button>
-                <button type="button" onClick={() => setSelectedKey(null)} className="min-h-11 w-full rounded-lg border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Cancel</button>
+                <button type="submit" disabled={isPending} className="inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 disabled:opacity-60 dark:bg-emerald-700 dark:hover:bg-emerald-600"><Save className="size-4" aria-hidden="true" /> {isPending ? "Saving..." : "Save changes"}</button>
+                <button type="button" onClick={() => setSelectedKey(null)} className="min-h-9 w-full rounded-lg border border-stone-200 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">Cancel</button>
               </form>
             </>
           ) : (
@@ -285,7 +285,7 @@ export function SiteContentManager({
               <div className="flex size-10 items-center justify-center rounded-full bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400"><Languages className="size-5" aria-hidden="true" /></div>
               <p className="text-sm font-semibold text-stone-800 dark:text-stone-200">Select a translation</p>
               <p className="text-sm leading-relaxed text-stone-500">Choose an entry from the table to edit its translations.</p>
-              <button type="button" onClick={() => setSelectedKey(filteredEntries[0] ? entryId(filteredEntries[0]) : null)} disabled={!filteredEntries.length} className="mt-1 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 hover:underline disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40">Open first entry <ChevronRight className="size-4" aria-hidden="true" /></button>
+              <button type="button" onClick={() => setSelectedKey(filteredEntries[0] ? entryId(filteredEntries[0]) : null)} disabled={!filteredEntries.length} className="mt-1 inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 hover:underline disabled:opacity-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40">Open first entry <ChevronRight className="size-4" aria-hidden="true" /></button>
             </div>
           )}
         </aside>
@@ -322,7 +322,7 @@ function NewTextField({ id, name, label, dir, required }: { id: string; name: Lo
 }
 
 function PageButton({ label, disabled, onClick, children }: { label: string; disabled: boolean; onClick: () => void; children: ReactNode }) {
-  return <button type="button" aria-label={label} disabled={disabled} onClick={onClick} className="inline-flex size-10 items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">{children}</button>;
+  return <button type="button" aria-label={label} disabled={disabled} onClick={onClick} className="inline-flex size-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">{children}</button>;
 }
 
 function entryId(entry: Entry) {

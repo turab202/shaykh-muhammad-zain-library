@@ -12,7 +12,7 @@ export function AdminNavigationLink({ href, children, mobile = false }: { href: 
       href={href as Parameters<typeof Link>[0]["href"]}
       aria-current={active ? "page" : undefined}
       className={[
-        "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "flex min-h-10 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         mobile ? "shrink-0 whitespace-nowrap" : "w-full",
         active
           ? "bg-emerald-800 text-white shadow-sm dark:bg-emerald-700"

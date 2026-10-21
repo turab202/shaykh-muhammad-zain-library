@@ -160,7 +160,7 @@ export function BooksManagement({
           title="Add Book"
           submitLabel="Create book"
           action={createAction}
-          triggerClassName="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-900 active:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto"
+          triggerClassName="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-900 active:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto"
         >
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FormField name="slug" label="Slug" required />
@@ -197,7 +197,7 @@ export function BooksManagement({
             aria-expanded={mobileSearchOpen}
             aria-controls="books-admin-search"
             onClick={() => setMobileSearchOpen((open) => !open)}
-            className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileSearchOpen || query ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+            className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileSearchOpen || query ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
           >
             <Search className="size-4" aria-hidden="true" />
           </button>
@@ -207,7 +207,7 @@ export function BooksManagement({
             aria-expanded={mobileFiltersOpen}
             aria-controls="books-admin-filters"
             onClick={() => setMobileFiltersOpen((open) => !open)}
-            className={`relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileFiltersOpen || categoryId !== "all" || status !== "all" || sort !== "newest" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
+            className={`relative inline-flex min-h-10 min-w-10 items-center justify-center rounded-md border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${mobileFiltersOpen || categoryId !== "all" || status !== "all" || sort !== "newest" ? "border-emerald-800 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" : "border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`}
           >
             <SlidersHorizontal className="size-4" aria-hidden="true" />
             {(categoryId !== "all" || status !== "all" || sort !== "newest") && <span className="absolute -end-1 -top-1 size-2.5 rounded-full bg-emerald-700 ring-2 ring-white dark:ring-stone-900" />}
@@ -220,7 +220,7 @@ export function BooksManagement({
             value={query}
             onChange={(event) => { setQuery(event.target.value); setPage(1); }}
             placeholder="Search book title, author, or category..."
-            className="min-h-12 w-full rounded-xl border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+            className="min-h-10 w-full rounded-lg border border-stone-200 bg-white ps-10 pe-4 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </label>
         <div id="books-admin-filters" className={`${mobileFiltersOpen ? "grid" : "hidden"} grid-cols-2 gap-2 md:flex md:flex-wrap`}>
@@ -245,7 +245,7 @@ export function BooksManagement({
             <ViewButton label="List view" selected={view === "list"} onClick={() => setView("list")}><List className="size-4" aria-hidden="true" /></ViewButton>
           </div>
           {mobileFiltersOpen && (categoryId !== "all" || status !== "all" || sort !== "newest") && (
-            <button type="button" onClick={() => { setCategoryId("all"); setStatus("all"); setSort("newest"); }} className="col-span-2 min-h-11 text-start text-xs font-medium text-stone-600 dark:text-stone-300 md:hidden">
+            <button type="button" onClick={() => { setCategoryId("all"); setStatus("all"); setSort("newest"); }} className="col-span-2 min-h-10 text-start text-xs font-medium text-stone-600 dark:text-stone-300 md:hidden">
               Clear filters
             </button>
           )}
@@ -367,11 +367,11 @@ function StatCard({ label, value, icon: Icon, tone }: { label: string; value: nu
 }
 
 function FilterSelect({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: ReactNode }) {
-  return <label className="relative min-w-0 sm:min-w-40"><span className="sr-only">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="min-h-11 w-full appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-9 text-sm text-stone-700 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">{children}</select><ChevronDown className="pointer-events-none absolute inset-e-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" /></label>;
+  return <label className="relative min-w-0 sm:min-w-40"><span className="sr-only">{label}</span><select value={value} onChange={(event) => onChange(event.target.value)} className="min-h-10 w-full appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-9 text-sm text-stone-700 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">{children}</select><ChevronDown className="pointer-events-none absolute inset-e-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" /></label>;
 }
 
 function ViewButton({ label, selected, onClick, children }: { label: string; selected: boolean; onClick: () => void; children: ReactNode }) {
-  return <button type="button" aria-label={label} aria-pressed={selected} title={label} onClick={onClick} className={`inline-flex size-11 items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${selected ? "border-emerald-800 bg-emerald-800 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"}`}>{children}</button>;
+  return <button type="button" aria-label={label} aria-pressed={selected} title={label} onClick={onClick} className={`inline-flex size-9 items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${selected ? "border-emerald-800 bg-emerald-800 text-white" : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"}`}>{children}</button>;
 }
 
 function Heading({ children }: { children: ReactNode }) {
@@ -406,7 +406,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function BookActions({ book, categories, deleteAction, visibilityAction }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void> }) {
   return <div className="flex items-center gap-1.5">
-    <Link href={`/kutub/${book.slug}`} aria-label={`View ${book.title}`} title={`View ${book.title}`} className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
+    <Link href={`/kutub/${book.slug}`} aria-label={`View ${book.title}`} title={`View ${book.title}`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
     <EditBookButton book={toEditableBook(book)} categories={categories} compact />
     <BookActionMenu book={book} categories={categories} deleteAction={deleteAction} visibilityAction={visibilityAction} />
   </div>;
@@ -415,9 +415,9 @@ function BookActions({ book, categories, deleteAction, visibilityAction }: { boo
 function BookActionMenu({ book, categories, deleteAction, visibilityAction, mobile = false }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void>; mobile?: boolean }) {
   const coverKey = book.coverUrl ? book.coverUrl.split("/api/media/b2/")[1] : undefined;
   return <details className={`relative ${mobile ? "absolute inset-e-2 top-2" : ""}`}>
-    <summary aria-label={`More actions for ${book.title}`} title="More actions" className={`${mobile ? "size-11" : "size-10"} inline-flex cursor-pointer list-none items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800`}><MoreHorizontal className="size-5" aria-hidden="true" /></summary>
-    <div className={`absolute ${mobile ? "inset-e-0 top-12" : "inset-e-0 top-11"} z-30 flex min-w-48 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-2 shadow-lg dark:border-stone-700 dark:bg-stone-900`}>
-      {mobile && <Link href={`/kutub/${book.slug}`} className="min-h-11 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">View book</Link>}
+    <summary aria-label={`More actions for ${book.title}`} title="More actions" className={`${mobile ? "size-10" : "size-9"} inline-flex cursor-pointer list-none items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800`}><MoreHorizontal className="size-5" aria-hidden="true" /></summary>
+    <div className={`absolute ${mobile ? "inset-e-0 top-11" : "inset-e-0 top-10"} z-30 flex min-w-48 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-2 shadow-lg dark:border-stone-700 dark:bg-stone-900`}>
+      {mobile && <Link href={`/kutub/${book.slug}`} className="min-h-10 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">View book</Link>}
       {mobile && <EditBookButton book={toEditableBook(book)} categories={categories} />}
       <UploadPdfButton bookId={book.id} bookTitle={book.title} hasPdf={book.hasPdf} />
       <UploadCoverButton bookId={book.id} bookSlug={book.slug} hasCover={!!book.coverUrl} currentCoverUrl={book.coverUrl ?? undefined} />
@@ -449,7 +449,7 @@ function Footer({ start, end, total, page, pages, selected, disabled, onPage, on
 }
 
 function PageButton({ label, disabled, onClick, children }: { label: string; disabled: boolean; onClick: () => void; children: ReactNode }) {
-  return <button type="button" aria-label={label} disabled={disabled} onClick={onClick} className="inline-flex size-10 items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">{children}</button>;
+  return <button type="button" aria-label={label} disabled={disabled} onClick={onClick} className="inline-flex size-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">{children}</button>;
 }
 
 function EmptyState() {

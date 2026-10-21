@@ -68,8 +68,8 @@ export function DeleteButton({
         aria-label={`Delete ${itemType}: ${itemName}`}
         title={`Delete ${itemType}: ${itemName}`}
         className={compact
-          ? "inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
-          : "inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
+          ? "inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
+          : "inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
       >
         {compact && <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
         {!compact && label}
@@ -122,7 +122,7 @@ export function DeleteButton({
               type="button"
               onClick={closeModal}
               disabled={isPending}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 disabled:opacity-60"
+              className="inline-flex min-h-9 items-center justify-center rounded-lg border border-stone-300 px-3.5 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 disabled:opacity-60"
             >
               Cancel
             </button>
@@ -130,7 +130,7 @@ export function DeleteButton({
               type="button"
               onClick={handleConfirm}
               disabled={isPending}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+              className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-red-600 px-3.5 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
             >
               <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
               {isPending ? "Deleting…" : "Yes, delete"}

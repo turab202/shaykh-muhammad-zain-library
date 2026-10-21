@@ -54,7 +54,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
         </nav>
         <div className="border-t border-stone-200 p-4 dark:border-stone-800">
           <form action={logout}>
-            <button type="submit" className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-stone-400 dark:hover:bg-red-950/20 dark:hover:text-red-400">
+            <button type="submit" className="flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-stone-400 dark:hover:bg-red-950/20 dark:hover:text-red-400">
               <LogOut className="size-5 shrink-0" aria-hidden="true" />
               Sign out
             </button>
@@ -66,7 +66,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
       <div className="flex-1 flex flex-col min-w-0">
         <header className="flex min-h-16 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 sm:px-7">
           <AdminBreadcrumb items={navItems.map(({ href, label }) => ({ href, label }))} />
-          <Link href="/" className="inline-flex min-h-10 shrink-0 items-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 hover:underline dark:text-emerald-300 dark:hover:bg-emerald-950/40">Public site ↗</Link>
+          <Link href="/" className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 hover:underline dark:text-emerald-300 dark:hover:bg-emerald-950/40">Public site ↗</Link>
         </header>
         <nav aria-label="Admin navigation" className="sticky top-0 z-30 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-900 lg:hidden">
           {navItems.map(({ href, label, icon: Icon }) => (
@@ -76,7 +76,7 @@ export default async function AdminLayout({ children, params }: { children: Reac
             </AdminNavigationLink>
           ))}
           <form action={logout} className="shrink-0">
-            <button type="submit" className="flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
+            <button type="submit" className="flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
               <LogOut className="size-5" aria-hidden="true" />
               Sign out
             </button>

@@ -62,7 +62,7 @@ function Field({
       <input
         id={id} name={name} type={type} defaultValue={defaultValue}
         required={required} autoComplete={autoComplete}
-        className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors placeholder:text-stone-400 focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+        className="min-h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors placeholder:text-stone-400 focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
       />
       {hint && <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{hint}</p>}
     </div>
@@ -84,13 +84,13 @@ function PasswordField({
         <input
           id={id} name={name} type={show ? "text" : "password"}
           autoComplete={autoComplete} required={required}
-          className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pe-12 text-sm text-stone-900 transition-colors focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+          className="min-h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 pe-12 text-sm text-stone-900 transition-colors focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
         />
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
           aria-label={show ? "Hide password" : "Show password"}
-          className="absolute inset-y-0 inset-e-0 flex min-w-11 items-center justify-center text-stone-500 transition-colors hover:text-stone-700 dark:hover:text-stone-200"
+          className="absolute inset-y-0 inset-e-0 flex min-w-10 items-center justify-center text-stone-500 transition-colors hover:text-stone-700 dark:hover:text-stone-200"
         >
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
@@ -111,7 +111,7 @@ function SelectField({
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300">{label}</label>
       <select
         id={id} name={name} defaultValue={defaultValue}
-        className="min-h-11 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
+        className="min-h-10 w-full rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm text-stone-900 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
       >
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -158,7 +158,7 @@ function SubmitButton({ label, pendingLabel, pending }: { label: string; pending
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-emerald-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-800 dark:hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-emerald-900 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-800 dark:bg-emerald-800 dark:hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />}
       {pending ? (pendingLabel ?? "Saving…") : label}

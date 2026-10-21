@@ -38,7 +38,7 @@ export function ToggleVisibilityButton({
       disabled={isPending}
       title={isVisible ? `Hide "${itemName}"` : `Show "${itemName}"`}
       aria-label={isVisible ? `Hide ${itemName}` : `Show ${itemName}`}
-      className={`inline-flex items-center rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-10 justify-center" : "min-h-10 gap-1 px-3 py-2"} ${
+      className={`inline-flex items-center rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-9 justify-center" : "min-h-9 gap-1 px-3 py-1.5"} ${
         isVisible
           ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
           : "bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"

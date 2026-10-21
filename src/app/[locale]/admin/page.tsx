@@ -38,7 +38,7 @@ export default async function AdminDashboardPage({ params }: { params: Promise<{
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm dark:border-amber-900 dark:bg-amber-950/30 sm:px-5">
           <AlertCircle className="size-5 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden="true" />
           <span className="text-amber-950 dark:text-amber-100">{pendingImports} Telegram message{pendingImports !== 1 ? "s" : ""} awaiting review.</span>
-          <Link href="/admin/import" className="ms-auto inline-flex min-h-10 items-center rounded-lg bg-amber-800 px-4 text-sm font-semibold text-white transition-colors hover:bg-amber-900 dark:bg-amber-700 dark:hover:bg-amber-600">{t("importTitle")} →</Link>
+          <Link href="/admin/import" className="ms-auto inline-flex min-h-9 items-center rounded-lg bg-amber-800 px-3 text-sm font-semibold text-white transition-colors hover:bg-amber-900 dark:bg-amber-700 dark:hover:bg-amber-600">{t("importTitle")} →</Link>
         </div>
       )}
 
@@ -56,7 +56,7 @@ export default async function AdminDashboardPage({ params }: { params: Promise<{
       <div className="overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
         <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4 dark:border-stone-800 sm:px-6">
           <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100">{t("recentActivity")}</h2>
-          <Link href="/admin/lessons" className="inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50 hover:underline dark:text-emerald-400 dark:hover:bg-emerald-950/40">{t("lessons")} →</Link>
+          <Link href="/admin/lessons" className="inline-flex min-h-9 items-center rounded-lg px-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50 hover:underline dark:text-emerald-400 dark:hover:bg-emerald-950/40">{t("lessons")} →</Link>
         </div>
         {recentLessons.length === 0 ? (
           <p className="p-6 text-sm text-stone-600 dark:text-stone-400">No lessons yet. <Link href="/admin/lessons" className="font-semibold text-emerald-800 hover:underline dark:text-emerald-300">Add one →</Link></p>
