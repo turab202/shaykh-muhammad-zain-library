@@ -93,14 +93,14 @@ export function UploadCoverButton({
           onClick={() => inputRef.current?.click()}
           aria-label={`${hasCover ? "Change" : "Add"} cover for ${bookSlug}`}
           title={`${hasCover ? "Change" : "Add"} cover for ${bookSlug}`}
-          className={`group relative flex items-center justify-center overflow-hidden rounded-md border border-stone-200 bg-stone-100 transition-colors hover:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-wait disabled:opacity-60 dark:border-stone-700 dark:bg-stone-800 ${thumbnailSize === "table" ? "h-12 w-9" : "h-[86px] w-[62px]"}`}
+          className={`group relative flex items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-100 transition-colors hover:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-wait disabled:opacity-60 dark:border-stone-700 dark:bg-stone-800 ${thumbnailSize === "table" ? "size-14" : "h-[86px] w-[62px]"}`}
         >
           {preview ? (
             <Image
               src={preview}
               alt={`${bookSlug} cover`}
               fill
-              sizes={thumbnailSize === "table" ? "36px" : "62px"}
+              sizes={thumbnailSize === "table" ? "56px" : "62px"}
               unoptimized
               className="object-cover"
             />
