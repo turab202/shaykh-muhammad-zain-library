@@ -17,7 +17,7 @@ export function AdminActionMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState({ top: 0, left: 0, maxHeight: 0 });
 
   const positionMenu = useCallback(() => {
     const trigger = triggerRef.current;
@@ -25,15 +25,15 @@ export function AdminActionMenu({
     if (!trigger || !menu) return;
 
     const triggerRect = trigger.getBoundingClientRect();
-    const menuRect = menu.getBoundingClientRect();
     const gutter = 12;
+    const maxMenuHeight = Math.min(512, Math.max(0, window.innerHeight - gutter * 2));
+    menu.style.maxHeight = `${maxMenuHeight}px`;
+    const menuRect = menu.getBoundingClientRect();
     const left = Math.max(gutter, Math.min(triggerRect.right - menuRect.width, window.innerWidth - menuRect.width - gutter));
     const below = triggerRect.bottom + 8;
-    const top = below + menuRect.height <= window.innerHeight - gutter
-      ? below
-      : Math.max(gutter, triggerRect.top - menuRect.height - 8);
+    const availableHeight = Math.max(0, window.innerHeight - below - gutter);
 
-    setPosition({ top, left });
+    setPosition({ top: below, left, maxHeight: Math.min(maxMenuHeight, availableHeight) });
   }, []);
 
   const closeMenu = useCallback(() => {
@@ -113,8 +113,8 @@ export function AdminActionMenu({
           id={menuId}
           aria-label={`${itemType} actions`}
           onClick={handleMenuClick}
-          className="fixed z-[100] max-h-[min(32rem,calc(100dvh-1.5rem))] w-[min(15rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-stone-200 bg-white p-2 shadow-xl shadow-stone-900/10 ring-1 ring-black/5 dark:border-stone-700 dark:bg-stone-900 dark:shadow-black/30 dark:ring-white/5"
-          style={{ top: position.top, left: position.left }}
+          className="fixed z-[100] w-[min(15rem,calc(100vw-1.5rem))] overflow-y-auto overscroll-contain rounded-xl border border-stone-200 bg-white p-2 shadow-xl shadow-stone-900/10 ring-1 ring-black/5 dark:border-stone-700 dark:bg-stone-900 dark:shadow-black/30 dark:ring-white/5"
+          style={{ top: position.top, left: position.left, maxHeight: position.maxHeight }}
         >
           <div className="flex items-center gap-2.5 border-b border-stone-100 px-2.5 pb-2.5 dark:border-stone-800">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
