@@ -105,16 +105,16 @@ def save_ia_record(lesson_id: str, filename: str, ia_url: str, size: int, durati
         conn.close()
 
 
-async def upload_to_archive(limit: int, test_mode: bool = False):
+async def upload_to_archive(limit: int, test_mode: bool = False, session_num: str = "2"):
     from telethon import TelegramClient
     from telethon.network import ConnectionTcpObfuscated
     from mutagen import File as MutagenFile
-    from internetarchive import upload, get_item
+    from internetarchive import upload
 
     if not IA_ACCESS or not IA_SECRET:
         print("ERROR: IA_ACCESS_KEY and IA_SECRET_KEY not set in .env")
         print("1. Sign up at https://archive.org/account/signup")
-        print("2. Get keys at https://archive.org/account/s3")
+        print("2. Get keys at https://archive.org/account/s3.php")
         print("3. Add to .env: IA_ACCESS_KEY=xxx and IA_SECRET_KEY=xxx")
         return
 
@@ -123,11 +123,11 @@ async def upload_to_archive(limit: int, test_mode: bool = False):
         print("All lessons have audio!", flush=True)
         return
 
-    SESSION = str(Path(__file__).parent.parent / "telegram" / ".session" / "importer2")
+    session_name = "importer" if session_num == "1" else "importer2"
+    SESSION = str(Path(__file__).parent.parent / "telegram" / ".session" / session_name)
     API_ID = int(os.environ["TELEGRAM_API_ID"])
     _API_HASH = os.environ["TELEGRAM_API_HASH"]
     CHANNEL = os.environ.get("TELEGRAM_CHANNEL", "@SheikhMuhammedZain")
-
     print(f"Connecting to Telegram...", flush=True)
     client = TelegramClient(
         SESSION, API_ID, _API_HASH,
@@ -260,9 +260,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=2000)
     parser.add_argument("--test", action="store_true", help="Test with 10 files only")
+    parser.add_argument("--session", choices=["1", "2"], default="2",
+                        help="1=importer (GitHub Actions), 2=importer2 (local, default)")
     args = parser.parse_args()
 
-    asyncio.run(upload_to_archive(args.limit, test_mode=args.test))
+    asyncio.run(upload_to_archive(args.limit, test_mode=args.test, session_num=args.session))
 
 
 if __name__ == "__main__":

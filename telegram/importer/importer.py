@@ -108,6 +108,33 @@ def process_one_message(
     result["confidence"] = suggested.confidence
     result["suggested"] = suggested.to_dict()
 
+    # 2b. Auto-reject clearly non-lesson messages — never insert into DB
+    JUNK_EXTENSIONS = {'.pdf', '.webp', '.apk', '.jpg', '.jpeg', '.png',
+                       '.gif', '.zip', '.rar', '.mp4', '.mov', '.avi'}
+    JUNK_FILENAMES  = {'SunnahMedia.mp3', 'SunnahMedia'}
+
+    if audio_filename:
+        fn_lower = audio_filename.lower()
+        fn_stem  = audio_filename.rsplit('.', 1)[0] if '.' in audio_filename else audio_filename
+        ext = '.' + fn_lower.rsplit('.', 1)[-1] if '.' in fn_lower else ''
+        is_junk = (
+            ext in JUNK_EXTENSIONS
+            or fn_stem in JUNK_FILENAMES
+            or audio_filename in JUNK_FILENAMES
+            # Numbers-only filenames e.g. "5904720518849760682.mp3" (random IDs)
+            or (fn_stem.isdigit() and len(fn_stem) > 10)
+        )
+    else:
+        # No audio file — these are text messages, service messages etc.
+        # Skip them — they can't be lessons without audio
+        is_junk = True
+
+    if is_junk:
+        log.info("  ⏭  auto-reject junk: %s msgId=%d", audio_filename or '(no file)', message_id)
+        result["skipped"] = True
+        result["skip_reason"] = "junk"
+        return result
+
     log.info(
         "  📋 messageId=%d confidence=%.2f series=%s lesson=%s",
         message_id, suggested.confidence,
