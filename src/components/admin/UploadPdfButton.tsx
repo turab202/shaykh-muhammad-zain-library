@@ -2,15 +2,17 @@
 
 import { useRef, useState } from "react";
 import { Upload, CheckCircle, XCircle, Loader } from "lucide-react";
+import { adminActionItemClass } from "./AdminActionMenu";
 
 interface UploadPdfButtonProps {
   bookId: string;
   bookTitle: string;
   hasPdf: boolean;
   compact?: boolean;
+  menu?: boolean;
 }
 
-export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: UploadPdfButtonProps) {
+export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false, menu = false }: UploadPdfButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus]   = useState<"idle" | "uploading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -61,22 +63,24 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: 
         onClick={() => inputRef.current?.click()}
         aria-label={`${hasPdf ? "Replace" : "Upload"} PDF for ${bookTitle}`}
         title={`${hasPdf ? "Replace" : "Upload"} PDF for ${bookTitle}`}
-        className={`inline-flex items-center rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-8 justify-center" : "gap-1 px-2 py-1"} ${
+        className={menu
+          ? adminActionItemClass
+          : `inline-flex items-center rounded text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-60 ${compact ? "size-8 justify-center" : "gap-1 px-2 py-1"} ${
           hasPdf
             ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700 hover:bg-amber-100"
             : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100"
         }`}
       >
-        {compact && (status === "uploading" ? (
-          <Loader className="w-3 h-3 animate-spin" />
+        {(compact || menu) && (status === "uploading" ? (
+          <Loader className={menu ? "size-4 animate-spin" : "w-3 h-3 animate-spin"} aria-hidden="true" />
         ) : status === "done" ? (
-          <CheckCircle className="w-3 h-3" />
+          <CheckCircle className={menu ? "size-4" : "w-3 h-3"} aria-hidden="true" />
         ) : status === "error" ? (
-          <XCircle className="w-3 h-3" />
+          <XCircle className={menu ? "size-4" : "w-3 h-3"} aria-hidden="true" />
         ) : (
-          <Upload className="w-3 h-3" />
+          <Upload className={menu ? "size-4" : "w-3 h-3"} aria-hidden="true" />
         ))}
-        {!compact && (hasPdf ? "Replace PDF" : "Upload PDF")}
+        {menu ? (status === "uploading" ? "Uploading PDF…" : hasPdf ? "Replace PDF" : "Upload PDF") : !compact && (hasPdf ? "Replace PDF" : "Upload PDF")}
       </button>
       {message && (
         <span className={`text-[10px] max-w-[140px] leading-tight ${
@@ -88,4 +92,3 @@ export function UploadPdfButton({ bookId, bookTitle, hasPdf, compact = false }: 
     </div>
   );
 }
-

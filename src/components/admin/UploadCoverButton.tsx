@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, CheckCircle, XCircle, Loader } from "lucide-react";
+import { adminActionItemClass } from "./AdminActionMenu";
 
 interface UploadCoverButtonProps {
   bookId: string;
@@ -11,6 +12,7 @@ interface UploadCoverButtonProps {
   currentCoverUrl?: string;
   compact?: boolean;
   thumbnailSize?: "table" | "card";
+  menu?: boolean;
 }
 
 export function UploadCoverButton({
@@ -20,6 +22,7 @@ export function UploadCoverButton({
   currentCoverUrl,
   compact = false,
   thumbnailSize,
+  menu = false,
 }: UploadCoverButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus]   = useState<"idle" | "uploading" | "done" | "error">("idle");
@@ -72,7 +75,18 @@ export function UploadCoverButton({
         className="hidden"
         onChange={handleFile}
       />
-      {thumbnailSize ? (
+      {menu ? (
+        <button
+          type="button"
+          disabled={status === "uploading"}
+          onClick={() => inputRef.current?.click()}
+          aria-label={`${hasCover ? "Change" : "Add"} cover for ${bookSlug}`}
+          className={adminActionItemClass}
+        >
+          {status === "uploading" ? <Loader className="size-4 animate-spin" aria-hidden="true" /> : <ImagePlus className="size-4" aria-hidden="true" />}
+          {status === "uploading" ? "Uploading cover…" : hasCover ? "Change cover" : "Add cover"}
+        </button>
+      ) : thumbnailSize ? (
         <button
           type="button"
           disabled={status === "uploading"}
@@ -123,7 +137,7 @@ export function UploadCoverButton({
         </button>
       )}
       {message && status === "error" && (
-        <span className="text-[9px] text-red-500 max-w-[80px] text-center leading-tight">{message}</span>
+        <span role="alert" className={`${menu ? "w-full px-3 text-left text-xs" : "max-w-[80px] text-center text-[9px]"} leading-tight text-red-600 dark:text-red-400`}>{message}</span>
       )}
     </div>
   );

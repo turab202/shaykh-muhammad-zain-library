@@ -14,7 +14,6 @@ import {
   FileText,
   Grid2X2,
   List,
-  MoreHorizontal,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { UploadPdfButton } from "@/components/admin/UploadPdfButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { UploadCoverButton } from "@/components/admin/UploadCoverButton";
 import { AdminPageHeading } from "@/components/admin/AdminPageChrome";
+import { AdminActionMenu, adminActionItemClass } from "@/components/admin/AdminActionMenu";
 
 type Category = { id: string; name: string };
 
@@ -335,7 +335,9 @@ export function BooksManagement({
                 <StatusBadge status={book.status} />
               </div>
             </div>
-            <BookActionMenu book={book} categories={categories} deleteAction={deleteAction} visibilityAction={visibilityAction} mobile />
+            <div className="absolute inset-e-2 top-2">
+              <BookActionMenu book={book} categories={categories} deleteAction={deleteAction} visibilityAction={visibilityAction} />
+            </div>
           </article>
         )) : <EmptyState />}
         <Footer
@@ -405,27 +407,18 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function BookActions({ book, categories, deleteAction, visibilityAction }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void> }) {
-  return <div className="flex items-center gap-1.5">
-    <Link href={`/kutub/${book.slug}`} aria-label={`View ${book.title}`} title={`View ${book.title}`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"><Eye className="size-4" aria-hidden="true" /></Link>
-    <EditBookButton book={toEditableBook(book)} categories={categories} compact />
-    <BookActionMenu book={book} categories={categories} deleteAction={deleteAction} visibilityAction={visibilityAction} />
-  </div>;
+  return <BookActionMenu book={book} categories={categories} deleteAction={deleteAction} visibilityAction={visibilityAction} />;
 }
 
-function BookActionMenu({ book, categories, deleteAction, visibilityAction, mobile = false }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void>; mobile?: boolean }) {
-  const coverKey = book.coverUrl ? book.coverUrl.split("/api/media/b2/")[1] : undefined;
-  return <details className={`relative ${mobile ? "absolute inset-e-2 top-2" : ""}`}>
-    <summary aria-label={`More actions for ${book.title}`} title="More actions" className={`${mobile ? "size-10" : "size-9"} inline-flex cursor-pointer list-none items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800`}><MoreHorizontal className="size-5" aria-hidden="true" /></summary>
-    <div className={`absolute ${mobile ? "inset-e-0 top-11" : "inset-e-0 top-10"} z-30 flex min-w-48 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-2 shadow-lg dark:border-stone-700 dark:bg-stone-900`}>
-      {mobile && <Link href={`/kutub/${book.slug}`} className="min-h-10 rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">View book</Link>}
-      {mobile && <EditBookButton book={toEditableBook(book)} categories={categories} />}
-      <UploadPdfButton bookId={book.id} bookTitle={book.title} hasPdf={book.hasPdf} />
-      <UploadCoverButton bookId={book.id} bookSlug={book.slug} hasCover={!!book.coverUrl} currentCoverUrl={book.coverUrl ?? undefined} />
-      <ToggleVisibilityButton id={book.id} currentStatus={book.status} itemName={book.title} action={visibilityAction} />
-      <DeleteButton action={deleteAction.bind(null, book.id)} itemName={book.title} itemType="book" />
-    </div>
-    {coverKey && <span className="sr-only">Cover: {coverKey}</span>}
-  </details>;
+function BookActionMenu({ book, categories, deleteAction, visibilityAction }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void> }) {
+  return <AdminActionMenu itemName={book.title} itemType="Book">
+    <Link href={`/kutub/${book.slug}`} className={adminActionItemClass}><Eye className="size-4" aria-hidden="true" />View book</Link>
+    <EditBookButton book={toEditableBook(book)} categories={categories} menu />
+    <UploadPdfButton bookId={book.id} bookTitle={book.title} hasPdf={book.hasPdf} menu />
+    <UploadCoverButton bookId={book.id} bookSlug={book.slug} hasCover={!!book.coverUrl} currentCoverUrl={book.coverUrl ?? undefined} menu />
+    <ToggleVisibilityButton id={book.id} currentStatus={book.status} itemName={book.title} action={visibilityAction} menu />
+    <DeleteButton action={deleteAction.bind(null, book.id)} itemName={book.title} itemType="book" menu />
+  </AdminActionMenu>;
 }
 
 function BookGridCard({ book, categories, deleteAction, visibilityAction, selected, onSelect }: { book: BookEntry; categories: Category[]; deleteAction: (id: string) => Promise<void>; visibilityAction: (id: string, status: string) => Promise<void>; selected: boolean; onSelect: (checked: boolean) => void }) {

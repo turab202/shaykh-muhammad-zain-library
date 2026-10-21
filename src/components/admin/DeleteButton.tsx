@@ -10,6 +10,7 @@
 
 import { useState, useRef, useTransition } from "react";
 import { Trash2, AlertTriangle, X } from "lucide-react";
+import { adminActionDangerClass } from "./AdminActionMenu";
 
 interface DeleteButtonProps {
   /** The bound server action to call on confirm */
@@ -21,6 +22,7 @@ interface DeleteButtonProps {
   /** Optional item type shown in modal heading, e.g. "series", "lesson" */
   itemType?: string;
   compact?: boolean;
+  menu?: boolean;
 }
 
 export function DeleteButton({
@@ -29,6 +31,7 @@ export function DeleteButton({
   itemName,
   itemType = "item",
   compact = false,
+  menu = false,
 }: DeleteButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -67,12 +70,14 @@ export function DeleteButton({
         onClick={openModal}
         aria-label={`Delete ${itemType}: ${itemName}`}
         title={`Delete ${itemType}: ${itemName}`}
-        className={compact
+        className={menu
+          ? adminActionDangerClass
+          : compact
           ? "inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-red-200 text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
           : "inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"}
       >
-        {compact && <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
-        {!compact && label}
+        {(compact || menu) && <Trash2 className="size-4" aria-hidden="true" />}
+        {menu ? `Delete ${itemType}` : !compact && label}
       </button>
 
       {/* Modal — only mounted when open to avoid stale refs */}

@@ -7,7 +7,8 @@ import { publishLesson, unpublishLesson, deleteLesson } from "@/server/admin/act
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { EditLessonButton } from "@/components/admin/EditLessonButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
-import { FileText, Eye, Clock3, Archive, EyeOff, Search } from "lucide-react";
+import { FileText, Eye, Clock3, Archive, EyeOff, Search, ExternalLink } from "lucide-react";
+import { AdminActionMenu, adminActionItemClass } from "@/components/admin/AdminActionMenu";
 
 export default async function AdminLessonsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
@@ -65,16 +66,15 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
     lessonTitle: media.lesson?.title ?? null,
   }));
 
-  function LessonActions({ lesson, mobile = false }: { lesson: (typeof lessons)[number]; mobile?: boolean }) {
-    const actionClass = mobile
-      ? "inline-flex min-h-10 items-center justify-center rounded-lg border px-3 text-sm font-medium"
-      : "inline-flex size-9 items-center justify-center rounded-lg border";
-    return <div className={`flex flex-wrap items-center gap-1.5 ${mobile ? "[&_button]:min-h-10" : ""}`}>
-      {lesson.status !== "PUBLISHED" ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Publish ${lesson.title}`} title={`Publish ${lesson.title}`} className={`${actionClass} border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300`}>{mobile ? "Publish" : <Eye className="size-4" aria-hidden="true" />}</button></form> : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" aria-label={`Unpublish ${lesson.title}`} title={`Unpublish ${lesson.title}`} className={`${actionClass} border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300`}>{mobile ? "Unpublish" : <EyeOff className="size-4" aria-hidden="true" />}</button></form>}
-      <Link href={`/duruus/${lesson.slug}`} aria-label={`View ${lesson.title}`} title={`View ${lesson.title}`} className={`${actionClass} border-stone-200 text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800`}>{mobile ? "View" : <Eye className="size-4" aria-hidden="true" />}</Link>
-      <EditLessonButton lesson={{ id: lesson.id, slug: lesson.slug, title: lesson.title, translations: (lesson.translations as Record<string, string>) ?? {}, description: lesson.description ?? null, descTranslations: (lesson.descTranslations as Record<string, string>) ?? {}, lessonNumber: lesson.lessonNumber ?? null, duration: lesson.duration ?? null, status: lesson.status, publishedAt: lesson.publishedAt?.toISOString() ?? null, categoryId: lesson.categoryId ?? null, seriesId: lesson.seriesId ?? null, bookId: lesson.bookId ?? null, audioMediaId: lesson.media[0]?.id ?? null }} categories={categories} seriesList={seriesList} books={books} audioFiles={editorAudioFiles} compact={!mobile} />
-      <DeleteButton action={deleteLesson.bind(null, lesson.id)} itemName={lesson.title} itemType="lesson" compact={!mobile} />
-    </div>;
+  function LessonActions({ lesson }: { lesson: (typeof lessons)[number] }) {
+    return <AdminActionMenu itemName={lesson.title} itemType="Lesson">
+      {lesson.status !== "PUBLISHED"
+        ? <form action={publishLesson.bind(null, lesson.id)}><button type="submit" className={`${adminActionItemClass} text-emerald-800 dark:text-emerald-300`}><Eye className="size-4" aria-hidden="true" />Publish lesson</button></form>
+        : <form action={unpublishLesson.bind(null, lesson.id)}><button type="submit" className={`${adminActionItemClass} text-amber-800 dark:text-amber-300`}><EyeOff className="size-4" aria-hidden="true" />Hide lesson</button></form>}
+      <Link href={`/duruus/${lesson.slug}`} className={adminActionItemClass}><ExternalLink className="size-4" aria-hidden="true" />View lesson</Link>
+      <EditLessonButton lesson={{ id: lesson.id, slug: lesson.slug, title: lesson.title, translations: (lesson.translations as Record<string, string>) ?? {}, description: lesson.description ?? null, descTranslations: (lesson.descTranslations as Record<string, string>) ?? {}, lessonNumber: lesson.lessonNumber ?? null, duration: lesson.duration ?? null, status: lesson.status, publishedAt: lesson.publishedAt?.toISOString() ?? null, categoryId: lesson.categoryId ?? null, seriesId: lesson.seriesId ?? null, bookId: lesson.bookId ?? null, audioMediaId: lesson.media[0]?.id ?? null }} categories={categories} seriesList={seriesList} books={books} audioFiles={editorAudioFiles} menu />
+      <DeleteButton action={deleteLesson.bind(null, lesson.id)} itemName={lesson.title} itemType="lesson" menu />
+    </AdminActionMenu>;
   }
 
   return (
@@ -119,7 +119,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         {lessons.map((lesson) => <article key={lesson.id} className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-base font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-xs text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-2 text-sm text-stone-600 dark:text-stone-400"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
-          <div className="mt-4 flex flex-wrap justify-end border-t border-stone-100 pt-3 dark:border-stone-800"><LessonActions lesson={lesson} mobile /></div>
+          <div className="mt-4 flex justify-end border-t border-stone-100 pt-3 dark:border-stone-800"><LessonActions lesson={lesson} /></div>
         </article>)}
         {lessons.length === 0 && <p className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500 dark:border-stone-700">{query ? "No lessons match your search." : "No lessons yet."}</p>}
       </div>

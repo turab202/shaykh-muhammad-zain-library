@@ -11,7 +11,8 @@ import { UploadSeriesCoverButton } from "@/components/admin/UploadSeriesCoverBut
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { AdminPageHeading, AdminSummaryGrid } from "@/components/admin/AdminPageChrome";
 import { storageKeyToUrl } from "@/lib/media-url";
-import { Layers, BookOpen, Eye, Clock3, Search, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Layers, BookOpen, Eye, Clock3, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { AdminActionMenu, adminActionItemClass } from "@/components/admin/AdminActionMenu";
 
 const pageSize = 8;
 
@@ -179,18 +180,13 @@ function SeriesStatus({ status }: { status: string }) {
 
 function SeriesActions({ item, categories, books }: { item: { id: string; slug: string; title: string; translations: unknown; description: string | null; descTranslations: unknown; order: number; status: string; categoryId: string | null; bookId: string | null; coverImageKey: string | null }; categories: { id: string; name: string }[]; books: { id: string; title: string }[] }) {
   return (
-    <details className="group relative">
-      <summary aria-label={`Actions for ${item.title}`} title="Series actions" className="flex size-9 cursor-pointer list-none items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition-colors hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 group-open:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:group-open:bg-stone-800">
-        <MoreHorizontal className="size-4" aria-hidden="true" />
-      </summary>
-      <div className="absolute end-0 top-full z-20 mt-1 flex min-w-44 flex-col gap-1 rounded-lg border border-stone-200 bg-white p-1.5 shadow-lg dark:border-stone-700 dark:bg-stone-900">
-        <UploadSeriesCoverButton seriesId={item.id} seriesSlug={item.slug} hasCover={!!item.coverImageKey} currentCoverUrl={storageKeyToUrl(item.coverImageKey)} />
-        <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} />
-        <Link href={`/series/${item.slug}`} className="inline-flex min-h-9 items-center rounded-md px-2.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800">View series</Link>
-        <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} />
-        <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" />
-      </div>
-    </details>
+    <AdminActionMenu itemName={item.title} itemType="Series">
+      <UploadSeriesCoverButton seriesId={item.id} seriesSlug={item.slug} hasCover={!!item.coverImageKey} currentCoverUrl={storageKeyToUrl(item.coverImageKey)} menu />
+      <ToggleVisibilityButton id={item.id} currentStatus={item.status} itemName={item.title} action={toggleSeriesVisibility} menu />
+      <Link href={`/series/${item.slug}`} className={adminActionItemClass}><ExternalLink className="size-4" aria-hidden="true" />View series</Link>
+      <EditSeriesButton series={{ ...item, translations: item.translations as Record<string, string>, descTranslations: item.descTranslations as Record<string, string> }} categories={categories} books={books} menu />
+      <DeleteButton action={deleteSeries.bind(null, item.id)} itemName={item.title} itemType="series" menu />
+    </AdminActionMenu>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { CheckCircle, ImagePlus, Loader, XCircle } from "lucide-react";
+import { adminActionItemClass } from "./AdminActionMenu";
 
 interface UploadSeriesCoverButtonProps {
   seriesId: string;
@@ -11,6 +12,7 @@ interface UploadSeriesCoverButtonProps {
   currentCoverUrl?: string;
   compact?: boolean;
   thumbnailSize?: "table" | "card";
+  menu?: boolean;
 }
 
 export function UploadSeriesCoverButton({
@@ -20,6 +22,7 @@ export function UploadSeriesCoverButton({
   currentCoverUrl,
   compact = false,
   thumbnailSize,
+  menu = false,
 }: UploadSeriesCoverButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
@@ -68,7 +71,17 @@ export function UploadSeriesCoverButton({
         className="hidden"
         onChange={handleFile}
       />
-      {thumbnailSize ? (
+      {menu ? (
+        <button
+          type="button"
+          disabled={status === "uploading"}
+          onClick={() => inputRef.current?.click()}
+          className={adminActionItemClass}
+        >
+          {status === "uploading" ? <Loader className="size-4 animate-spin" aria-hidden="true" /> : <ImagePlus className="size-4" aria-hidden="true" />}
+          {status === "uploading" ? "Uploading cover…" : hasCover ? "Change cover" : "Add cover"}
+        </button>
+      ) : thumbnailSize ? (
         <button
           type="button"
           disabled={status === "uploading"}
@@ -119,7 +132,7 @@ export function UploadSeriesCoverButton({
         </button>
       )}
       {message && status === "error" && (
-        <span className="max-w-[80px] text-center text-[9px] leading-tight text-red-500">{message}</span>
+        <span role="alert" className={`${menu ? "w-full px-3 text-left text-xs" : "max-w-[80px] text-center text-[9px]"} leading-tight text-red-600 dark:text-red-400`}>{message}</span>
       )}
     </div>
   );
