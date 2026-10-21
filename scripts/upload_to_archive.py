@@ -128,13 +128,15 @@ async def upload_to_archive(limit: int, test_mode: bool = False, session_num: st
     API_ID = int(os.environ["TELEGRAM_API_ID"])
     _API_HASH = os.environ["TELEGRAM_API_HASH"]
     CHANNEL = os.environ.get("TELEGRAM_CHANNEL", "@SheikhMuhammedZain")
-    print(f"Connecting to Telegram...", flush=True)
+    print(f"Connecting to Telegram (session: {session_name})...", flush=True)
     client = TelegramClient(
         SESSION, API_ID, _API_HASH,
         connection=ConnectionTcpObfuscated,
         connection_retries=5, timeout=120, use_ipv6=False,
     )
-    await client.start()
+
+    PHONE = os.environ.get("TELEGRAM_PHONE", "")
+    await client.start(phone=PHONE if PHONE else None)
     me = await client.get_me()
     print(f"Authorized: {me.first_name}", flush=True)
     entity = await client.get_entity(CHANNEL)
