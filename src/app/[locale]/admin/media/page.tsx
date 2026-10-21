@@ -66,7 +66,7 @@ export default async function AdminMediaPage({ params }: { params: Promise<{ loc
       ) : (
         <div className="space-y-3">
           {Array.from(bySeries.entries()).map(([seriesTitle, seriesLessons]) => (
-            <div key={seriesTitle} className="overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+            <div key={seriesTitle} className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
               <div className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-5 py-4 dark:border-stone-800 dark:bg-stone-950/50">
                 <div className="flex items-center gap-2">
                   <BookOpen className="size-5 text-emerald-800 dark:text-emerald-300" />

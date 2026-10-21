@@ -28,7 +28,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
   ]);
 
   return (
-    <div className="mx-auto max-w-360 space-y-6">
+    <div className="mx-auto max-w-360 space-y-5 sm:space-y-6">
       <AdminPageHeading title={t("categories")} description={`Organize lessons, series, and books · ${categoryCount} categories`} icon={Layers}
         action={
           <CreateDialog title="Add Category" submitLabel="Create category" action={createCategory} triggerClassName="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:w-auto">
@@ -53,7 +53,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         { label: "Books assigned", value: bookCount, icon: BookOpen, tone: "green" },
       ]} />
 
-      <form method="get" role="search" className="flex min-w-0 gap-2">
+      <form method="get" role="search" className="flex min-w-0 gap-2 rounded-xl border border-stone-200 bg-white p-3 shadow-sm dark:border-stone-800 dark:bg-stone-900">
         <label className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search categories</span>
@@ -64,7 +64,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
         </button>
       </form>
 
-      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
+      <div className="hidden overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-180 text-left text-sm">
             <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">
@@ -86,7 +86,7 @@ export default async function AdminCategoriesPage({ params, searchParams }: { pa
       </div>
 
       <div className="space-y-3 lg:hidden">
-        {categories.map((category) => <article key={category.id} className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        {categories.map((category) => <article key={category.id} className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-base font-semibold text-stone-800 dark:text-stone-100">{category.name}</h2><p className="mt-1 truncate font-mono text-xs text-stone-500">{category.slug}</p></div><CategoryActions category={category} mobile /></div>
           <div className="mt-4 grid grid-cols-3 gap-3 border-t border-stone-100 pt-3 dark:border-stone-800"><MiniCount label="Lessons" value={category._count.lessons} /><MiniCount label="Series" value={category._count.series} /><MiniCount label="Books" value={category._count.books} /></div>
         </article>)}

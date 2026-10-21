@@ -41,7 +41,7 @@ export function AdminSummaryGrid({ items, compact = false }: { items: { label: s
           red: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
         };
         return (
-          <div key={label} className={`flex min-w-0 items-center border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 ${compact ? "gap-2.5 rounded-md px-3 py-3 sm:gap-3 sm:px-4" : "gap-3 rounded-xl px-4 py-4 sm:gap-4 sm:px-5"}`}>
+          <div key={label} className={`flex min-w-0 items-center border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900 ${compact ? "gap-2.5 rounded-md px-3 py-3 sm:gap-3 sm:px-4" : "gap-3 rounded-xl px-4 py-4 sm:gap-4 sm:px-5"}`}>
             <div className={`flex shrink-0 items-center justify-center rounded-full ${compact ? "size-8" : "size-10"} ${colors[tone]}`}>
               <Icon className={compact ? "size-4" : "size-5"} aria-hidden="true" />
             </div>

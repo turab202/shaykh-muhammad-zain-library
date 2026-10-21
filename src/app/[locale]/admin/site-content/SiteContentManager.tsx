@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { CreateDialog } from "@/components/admin/CreateDialog";
+import { AdminPageHeading } from "@/components/admin/AdminPageChrome";
 import type { Locale } from "@/types/i18n";
 
 type Entry = {
@@ -128,20 +129,14 @@ export function SiteContentManager({
 
   return (
     <div className="min-w-0 space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">
-            <Languages className="size-6" aria-hidden="true" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Website Content</h1>
-            <p className="mt-1.5 text-sm text-stone-600 dark:text-stone-400">Manage public pages and translations across languages</p>
-          </div>
-        </div>
-        <a href="/" target="_blank" rel="noreferrer" className="hidden items-center gap-1.5 text-xs font-medium text-emerald-800 hover:text-emerald-950 sm:inline-flex dark:text-emerald-300 dark:hover:text-emerald-100">
-          <Globe2 className="size-3.5" aria-hidden="true" /> Public site <span aria-hidden="true">↗</span>
-        </a>
-      </div>
+      <AdminPageHeading
+        title="Website Content"
+        description="Manage public pages and translations across languages"
+        icon={Languages}
+        action={<a href="/" target="_blank" rel="noreferrer" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-950/40">
+          <Globe2 className="size-4" aria-hidden="true" /> Public site <span aria-hidden="true">↗</span>
+        </a>}
+      />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Summary label="Translation entries" value={entries.length} icon={Languages} tone="green" />

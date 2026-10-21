@@ -24,6 +24,7 @@ import { EditBookButton } from "@/components/admin/EditBookButton";
 import { UploadPdfButton } from "@/components/admin/UploadPdfButton";
 import { ToggleVisibilityButton } from "@/components/admin/ToggleVisibilityButton";
 import { UploadCoverButton } from "@/components/admin/UploadCoverButton";
+import { AdminPageHeading } from "@/components/admin/AdminPageChrome";
 
 type Category = { id: string; name: string };
 
@@ -150,13 +151,12 @@ export function BooksManagement({
   const rangeEnd = Math.min(currentPage * pageSize, filteredBooks.length);
 
   return (
-    <div className="mx-auto min-w-0 max-w-360 space-y-6">
-      <section className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Books Management</h1>
-          <p className="mt-1.5 text-sm text-stone-600 dark:text-stone-400">Manage books in the catalog · {books.length} books</p>
-        </div>
-        <CreateDialog
+    <div className="mx-auto min-w-0 max-w-360 space-y-5 sm:space-y-6">
+      <AdminPageHeading
+        title="Books Management"
+        description={`Manage books in the catalog · ${books.length} books`}
+        icon={BookOpen}
+        action={<CreateDialog
           title="Add Book"
           submitLabel="Create book"
           action={createAction}
@@ -179,8 +179,8 @@ export function BooksManagement({
               <option value="ARCHIVED">Archived</option>
             </SelectField>
           </div>
-        </CreateDialog>
-      </section>
+        </CreateDialog>}
+      />
 
       <section aria-label="Book statistics" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard label="Total Books" value={stats.total} icon={BookOpen} tone="green" />
@@ -189,7 +189,7 @@ export function BooksManagement({
         <StatCard label="Hidden" value={stats.hidden} icon={EyeOff} tone="red" />
       </section>
 
-      <section aria-label="Search and filters" className="space-y-2.5">
+      <section aria-label="Search and filters" className="space-y-2.5 rounded-xl border border-stone-200 bg-white p-3 shadow-sm dark:border-stone-800 dark:bg-stone-900">
         <div className="flex items-center gap-2 md:hidden">
           <button
             type="button"
@@ -255,7 +255,7 @@ export function BooksManagement({
       {(error || notice) && <p role={error ? "alert" : "status"} className={`rounded-md border px-3 py-2 text-xs ${error ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300" : "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"}`}>{error || notice}</p>}
 
       {view === "list" ? (
-        <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
+        <div className="hidden overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900 lg:block">
           <div className="overflow-x-auto">
             <table className="w-full min-w-235 border-collapse text-left text-sm">
               <thead className="bg-stone-50 dark:bg-stone-950/50">
@@ -322,7 +322,7 @@ export function BooksManagement({
 
       <div className="space-y-3 lg:hidden">
         {visibleBooks.length ? visibleBooks.map((book) => (
-          <article key={book.id} className="relative flex gap-4 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <article key={book.id} className="relative flex gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <input type="checkbox" aria-label={`Select ${book.title}`} checked={selectedIds.has(book.id)} onChange={(event) => toggleBookSelection(book.id, event.target.checked)} className="absolute inset-s-2 top-2 size-4 accent-emerald-800" />
             <div className="shrink-0 ps-5"><CoverThumb book={book} size="card" /></div>
             <div className="min-w-0 flex-1 pe-12">
@@ -363,7 +363,7 @@ function StatCard({ label, value, icon: Icon, tone }: { label: string; value: nu
     blue: "bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300",
     red: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
   };
-  return <div className="flex min-w-0 items-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-4 dark:border-stone-800 dark:bg-stone-900 sm:gap-4 sm:px-5"><div className={`flex size-10 shrink-0 items-center justify-center rounded-full ${colors[tone]}`}><Icon className="size-5" aria-hidden="true" /></div><div className="min-w-0"><p className="text-lg font-bold leading-none tabular-nums text-stone-900 dark:text-stone-100">{value}</p><p className="mt-1.5 truncate text-xs font-medium text-stone-600 dark:text-stone-400">{label}</p></div></div>;
+  return <div className="flex min-w-0 items-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-4 shadow-sm dark:border-stone-800 dark:bg-stone-900 sm:gap-4 sm:px-5"><div className={`flex size-10 shrink-0 items-center justify-center rounded-full ${colors[tone]}`}><Icon className="size-5" aria-hidden="true" /></div><div className="min-w-0"><p className="text-lg font-bold leading-none tabular-nums text-stone-900 dark:text-stone-100">{value}</p><p className="mt-1.5 truncate text-xs font-medium text-stone-600 dark:text-stone-400">{label}</p></div></div>;
 }
 
 function FilterSelect({ label, value, onChange, children }: { label: string; value: string; onChange: (value: string) => void; children: ReactNode }) {

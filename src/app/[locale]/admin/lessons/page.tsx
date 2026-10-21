@@ -78,7 +78,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
   }
 
   return (
-    <div className="mx-auto max-w-360 space-y-6">
+    <div className="mx-auto max-w-360 space-y-5 sm:space-y-6">
       <AdminPageHeading title={t("lessons")} description={`Manage lesson metadata and publication · ${total} lessons`} icon={FileText} />
       <AdminSummaryGrid items={[
         { label: "Total lessons", value: total, icon: FileText },
@@ -86,7 +86,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         { label: "Draft", value: drafts, icon: Clock3, tone: "blue" },
         { label: "Archived", value: archived, icon: Archive, tone: "amber" },
       ]} />
-      <form method="get" role="search" className="flex min-w-0 gap-2">
+      <form method="get" role="search" className="flex min-w-0 gap-2 rounded-xl border border-stone-200 bg-white p-3 shadow-sm dark:border-stone-800 dark:bg-stone-900">
         <label className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
           <span className="sr-only">Search lessons</span>
@@ -97,7 +97,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
         </button>
       </form>
 
-      <div className="hidden overflow-hidden rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900 lg:block">
+      <div className="hidden overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900 lg:block">
         <div className="overflow-x-auto"><table className="w-full min-w-225 text-left text-xs">
           <thead className="bg-stone-50 dark:bg-stone-950/50"><tr className="border-b border-stone-200 dark:border-stone-800">{["#", "Title", "Series", "Category", "Duration", "Status", "Actions"].map((heading) => <th key={heading} className="px-4 py-3 text-xs font-bold uppercase tracking-wide text-stone-500">{heading}</th>)}</tr></thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
@@ -116,7 +116,7 @@ export default async function AdminLessonsPage({ params, searchParams }: { param
       </div>
 
       <div className="space-y-3 lg:hidden">
-        {lessons.map((lesson) => <article key={lesson.id} className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        {lessons.map((lesson) => <article key={lesson.id} className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="line-clamp-2 text-base font-semibold text-stone-800 dark:text-stone-100">{lesson.title}</p><p className="mt-1 truncate font-mono text-xs text-stone-500">{lesson.lessonNumber ? `#${lesson.lessonNumber} · ` : ""}{lesson.slug}</p></div><LessonStatus status={lesson.status} /></div>
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-2 text-sm text-stone-600 dark:text-stone-400"><span>{lesson.series?.title ?? "No series"}</span><span>{lesson.category?.name ?? "Uncategorized"}</span><span>{lesson.duration ? `${Math.floor(lesson.duration / 60)} min` : "No duration"}</span></div>
           <div className="mt-4 flex flex-wrap justify-end border-t border-stone-100 pt-3 dark:border-stone-800"><LessonActions lesson={lesson} mobile /></div>

@@ -29,7 +29,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
       <div className="flex items-center gap-4 border-b border-stone-100 px-5 py-4 dark:border-stone-800 sm:px-6">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40">
           <Icon className="size-5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
