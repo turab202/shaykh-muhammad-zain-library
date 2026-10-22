@@ -118,7 +118,7 @@ jobs:
           IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
         run: |
           pip install mutagen internetarchive -q
-          python scripts/upload_to_archive.py --session 1 --limit 500
+          python -X utf8 scripts/upload_to_archive.py --session 1 --limit 500
 
       - name: Run audio import — new messages mode (check for new lessons daily)
         if: ${{ steps.strategy.outputs.mode == 'new_messages' }}

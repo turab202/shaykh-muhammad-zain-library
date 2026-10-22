@@ -218,7 +218,8 @@ async def run_upload(limit: int, session_num: str):
 
         except Exception as e:
             async with lock: failed += 1
-            print(f"    ✗ {fn[:40]}: {type(e).__name__}: {str(e)[:80]}", flush=True)
+            err_msg = str(e).encode('ascii', errors='replace').decode('ascii')
+            print(f"    ✗ {fn[:40]}: {type(e).__name__}: {err_msg[:80]}", flush=True)
             if tmp_path and os.path.exists(tmp_path):
                 try: os.unlink(tmp_path)
                 except: pass
@@ -261,6 +262,8 @@ def main():
                                   errors="replace", line_buffering=True)
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8",
                                   errors="replace", line_buffering=True)
+    # Also set environment for subprocesses
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit",   type=int, default=5000)
