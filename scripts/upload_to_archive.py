@@ -1,35 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-Upload audio files to Internet Archive (archive.org) - completely FREE.
+FAST concurrent audio uploader to Internet Archive (archive.org).
 
-Internet Archive:
-- No card required
-- Unlimited storage
-- Direct CDN URLs: https://archive.org/download/{identifier}/{filename}
-- Perfect for Islamic educational content
+Uses:
+- Telegram download: 3 concurrent streams
+- Archive.org upload: direct S3 API via requests (faster than ia library)
+- 3 concurrent upload workers
 
 Setup:
-1. Sign up at https://archive.org/account/signup (free, just email)
-2. Get S3 keys at https://archive.org/account/s3
-3. Add to .env:
-   IA_ACCESS_KEY=your_access_key
-   IA_SECRET_KEY=your_secret_key
+    IA_ACCESS_KEY and IA_SECRET_KEY in .env
+    Get keys at: https://archive.org/account/s3.php
 
 Usage:
-    py scripts/upload_to_archive.py              # upload all missing
-    py scripts/upload_to_archive.py --limit 100  # upload first 100
-    py scripts/upload_to_archive.py --test       # test with 1 file
-
-Each series gets its own Archive.org item, e.g.:
-  shaykh-zain-bulugh-al-maram
-  shaykh-zain-al-fawakeh
-  etc.
-
-Files are publicly accessible at:
-  https://archive.org/download/shaykh-zain-{series-slug}/{filename}
+    py scripts/upload_to_archive.py              # local (session2)
+    py scripts/upload_to_archive.py --session 1  # GitHub Actions (session1)
+    py scripts/upload_to_archive.py --limit 200  # limit files
 """
-import sys, os, asyncio, argparse, time, secrets, tempfile
+import sys, os, asyncio, argparse, time, secrets, tempfile, threading
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+import queue
 
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -39,16 +29,13 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 from _neon import connect
 
-IA_ACCESS = os.environ.get("IA_ACCESS_KEY", "")
-IA_SECRET = os.environ.get("IA_SECRET_KEY", "")
-IA_BASE_URL = "https://archive.org/download"
-
-# Archive.org item name prefix
+IA_ACCESS  = os.environ.get("IA_ACCESS_KEY", "")
+IA_SECRET  = os.environ.get("IA_SECRET_KEY", "")
+IA_S3_HOST = "s3.us.archive.org"
 ITEM_PREFIX = "shaykh-muhammad-zain"
 
 
 def get_missing_lessons(limit: int) -> list:
-    """Get lessons without audio (no B2 audio)."""
     conn = connect()
     cur = conn.cursor()
     cur.execute(f"""
@@ -67,19 +54,12 @@ def get_missing_lessons(limit: int) -> list:
         LIMIT {int(limit)}
     """)
     rows = cur.fetchall()
-    cur.close()
-    conn.close()
+    cur.close(); conn.close()
     print(f"Found {len(rows)} lessons needing audio", flush=True)
     return rows
 
 
-def get_or_create_ia_item(series_slug: str, series_title: str) -> str:
-    """Get the archive.org item identifier for a series."""
-    return f"{ITEM_PREFIX}-{series_slug}"
-
-
-def save_ia_record(lesson_id: str, filename: str, ia_url: str, size: int, duration: int) -> bool:
-    """Save archive.org URL as a media record."""
+def save_ia_record(lesson_id, filename, ia_url, size, duration):
     conn = connect()
     cur = conn.cursor()
     media_id = f"c{int(time.time()*1000):x}{secrets.token_urlsafe(8)}"[:25]
@@ -88,10 +68,8 @@ def save_ia_record(lesson_id: str, filename: str, ia_url: str, size: int, durati
             INSERT INTO media (id, filename, "mimeType", size, duration,
                                "mediaType", "storageKey", "storageProvider",
                                "lessonId", "createdAt")
-            VALUES (%s, %s, 'audio/mpeg', %s, %s,
-                    'AUDIO'::"MediaType",
-                    %s, 'S3'::"StorageProvider",
-                    %s, NOW())
+            VALUES (%s,%s,'audio/mpeg',%s,%s,'AUDIO'::"MediaType",
+                    %s,'S3'::"StorageProvider",%s, NOW())
             ON CONFLICT DO NOTHING
         """, (media_id, filename, size, duration, ia_url, lesson_id))
         conn.commit()
@@ -101,21 +79,55 @@ def save_ia_record(lesson_id: str, filename: str, ia_url: str, size: int, durati
         conn.rollback()
         return False
     finally:
-        cur.close()
-        conn.close()
+        cur.close(); conn.close()
 
 
-async def upload_to_archive(limit: int, test_mode: bool = False, session_num: str = "2"):
+def upload_to_ia_s3(tmp_path: str, item_id: str, safe_fn: str,
+                    series_title: str, mime_type: str = "audio/mpeg") -> str:
+    """Upload file directly to archive.org S3 API. Returns the public URL."""
+    import requests
+    from requests_aws4auth import AWS4Auth
+
+    # archive.org S3-compatible endpoint
+    url = f"https://{IA_S3_HOST}/{item_id}/{safe_fn}"
+    file_size = os.path.getsize(tmp_path)
+
+    auth = AWS4Auth(IA_ACCESS, IA_SECRET, "us", "s3",
+                    service="s3", session_token=None)
+
+    headers = {
+        "x-archive-auto-make-bucket": "1",
+        "x-archive-meta-title": f"Shaykh Muhammad Zain — {series_title}",
+        "x-archive-meta-creator": "Shaykh Muhammad Zain",
+        "x-archive-meta-language": "ara",
+        "x-archive-meta-mediatype": "audio",
+        "x-archive-meta-licenseurl": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "x-archive-meta-subject": "Islam;Islamic lectures;Shaykh Muhammad Zain",
+        "x-archive-meta-collection": "opensource_audio",
+        "Content-Type": mime_type,
+        "Content-Length": str(file_size),
+    }
+
+    with open(tmp_path, "rb") as f:
+        resp = requests.put(url, data=f, auth=auth, headers=headers,
+                            verify=False, timeout=(30, 300))
+
+    if resp.status_code not in (200, 201):
+        raise Exception(f"IA upload failed: HTTP {resp.status_code} — {resp.text[:200]}")
+
+    return f"https://archive.org/download/{item_id}/{safe_fn}"
+
+
+async def run_upload(limit: int, session_num: str):
     from telethon import TelegramClient
     from telethon.network import ConnectionTcpObfuscated
     from mutagen import File as MutagenFile
-    from internetarchive import upload
+    import urllib3
+    urllib3.disable_warnings()
 
     if not IA_ACCESS or not IA_SECRET:
-        print("ERROR: IA_ACCESS_KEY and IA_SECRET_KEY not set in .env")
-        print("1. Sign up at https://archive.org/account/signup")
-        print("2. Get keys at https://archive.org/account/s3.php")
-        print("3. Add to .env: IA_ACCESS_KEY=xxx and IA_SECRET_KEY=xxx")
+        print("ERROR: Set IA_ACCESS_KEY and IA_SECRET_KEY in .env", flush=True)
+        print("Get keys at: https://archive.org/account/s3.php", flush=True)
         return
 
     missing = get_missing_lessons(limit)
@@ -123,150 +135,143 @@ async def upload_to_archive(limit: int, test_mode: bool = False, session_num: st
         print("All lessons have audio!", flush=True)
         return
 
+    msg_lookup = {row[1]: row for row in missing}
+    msg_ids = sorted(msg_lookup.keys())
+
     session_name = "importer" if session_num == "1" else "importer2"
     SESSION = str(Path(__file__).parent.parent / "telegram" / ".session" / session_name)
-    API_ID = int(os.environ["TELEGRAM_API_ID"])
-    _API_HASH = os.environ["TELEGRAM_API_HASH"]
-    CHANNEL = os.environ.get("TELEGRAM_CHANNEL", "@SheikhMuhammedZain")
-    print(f"Connecting to Telegram (session: {session_name})...", flush=True)
-    client = TelegramClient(
-        SESSION, API_ID, _API_HASH,
-        connection=ConnectionTcpObfuscated,
-        connection_retries=5, timeout=120, use_ipv6=False,
-    )
+    API_ID   = int(os.environ["TELEGRAM_API_ID"])
+    _HASH    = os.environ["TELEGRAM_API_HASH"]
+    CHANNEL  = os.environ.get("TELEGRAM_CHANNEL", "@SheikhMuhammedZain")
+    PHONE    = os.environ.get("TELEGRAM_PHONE", "")
 
-    PHONE = os.environ.get("TELEGRAM_PHONE", "")
+    client = TelegramClient(SESSION, API_ID, _HASH,
+        connection=ConnectionTcpObfuscated,
+        connection_retries=5, timeout=120, use_ipv6=False)
+
+    print(f"Connecting (session={session_name})...", flush=True)
     await client.start(phone=PHONE if PHONE else None)
     me = await client.get_me()
     print(f"Authorized: {me.first_name}", flush=True)
     entity = await client.get_entity(CHANNEL)
-    print(f"Channel ready. Uploading to archive.org...\n", flush=True)
+    print(f"Channel ready. {len(msg_ids)} files to upload.\n", flush=True)
 
     downloaded = 0
     failed = 0
     skipped = 0
+    lock = asyncio.Lock()
 
-    # Group by series for better IA organization
-    msg_ids = [row[1] for row in missing]
-    msg_lookup = {row[1]: row for row in missing}
+    # Thread pool for archive.org uploads (CPU-bound + network)
+    executor = ThreadPoolExecutor(max_workers=3)
 
-    # Pre-created item identifiers per series
-    created_items = set()
-
-    async def upload_one(msg):
+    async def process_one(msg):
         nonlocal downloaded, failed, skipped
+
         if msg is None:
-            skipped += 1
+            async with lock: skipped += 1
+            return
+        if msg.id not in msg_lookup:
+            async with lock: skipped += 1
             return
 
         lesson_id, _, filename, series_slug, series_title = msg_lookup[msg.id]
         fn = str(filename)
-        total = downloaded + failed + skipped + 1
+        safe_fn = fn.replace(" ", "_").replace("/", "_")
+        item_id = f"{ITEM_PREFIX}-{series_slug}"
 
-        print(f"  [{total}/{len(msg_ids)}] ↓ {fn[:50]}", flush=True)
+        async with lock:
+            done = downloaded + failed + skipped + 1
+        print(f"  [{done}/{len(msg_ids)}] {fn[:55]}", flush=True)
 
         tmp_path = None
         try:
+            # 1. Download from Telegram
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
                 tmp_path = tmp.name
-
             await asyncio.wait_for(client.download_media(msg, tmp_path), timeout=480)
 
             file_size = os.path.getsize(tmp_path)
             duration = 0
             try:
                 info = MutagenFile(tmp_path)
-                if info and hasattr(info.info, 'length'):
+                if info and hasattr(info.info, "length"):
                     duration = int(info.info.length)
             except Exception:
                 pass
 
-            # Upload to Internet Archive
-            item_id = get_or_create_ia_item(series_slug, series_title)
-
-            # Create item metadata if first file for this series
-            metadata = {
-                "title": f"Shaykh Muhammad Zain — {series_title}",
-                "description": f"Islamic audio lectures by Shaykh Muhammad Zain on {series_title}",
-                "subject": ["Islam", "Islamic lectures", "Shaykh Muhammad Zain", series_title],
-                "creator": "Shaykh Muhammad Zain",
-                "language": "ara",
-                "licenseurl": "https://creativecommons.org/licenses/by-nc/4.0/",
-                "mediatype": "audio",
-                "collection": "opensource_audio",
-            }
-
-            # Upload the file
-            safe_fn = fn.replace(" ", "_").replace("/", "_")
-            result = upload(
-                item_id,
-                files={safe_fn: tmp_path},
-                metadata=metadata,
-                access_key=IA_ACCESS,
-                secret_key=IA_SECRET,
-                verbose=False,
-                retries=3,
+            # 2. Upload to archive.org S3 in thread (non-blocking)
+            loop = asyncio.get_event_loop()
+            ia_url = await loop.run_in_executor(
+                executor,
+                upload_to_ia_s3, tmp_path, item_id, safe_fn, series_title
             )
 
-            os.unlink(tmp_path)
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
             tmp_path = None
 
-            # Direct CDN URL
-            ia_url = f"https://archive.org/download/{item_id}/{safe_fn}"
-
             if save_ia_record(lesson_id, fn, ia_url, file_size, duration):
-                downloaded += 1
-                print(f"    ✓ {fn[:45]} → {ia_url[:60]}", flush=True)
+                async with lock: downloaded += 1
+                print(f"    ✓ {fn[:50]}", flush=True)
             else:
-                failed += 1
+                async with lock: failed += 1
 
         except Exception as e:
-            print(f"    ✗ {fn[:40]} Error: {e}", flush=True)
-            failed += 1
+            async with lock: failed += 1
+            print(f"    ✗ {fn[:40]}: {type(e).__name__}: {str(e)[:80]}", flush=True)
             if tmp_path and os.path.exists(tmp_path):
                 try: os.unlink(tmp_path)
                 except: pass
 
-    # Process in chunks of 10 (sequential — IA upload is slow)
-    chunk_size = 10
+    # Process in chunks of 30, 3 concurrent per chunk
+    semaphore = asyncio.Semaphore(3)
+
+    async def process_with_sem(msg):
+        async with semaphore:
+            await process_one(msg)
+
+    chunk_size = 30
     for i in range(0, len(msg_ids), chunk_size):
         chunk = msg_ids[i:i + chunk_size]
         try:
             messages = await client.get_messages(entity, ids=chunk)
         except Exception as e:
-            print(f"  Error fetching: {e}", flush=True)
+            print(f"  Fetch error: {e}", flush=True)
             await asyncio.sleep(10)
             continue
 
-        for msg in messages:
-            await upload_one(msg)
-            await asyncio.sleep(1)
+        await asyncio.gather(*[process_with_sem(msg) for msg in messages])
 
         total_done = downloaded + failed + skipped
-        remaining = len(msg_ids) - total_done
-        print(f"\n  ✓{downloaded} done | ✗{failed} failed | {remaining} remaining\n", flush=True)
+        remaining  = len(msg_ids) - total_done
+        pct = downloaded * 100 // max(len(msg_ids), 1)
+        print(f"\n  ── {pct}% | ✓{downloaded} uploaded | ✗{failed} failed | {remaining} remaining ──\n",
+              flush=True)
 
-        if test_mode:
-            print("Test mode: stopping after first chunk", flush=True)
-            break
+        await asyncio.sleep(2)
 
     await client.disconnect()
+    executor.shutdown(wait=False)
     print(f"\nDONE: {downloaded} uploaded to archive.org, {failed} failed", flush=True)
 
 
 def main():
     import io
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace', line_buffering=True)
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace', line_buffering=True)
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8",
+                                  errors="replace", line_buffering=True)
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8",
+                                  errors="replace", line_buffering=True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--limit", type=int, default=2000)
-    parser.add_argument("--test", action="store_true", help="Test with 10 files only")
-    parser.add_argument("--session", choices=["1", "2"], default="2",
-                        help="1=importer (GitHub Actions), 2=importer2 (local, default)")
+    parser.add_argument("--limit",   type=int, default=5000)
+    parser.add_argument("--test",    action="store_true")
+    parser.add_argument("--session", choices=["1", "2"], default="2")
     args = parser.parse_args()
 
-    asyncio.run(upload_to_archive(args.limit, test_mode=args.test, session_num=args.session))
+    if args.test:
+        args.limit = 10
+
+    asyncio.run(run_upload(args.limit, args.session))
 
 
 if __name__ == "__main__":
