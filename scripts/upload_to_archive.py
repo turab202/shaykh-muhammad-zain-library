@@ -97,7 +97,7 @@ def upload_to_ia_s3(tmp_path: str, item_id: str, safe_fn: str,
 
     headers = {
         "x-archive-auto-make-bucket": "1",
-        "x-archive-meta-title": f"Shaykh Muhammad Zain — {series_title}",
+        "x-archive-meta-title": f"Shaykh Muhammad Zain - {series_title}".encode('ascii', errors='replace').decode('ascii'),
         "x-archive-meta-creator": "Shaykh Muhammad Zain",
         "x-archive-meta-language": "ara",
         "x-archive-meta-mediatype": "audio",
@@ -176,7 +176,9 @@ async def run_upload(limit: int, session_num: str):
 
         lesson_id, _, filename, series_slug, series_title = msg_lookup[msg.id]
         fn = str(filename)
-        safe_fn = fn.replace(" ", "_").replace("/", "_")
+        # URL-encode Arabic characters so they work in HTTP headers
+        import urllib.parse
+        safe_fn = urllib.parse.quote(fn.replace(" ", "_"), safe=".-_")
         item_id = f"{ITEM_PREFIX}-{series_slug}"
 
         async with lock:
