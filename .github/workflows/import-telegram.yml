@@ -24,9 +24,6 @@ jobs:
   import:
     runs-on: ubuntu-latest
     timeout-minutes: 300   # 5 hours max
-    permissions:
-      contents: read
-      secrets: write
 
     steps:
       - name: Checkout
