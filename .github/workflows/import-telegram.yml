@@ -24,6 +24,9 @@ jobs:
   import:
     runs-on: ubuntu-latest
     timeout-minutes: 300   # 5 hours max
+    permissions:
+      contents: read
+      secrets: write
 
     steps:
       - name: Checkout
@@ -167,4 +170,5 @@ jobs:
           if [ -f telegram/.session/importer.session ]; then
             NEW_SESSION=$(base64 -w 0 telegram/.session/importer.session)
             echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 secret with: $NEW_SESSION"
+            echo "✓ Session saved — copy the value above to update TELEGRAM_SESSION_BASE64 secret"
           fi
