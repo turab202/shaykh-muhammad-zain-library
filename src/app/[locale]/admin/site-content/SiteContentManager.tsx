@@ -147,8 +147,8 @@ export function SiteContentManager({
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_270px]">
         <section className="min-w-0 space-y-4" aria-label="Translation entries">
-          <div className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900 lg:flex-row lg:items-center">
-            <div className="flex min-w-0 items-center gap-2">
+          <div className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900 lg:flex-row lg:flex-wrap lg:items-center">
+            <div className="flex min-w-48 flex-1 items-center gap-2">
               <label className="relative min-w-0 flex-1">
               <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
               <span className="sr-only">Search translation entries</span>
@@ -162,21 +162,21 @@ export function SiteContentManager({
             <div id="translation-mobile-filters" className={`${mobileFiltersOpen ? "flex" : "hidden"} flex-wrap items-center gap-2 lg:flex`} aria-label="Translation filters">
             <div className="flex flex-wrap items-center gap-1" aria-label="Translation status language">
               {locales.map(({ id, label, shortLabel }) => (
-                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`min-h-10 min-w-10 rounded-lg px-2.5 text-sm font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
+                <button key={id} type="button" aria-pressed={activeLocale === id} onClick={() => setActiveLocale(id)} className={`min-h-9 min-w-9 rounded-lg px-2 text-xs font-semibold transition-colors ${activeLocale === id ? "bg-emerald-800 text-white dark:bg-emerald-700" : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`} title={`${label} status`}>
                   {shortLabel}
                 </button>
               ))}
             </div>
             <label className="relative">
               <span className="sr-only">Filter by group</span>
-              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="min-h-10 min-w-40 appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-8 text-sm text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+              <select value={namespace} onChange={(event) => { setNamespace(event.target.value); setPage(1); }} className="min-h-10 min-w-36 appearance-none rounded-lg border border-stone-200 bg-white ps-3 pe-8 text-sm text-stone-700 outline-none focus:border-emerald-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
                 <option value="all">All groups</option>
                 {groups.map((group) => <option key={group} value={group}>{groupLabel(group)}</option>)}
               </select>
               <ChevronDown className="pointer-events-none absolute inset-e-2.5 top-1/2 size-3.5 -translate-y-1/2 text-stone-400" aria-hidden="true" />
             </label>
             </div>
-            <CreateDialog title="Add text entry" submitLabel="Add entry" action={saveAction}>
+            <CreateDialog title="Add text entry" submitLabel="Add entry" action={saveAction} triggerClassName="inline-flex min-h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-emerald-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
               <div className="grid gap-3 sm:grid-cols-2">
                 <NewField name="namespace" label="Group" placeholder="hero, about, footer" required />
                 <NewField name="key" label="Translation key" placeholder="newHeadline" required />
