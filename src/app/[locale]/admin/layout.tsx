@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth/session";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { AdminBreadcrumb, AdminNavigationLink } from "@/components/admin/AdminNavigation";
+import { AdminMobileNavigation } from "@/components/admin/AdminMobileNavigation";
 
 // Force dynamic so server action hashes never go stale after redeploy
 export const dynamic = "force-dynamic";
@@ -16,17 +17,18 @@ export default async function AdminLayout({ children, params }: { children: Reac
   try { await requireSession(); } catch { redirect(`/${locale}/login`); }
 
   const t = await getTranslations({ locale, namespace: "admin" });
+  const tNav = await getTranslations({ locale, namespace: "nav" });
 
   const navItems = [
-    { href: "/admin", label: t("dashboard"), icon: LayoutDashboard },
-    { href: "/admin/categories", label: t("categories"), icon: Layers },
-    { href: "/admin/series", label: t("series"), icon: Layers },
-    { href: "/admin/books", label: t("books"), icon: BookOpen },
-    { href: "/admin/lessons", label: t("lessons"), icon: FileText },
-    { href: "/admin/media", label: t("media"), icon: Headphones },
-    { href: "/admin/import", label: t("imports"), icon: Upload },
-    { href: "/admin/site-content", label: "Website Content", icon: Languages },
-    { href: "/admin/settings", label: t("settings"), icon: Settings },
+    { href: "/admin", label: t("dashboard"), icon: LayoutDashboard, mobileLabel: t("dashboard") },
+    { href: "/admin/categories", label: t("categories"), icon: Layers, mobileLabel: t("categories") },
+    { href: "/admin/series", label: t("series"), icon: Layers, mobileLabel: tNav("series") },
+    { href: "/admin/books", label: t("books"), icon: BookOpen, mobileLabel: tNav("books") },
+    { href: "/admin/lessons", label: t("lessons"), icon: FileText, mobileLabel: tNav("lessons") },
+    { href: "/admin/media", label: t("media"), icon: Headphones, mobileLabel: t("media") },
+    { href: "/admin/import", label: t("imports"), icon: Upload, mobileLabel: t("imports") },
+    { href: "/admin/site-content", label: "Website Content", icon: Languages, mobileLabel: "Website Content" },
+    { href: "/admin/settings", label: t("settings"), icon: Settings, mobileLabel: t("settings") },
   ];
 
   return (
@@ -64,25 +66,15 @@ export default async function AdminLayout({ children, params }: { children: Reac
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex min-h-16 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 sm:px-7">
+        <header className="hidden min-h-16 items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900 sm:px-7 lg:flex">
           <AdminBreadcrumb items={navItems.map(({ href, label }) => ({ href, label }))} />
           <Link href="/" className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 hover:underline dark:text-emerald-300 dark:hover:bg-emerald-950/40">Public site ↗</Link>
         </header>
-        <nav aria-label="Admin navigation" className="sticky top-0 z-30 flex gap-1 overflow-x-auto overscroll-x-contain border-b border-stone-200 bg-white px-2 py-2 dark:border-stone-800 dark:bg-stone-900 lg:hidden">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <AdminNavigationLink key={href} href={href} mobile>
-              <Icon className="size-4" aria-hidden="true" />
-              {label}
-            </AdminNavigationLink>
-          ))}
-          <form action={logout} className="shrink-0">
-            <button type="submit" className="flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-red-50 hover:text-red-700 dark:text-stone-300 dark:hover:bg-red-950/20 dark:hover:text-red-400">
-              <LogOut className="size-5" aria-hidden="true" />
-              Sign out
-            </button>
-          </form>
-        </nav>
-        <main className="min-w-0 flex-1 p-4 sm:p-7 xl:p-8">{children}</main>
+        <AdminMobileNavigation
+          items={navItems.map(({ href, label, mobileLabel }) => ({ href, label, mobileLabel }))}
+          logoutAction={logout}
+        />
+        <main className="min-w-0 flex-1 p-4 pb-28 sm:p-7 sm:pb-28 lg:p-7 lg:pb-8 xl:p-8 xl:pb-8">{children}</main>
       </div>
     </div>
   );
