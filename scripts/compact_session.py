@@ -1,20 +1,25 @@
 """
 Create a compact copy of the Telethon session for GitHub Actions.
-Strips the entity cache (which inflates the file) keeping only auth data.
+Uses importer2.session (local session) to avoid conflicting with
+importer.session which may be in use by GitHub Actions simultaneously.
 """
 import sqlite3, shutil, os, base64
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-src  = ROOT / "telegram" / ".session" / "importer.session"
+
+# Prefer importer2 (local session) — avoids conflicting with GitHub Actions
+src2 = ROOT / "telegram" / ".session" / "importer2.session"
+src1 = ROOT / "telegram" / ".session" / "importer.session"
+src  = src2 if src2.exists() else src1
+
 dest = ROOT / "telegram" / ".session" / "importer-compact.session"
 
 if not src.exists():
-    print(f"Session not found: {src}")
+    print(f"No session found. Run: py telegram/tests/telegram_auth.py")
     raise SystemExit(1)
 
-# Copy to compact file
-shutil.copy2(src, dest)
+print(f"Using session: {src.name}")
 
 # Connect and delete entity cache to shrink it
 conn = sqlite3.connect(str(dest))
