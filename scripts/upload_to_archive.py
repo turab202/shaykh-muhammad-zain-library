@@ -227,13 +227,13 @@ async def run_upload(limit: int, session_num: str):
                 except: pass
 
     # Process in chunks of 30, 3 concurrent per chunk
-    semaphore = asyncio.Semaphore(3)
+    semaphore = asyncio.Semaphore(1)  # Sequential — Telegram bans concurrent connections from same session
 
     async def process_with_sem(msg):
         async with semaphore:
             await process_one(msg)
 
-    chunk_size = 30
+    chunk_size = 10
     for i in range(0, len(msg_ids), chunk_size):
         chunk = msg_ids[i:i + chunk_size]
         try:
