@@ -1,10 +1,7 @@
 name: Import from Telegram
 
 on:
-  # Run every 4 hours automatically until all audio is done
-  schedule:
-    - cron: "0 */4 * * *"
-  # Also allow manual trigger
+  # Only manual trigger — prevents two runs conflicting
   workflow_dispatch:
     inputs:
       batch:
@@ -19,6 +16,11 @@ on:
         description: "Unused (kept for compatibility)"
         default: "0"
         required: false
+
+# Only one run at a time — prevents Telegram session conflicts
+concurrency:
+  group: telegram-import
+  cancel-in-progress: false
 
 jobs:
   import:

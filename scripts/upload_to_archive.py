@@ -145,14 +145,42 @@ async def run_upload(limit: int, session_num: str):
     CHANNEL  = os.environ.get("TELEGRAM_CHANNEL", "@SheikhMuhammedZain")
     PHONE    = os.environ.get("TELEGRAM_PHONE", "")
 
-    client = TelegramClient(SESSION, API_ID, _HASH,
-        connection=ConnectionTcpObfuscated,
-        connection_retries=5, timeout=120, use_ipv6=False)
+    # Handle AuthKeyDuplicatedError by deleting session and re-authenticating
+    for attempt in range(3):
+        try:
+            client = TelegramClient(SESSION, API_ID, _HASH,
+                connection=ConnectionTcpObfuscated,
+                connection_retries=3, timeout=120, use_ipv6=False)
 
-    print(f"Connecting (session={session_name})...", flush=True)
-    await client.start(phone=PHONE if PHONE else None)
-    me = await client.get_me()
-    print(f"Authorized: {me.first_name}", flush=True)
+            print(f"Connecting (session={session_name}, attempt {attempt+1})...", flush=True)
+            await asyncio.sleep(2 * attempt)  # Back off on retries
+            await client.start(phone=PHONE if PHONE else None)
+            me = await client.get_me()
+            print(f"Authorized: {me.first_name}", flush=True)
+            break  # Success
+        except Exception as e:
+            err = str(e)
+            if "AuthKeyDuplicated" in err or "AuthKeyNotFound" in err:
+                print(f"Session conflict on attempt {attempt+1}, clearing session...", flush=True)
+                # Delete the session file to force fresh auth key negotiation
+                session_file = Path(SESSION + ".session")
+                if session_file.exists():
+                    try:
+                        await client.disconnect()
+                    except Exception:
+                        pass
+                    await asyncio.sleep(2)
+                    try:
+                        session_file.unlink()
+                        print("Session cleared. Reconnecting...", flush=True)
+                    except Exception:
+                        pass
+                if attempt == 2:
+                    print("All attempts failed. Exiting.", flush=True)
+                    return
+            else:
+                print(f"Connection error: {e}", flush=True)
+                raise
     entity = await client.get_entity(CHANNEL)
     print(f"Channel ready. {len(msg_ids)} files to upload.\n", flush=True)
 
