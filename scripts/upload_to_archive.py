@@ -82,38 +82,28 @@ def save_ia_record(lesson_id, filename, ia_url, size, duration):
         cur.close(); conn.close()
 
 
-def upload_to_ia_s3(tmp_path: str, item_id: str, safe_fn: str,
-                    series_title: str, mime_type: str = "audio/mpeg") -> str:
-    """Upload file directly to archive.org S3 API. Returns the public URL."""
-    import requests
-    from requests_aws4auth import AWS4Auth
+def upload_to_ia(tmp_path: str, item_id: str, safe_fn: str, series_title: str) -> str:
+    """Upload file to archive.org using internetarchive library. Returns public URL."""
+    from internetarchive import upload as ia_upload
 
-    # archive.org S3-compatible endpoint
-    url = f"https://{IA_S3_HOST}/{item_id}/{safe_fn}"
-    file_size = os.path.getsize(tmp_path)
-
-    auth = AWS4Auth(IA_ACCESS, IA_SECRET, "us", "s3",
-                    service="s3", session_token=None)
-
-    headers = {
-        "x-archive-auto-make-bucket": "1",
-        "x-archive-meta-title": f"Shaykh Muhammad Zain - {series_title}".encode('ascii', errors='replace').decode('ascii'),
-        "x-archive-meta-creator": "Shaykh Muhammad Zain",
-        "x-archive-meta-language": "ara",
-        "x-archive-meta-mediatype": "audio",
-        "x-archive-meta-licenseurl": "https://creativecommons.org/licenses/by-nc/4.0/",
-        "x-archive-meta-subject": "Islam;Islamic lectures;Shaykh Muhammad Zain",
-        "x-archive-meta-collection": "opensource_audio",
-        "Content-Type": mime_type,
-        "Content-Length": str(file_size),
+    metadata = {
+        "title": f"Shaykh Muhammad Zain - {series_title}",
+        "creator": "Shaykh Muhammad Zain",
+        "language": "ara",
+        "mediatype": "audio",
+        "collection": "opensource_audio",
+        "subject": "Islam;Islamic lectures;Shaykh Muhammad Zain",
     }
 
-    with open(tmp_path, "rb") as f:
-        resp = requests.put(url, data=f, auth=auth, headers=headers,
-                            verify=False, timeout=(30, 300))
-
-    if resp.status_code not in (200, 201):
-        raise Exception(f"IA upload failed: HTTP {resp.status_code} — {resp.text[:200]}")
+    ia_upload(
+        item_id,
+        files={safe_fn: tmp_path},
+        metadata=metadata,
+        access_key=IA_ACCESS,
+        secret_key=IA_SECRET,
+        verbose=False,
+        retries=3,
+    )
 
     return f"https://archive.org/download/{item_id}/{safe_fn}"
 
@@ -233,7 +223,7 @@ async def run_upload(limit: int, session_num: str):
             loop = asyncio.get_event_loop()
             ia_url = await loop.run_in_executor(
                 executor,
-                upload_to_ia_s3, tmp_path, item_id, safe_fn, series_title
+                upload_to_ia, tmp_path, item_id, safe_fn, series_title
             )
 
             if tmp_path and os.path.exists(tmp_path):
