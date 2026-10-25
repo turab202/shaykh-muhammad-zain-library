@@ -208,7 +208,7 @@ async def run_upload(limit: int, session_num: str):
             # 1. Download from Telegram
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
                 tmp_path = tmp.name
-            await asyncio.wait_for(client.download_media(msg, tmp_path), timeout=480)
+            await asyncio.wait_for(client.download_media(msg, tmp_path), timeout=120)
 
             file_size = os.path.getsize(tmp_path)
             duration = 0
