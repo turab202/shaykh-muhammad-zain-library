@@ -50,6 +50,7 @@ def get_missing_lessons(limit: int) -> list:
           AND lower(tm."audioFilename") NOT LIKE '%.pdf'
           AND lower(tm."audioFilename") NOT LIKE '%.webp'
           AND lower(tm."audioFilename") NOT LIKE '%.apk'
+          AND s.slug != 'ar-raheeq-al-makhtum'  -- large files, handle separately
         ORDER BY s.slug, tm."messageId"
         LIMIT {int(limit)}
     """)
@@ -208,7 +209,7 @@ async def run_upload(limit: int, session_num: str):
             # 1. Download from Telegram
             with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
                 tmp_path = tmp.name
-            await asyncio.wait_for(client.download_media(msg, tmp_path), timeout=120)
+            await asyncio.wait_for(client.download_media(msg, tmp_path), timeout=300)
 
             file_size = os.path.getsize(tmp_path)
             duration = 0
