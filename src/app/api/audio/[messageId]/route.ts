@@ -45,14 +45,19 @@ export async function GET(
   const proxyMsgId     = botFileId.slice(lastColon + 1);
 
   try {
-    // Forward the proxy message to bot's own chat to get a usable file_id
+    // Forward to the admin's personal chat to get a file_id
+    const ADMIN_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID ?? "";
+    if (!ADMIN_CHAT_ID) {
+      return new NextResponse("Admin chat not configured", { status: 503 });
+    }
+
     const fwd = await fetch(`${TG}/bot${BOT_TOKEN}/forwardMessage`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({
         from_chat_id: proxyChannelId,
         message_id:   parseInt(proxyMsgId),
-        chat_id:      BOT_ID,  // bot's own chat
+        chat_id:      ADMIN_CHAT_ID,
       }),
     });
 
@@ -78,12 +83,12 @@ export async function GET(
       return new NextResponse("No file in forwarded message", { status: 404 });
     }
 
-    // Delete the forwarded message (cleanup)
+    // Delete the forwarded message from admin chat (cleanup)
     if (fwdData.result.message_id) {
       fetch(`${TG}/bot${BOT_TOKEN}/deleteMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: BOT_ID, message_id: fwdData.result.message_id }),
+        body: JSON.stringify({ chat_id: ADMIN_CHAT_ID, message_id: fwdData.result.message_id }),
       }).catch(() => {});
     }
 
