@@ -1,17 +1,19 @@
 /**
  * GET /api/audio/[messageId]
  *
- * For lessons not yet on B2/archive.org:
- * - If TELEGRAM_BOT_TOKEN is set: streams audio via Bot API
- * - Otherwise: redirects to t.me so user can play in Telegram
+ * Streams audio using Telegram Bot API.
+ * The bot is admin of a proxy channel containing all audio files.
+ * We forward the message to get a file_id, then stream it.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const CHANNEL   = "SheikhMuhammedZain";
-const CHAT_ID   = "1747155048";
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? "";
+const BOT_ID    = BOT_TOKEN.split(":")[0];
 const TG        = "https://api.telegram.org";
+
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 export async function GET(
   req: NextRequest,
@@ -20,52 +22,85 @@ export async function GET(
   const { messageId } = await params;
   const msgIdNum = parseInt(messageId, 10);
 
-  if (isNaN(msgIdNum)) {
-    return new NextResponse("Bad request", { status: 400 });
+  if (isNaN(msgIdNum) || !BOT_TOKEN) {
+    return new NextResponse("Not available", { status: 404 });
   }
 
-  // Always works — opens lesson in Telegram
-  const telegramUrl = `https://t.me/${CHANNEL}/${messageId}`;
-
-  // If no bot token, redirect to Telegram directly
-  if (!BOT_TOKEN) {
-    return NextResponse.redirect(telegramUrl);
-  }
-
-  // With bot token: stream the audio directly
+  // Look up botFileId (proxy:channel_id:msg_id)
   const msg = await prisma.telegramMessage.findFirst({
-    where: { chatId: CHAT_ID, messageId: msgIdNum },
-    select: { telegramFileId: true, audioFilename: true },
+    where: { messageId: msgIdNum },
+    select: { suggestedMetadata: true },
   }).catch(() => null);
 
-  if (!msg?.telegramFileId) {
-    return NextResponse.redirect(telegramUrl);
+  const meta      = (msg?.suggestedMetadata ?? {}) as Record<string, unknown>;
+  const botFileId = meta.botFileId as string | undefined;
+
+  if (!botFileId?.startsWith("proxy:")) {
+    return new NextResponse("Audio not available", { status: 404 });
   }
 
-  try {
-    const ctrl  = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    const gf    = await fetch(
-      `${TG}/bot${BOT_TOKEN}/getFile?file_id=${encodeURIComponent(msg.telegramFileId)}`,
-      { signal: ctrl.signal }
-    );
-    clearTimeout(timer);
+  // proxy:-1003908725997:456  →  channelId=-1003908725997, msgId=456
+  const lastColon     = botFileId.lastIndexOf(":");
+  const proxyChannelId = botFileId.slice("proxy:".length, lastColon);
+  const proxyMsgId     = botFileId.slice(lastColon + 1);
 
-    const data = await gf.json() as { ok: boolean; result?: { file_path: string } };
-    if (!data.ok || !data.result?.file_path) {
-      return NextResponse.redirect(telegramUrl);
+  try {
+    // Forward the proxy message to bot's own chat to get a usable file_id
+    const fwd = await fetch(`${TG}/bot${BOT_TOKEN}/forwardMessage`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        from_chat_id: proxyChannelId,
+        message_id:   parseInt(proxyMsgId),
+        chat_id:      BOT_ID,  // bot's own chat
+      }),
+    });
+
+    const fwdData = await fwd.json() as {
+      ok: boolean;
+      result?: {
+        message_id?: number;
+        audio?:    { file_id: string };
+        document?: { file_id: string };
+        voice?:    { file_id: string };
+      };
+    };
+
+    if (!fwdData.ok || !fwdData.result) {
+      return new NextResponse(`Bot error: ${JSON.stringify(fwdData)}`, { status: 502 });
     }
 
-    const audioUrl = `${TG}/file/bot${BOT_TOKEN}/${data.result.file_path}`;
+    const fileId = fwdData.result.audio?.file_id
+                ?? fwdData.result.document?.file_id
+                ?? fwdData.result.voice?.file_id;
+
+    if (!fileId) {
+      return new NextResponse("No file in forwarded message", { status: 404 });
+    }
+
+    // Delete the forwarded message (cleanup)
+    if (fwdData.result.message_id) {
+      fetch(`${TG}/bot${BOT_TOKEN}/deleteMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: BOT_ID, message_id: fwdData.result.message_id }),
+      }).catch(() => {});
+    }
+
+    // Get actual file download URL
+    const gf = await fetch(`${TG}/bot${BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`);
+    const gfData = await gf.json() as { ok: boolean; result?: { file_path: string } };
+
+    if (!gfData.ok || !gfData.result?.file_path) {
+      return new NextResponse("Could not get file path", { status: 502 });
+    }
+
+    const audioUrl = `${TG}/file/bot${BOT_TOKEN}/${gfData.result.file_path}`;
     const range    = req.headers.get("range");
 
-    const ctrl2  = new AbortController();
-    const timer2 = setTimeout(() => ctrl2.abort(), 30000);
     const upstream = await fetch(audioUrl, {
       headers: range ? { Range: range } : {},
-      signal:  ctrl2.signal,
     });
-    clearTimeout(timer2);
 
     const headers: Record<string, string> = {
       "Content-Type":  upstream.headers.get("Content-Type") ?? "audio/mpeg",
@@ -78,7 +113,9 @@ export async function GET(
     if (cr) headers["Content-Range"]  = cr;
 
     return new NextResponse(upstream.body, { status: upstream.status, headers });
-  } catch {
-    return NextResponse.redirect(telegramUrl);
+
+  } catch (err) {
+    console.error("Audio stream error:", err);
+    return new NextResponse("Stream error", { status: 500 });
   }
 }
