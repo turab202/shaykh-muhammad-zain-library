@@ -148,13 +148,25 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         if (retryCountRef.current < 3) {
           const delay = Math.pow(2, retryCountRef.current) * 1000; // 1s, 2s, 4s
           retryCountRef.current += 1;
+          // Close over the CURRENT src and time NOW — before the timeout fires
+          // a new playLesson call might have changed currentSrcRef/currentTime.
+          const srcToRetry = currentSrcRef.current;
+          const timeToRestore = audio.currentTime; // capture pre-error position
           console.warn(`[AudioContext] Network error, retry ${retryCountRef.current}/3 in ${delay}ms`);
           setTimeout(() => {
-            const src = currentSrcRef.current;
-            if (!src) return;
+            // Guard: if a new lesson was loaded in the meantime, abort this retry
+            if (!srcToRetry || currentSrcRef.current !== srcToRetry) return;
             if (!audio.paused) audio.pause();
-            audio.src = src;
+            audio.src = srcToRetry;
             audio.load();
+            // Restore the position that existed before the error
+            if (timeToRestore > 0) {
+              const restoreOnSeekable = () => {
+                try { audio.currentTime = timeToRestore; } catch { /* ignore */ }
+                audio.removeEventListener("canplay", restoreOnSeekable);
+              };
+              audio.addEventListener("canplay", restoreOnSeekable);
+            }
             audio.play()
               .then(() => setIsPlaying(true))
               .catch((playErr: Error) => {
@@ -263,17 +275,16 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const audioUrl = lesson.audioUrl ?? "";
     const isTelegramProxy = audioUrl.startsWith("/api/audio/");
 
-    // No real audio — open Telegram in new tab.
-    if (!audioUrl || isTelegramProxy) {
+    // No real audio
+    if (!audioUrl) {
       setCurrentLesson(lesson);
       setIsMiniPlayerOpen(true);
       setIsPlaying(false);
-      if (isTelegramProxy) {
-        const msgId = audioUrl.split("/").pop();
-        if (msgId) window.open(`https://t.me/SheikhMuhammedZain/${msgId}`, "_blank", "noopener");
-      }
       return;
     }
+
+    // For Telegram proxy URLs — play directly (bot streams the audio)
+    // No redirect needed — the API route handles the streaming
 
     // Restore saved progress.
     let resumeTime = 0;
