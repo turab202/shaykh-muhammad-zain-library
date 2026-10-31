@@ -55,7 +55,7 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
             {isCurrentlyPlaying ? (
               <Pause className="w-4 h-4 fill-current" aria-hidden="true" />
             ) : (
-              <Play className="w-4 h-4 fill-current ms-0.5" aria-hidden="true" />
+              <Play className="w-4 h-4 fill-current translate-x-0.5" aria-hidden="true" />
             )}
           </button>
 
@@ -104,10 +104,12 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
             )}
 
             <div className="flex items-center gap-3 text-[11px] text-stone-400 dark:text-stone-500 mt-1">
-              <span className="font-mono flex items-center gap-1">
-                <Clock className="w-3 h-3" aria-hidden="true" />
-                {formatDuration(lesson.duration)}
-              </span>
+              {(lesson.duration ?? 0) > 0 && (
+                <span className="font-mono flex items-center gap-1">
+                  <Clock className="w-3 h-3" aria-hidden="true" />
+                  {formatDuration(lesson.duration)}
+                </span>
+              )}
               {lesson.publishedAt && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -182,8 +184,14 @@ export function LessonCard({ lesson, viewMode = "card" }: LessonCardProps) {
       {/* Footer */}
       <div className="pt-3 border-t border-stone-200/60 dark:border-stone-800/60 flex items-center justify-between text-xs">
         <span className="font-mono text-[11px] text-stone-500 dark:text-stone-400 flex items-center gap-1">
-          <Clock className="w-3 h-3" aria-hidden="true" />
-          {formatDuration(lesson.duration)}
+          {(lesson.duration ?? 0) > 0 ? (
+            <>
+              <Clock className="w-3 h-3" aria-hidden="true" />
+              {formatDuration(lesson.duration)}
+            </>
+          ) : (
+            <span className="text-stone-300 dark:text-stone-600">—</span>
+          )}
         </span>
 
         <button

@@ -80,12 +80,12 @@ export function MiniAudioPlayer() {
           <button
             onClick={togglePlay}
             aria-label={isPlaying ? tActions("pause") : tActions("play")}
-            className="size-11 shrink-0 rounded-full bg-emerald-900 text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-700 dark:hover:bg-emerald-600 sm:size-9"
+            className="size-11 shrink-0 rounded-full bg-emerald-900 text-amber-100 shadow-sm transition-colors hover:bg-emerald-800 dark:bg-emerald-700 dark:hover:bg-emerald-600 sm:size-9 flex items-center justify-center"
           >
             {isPlaying ? (
               <Pause className="w-4 h-4 fill-current" aria-hidden="true" />
             ) : (
-              <Play className="w-4 h-4 fill-current ms-0.5" aria-hidden="true" />
+              <Play className="w-4 h-4 fill-current translate-x-0.5" aria-hidden="true" />
             )}
           </button>
 

@@ -1,7 +1,10 @@
 name: Import from Telegram
 
 on:
-  # Only manual trigger — prevents two runs conflicting
+  # Check for new lessons every 6 hours
+  schedule:
+    - cron: "0 */6 * * *"
+  # Only manual trigger for backfill
   workflow_dispatch:
     inputs:
       batch:
@@ -132,10 +135,11 @@ jobs:
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
           IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
           IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
+          TELEGRAM_PROXY_CHANNEL_ID: ${{ secrets.TELEGRAM_PROXY_CHANNEL_ID }}
         run: |
-          pip install mutagen internetarchive -q
+          pip install mutagen -q
           echo "Checking for new lessons from Telegram..."
-          python scripts/upload_to_archive.py --session 1 --limit 50
+          python scripts/auto_publish_new.py
 
       - name: Fix audio durations from B2 metadata
         if: ${{ github.event.inputs.no_media != 'true' }}
