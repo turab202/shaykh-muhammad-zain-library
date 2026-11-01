@@ -1,0 +1,18 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "findings": [
+    {
+      "id": "retry-race",
+      "label": "Retry-vs-new-lesson race",
+      "severity": "blocking",
+      "detail": "The retry setTimeout captures currentSrcRef.current at fire time, not at scheduling time. If playLesson is called for a different lesson while the timeout is pending, the ref is overwritten and the retry fires against the new lesson's URL, issuing a redundant load() that can interrupt or reset the in-progress play. Fix: close over `const src = currentSrcRef.current` before the setTimeout, and add `if (currentSrcRef.current !== src) return;` at the top of the callback."
+    },
+    {
+      "id": "retry-progress-loss",
+      "label": "Retry does not restore playback position",
+      "severity": "minor",
+      "detail": "audio.load() resets currentTime to 0. The retry path never captures or restores the position the player had reached before the network error. For long lectures this causes a significant rewind. Fix: capture audio.currentTime before audio.load() and restore it after load in the retry callback."
+    }
+  ],
+  "reviewDoc": "c:\\Users\\hasbi\\Documents\\GitHub\\shaykh-muhammad-zain-library\\.agents\\tasks\\audio-review.md"
+}

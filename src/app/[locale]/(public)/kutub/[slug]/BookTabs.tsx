@@ -176,7 +176,7 @@ export function BookTabs({
                   Open
                 </a>
                 <a
-                  href={pdfUrl}
+                  href={`/api/media/download?key=${encodeURIComponent(pdfUrl ?? "")}&name=${encodeURIComponent(title + ".pdf")}`}
                   download
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-700 dark:bg-amber-800 text-white text-xs font-medium hover:bg-amber-600 dark:hover:bg-amber-700 transition-colors"
                 >

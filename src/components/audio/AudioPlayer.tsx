@@ -263,8 +263,10 @@ export function AudioPlayer({ lesson, bookSlug, bookPdfUrl }: AudioPlayerProps) 
 
           {/* Download */}
           <a
-            href={lesson.audioUrl}
-            download={`Lesson_${lesson.lessonNumber ?? ""}.mp3`}
+            href={lesson.audioUrl?.startsWith("/api/audio/")
+              ? `/api/audio/download/${lesson.audioUrl.split("/").pop()}`
+              : lesson.audioUrl}
+            download={`${(lesson.displayTitle ?? lesson.title).replace(/[^a-zA-Z0-9\u0600-\u06FF ]/g, "")}_${lesson.lessonNumber ?? ""}.mp3`}
             title={tActions("downloadAudio")}
             aria-label={tActions("downloadAudio")}
             className="p-2 rounded-md border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors flex items-center gap-1 text-xs"
