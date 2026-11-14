@@ -1,26 +1,10 @@
 name: Import from Telegram
 
 on:
-  # Check for new lessons every 6 hours
   schedule:
-    - cron: "0 */6 * * *"
-  # Only manual trigger for backfill
-  workflow_dispatch:
-    inputs:
-      batch:
-        description: "Max lessons to download (default 500)"
-        default: "500"
-        required: false
-      no_media:
-        description: "Metadata only? (true = fast, no audio download)"
-        default: "false"
-        required: false
-      start_id:
-        description: "Unused (kept for compatibility)"
-        default: "0"
-        required: false
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:          # manual trigger
 
-# Only one run at a time — prevents Telegram session conflicts
 concurrency:
   group: telegram-import
   cancel-in-progress: false
@@ -28,14 +12,12 @@ concurrency:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 300   # 5 hours max
+    timeout-minutes: 60
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
@@ -43,135 +25,42 @@ jobs:
       - name: Install dependencies
         run: pip install -r telegram/requirements.txt
 
-      - name: Verify required secrets
+      - name: Check secrets
         run: |
-          missing=""
-          [ -z "${{ secrets.DATABASE_URL }}" ]          && missing="$missing DATABASE_URL"
-          [ -z "${{ secrets.TELEGRAM_API_ID }}" ]       && missing="$missing TELEGRAM_API_ID"
-          [ -z "${{ secrets.TELEGRAM_API_HASH }}" ]     && missing="$missing TELEGRAM_API_HASH"
-          [ -z "${{ secrets.TELEGRAM_PHONE }}" ]        && missing="$missing TELEGRAM_PHONE"
-          [ -z "${{ secrets.TELEGRAM_CHANNEL }}" ]      && missing="$missing TELEGRAM_CHANNEL"
-          [ -z "${{ secrets.B2_APPLICATION_KEY_ID }}" ] && missing="$missing B2_APPLICATION_KEY_ID"
-          [ -z "${{ secrets.B2_APPLICATION_KEY }}" ]    && missing="$missing B2_APPLICATION_KEY"
-          [ -z "${{ secrets.B2_BUCKET_NAME }}" ]        && missing="$missing B2_BUCKET_NAME"
-          [ -z "${{ secrets.B2_ENDPOINT }}" ]           && missing="$missing B2_ENDPOINT"
-          if [ -n "$missing" ]; then
-            echo "❌ Missing required GitHub secrets:$missing"
-            exit 1
-          fi
-          echo "✓ All required secrets are present"
-
-      - name: Restore Telegram session
+          for secret in DATABASE_URL TELEGRAM_API_ID TELEGRAM_API_HASH TELEGRAM_PHONE TELEGRAM_CHANNEL TELEGRAM_SESSION_BASE64; do
+            if [ -z "${!secret}" ]; then echo "❌ Missing: $secret"; exit 1; fi
+          done
+          echo "✓ All secrets present"
         env:
-          SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          TELEGRAM_SESSION_BASE64: ${{ secrets.TELEGRAM_SESSION_BASE64 }}
+
+      - name: Restore session
         run: |
           mkdir -p telegram/.session
-          if [ -n "$SESSION_BASE64" ]; then
-            echo "$SESSION_BASE64" | base64 -d > telegram/.session/importer.session
-            echo "✓ Session restored"
-          else
-            echo "❌ TELEGRAM_SESSION_BASE64 not set"
-            exit 1
-          fi
+          echo "${{ secrets.TELEGRAM_SESSION_BASE64 }}" | base64 -d > telegram/.session/importer.session
+          echo "Session restored: $(wc -c < telegram/.session/importer.session) bytes"
 
-      - name: Determine import strategy
-        id: strategy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          # Check how many lessons still need audio
-          NEED=$(python -c "
-          import os, psycopg2
-          url = os.environ['DATABASE_URL']
-          if '?' in url:
-              from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
-              p = urlparse(url)
-              qs = {k: v for k,v in parse_qs(p.query).items() if k in ('sslmode',)}
-              url = urlunparse(p._replace(query=urlencode(qs, doseq=True)))
-          conn = psycopg2.connect(url, connect_timeout=30)
-          cur = conn.cursor()
-          cur.execute('''
-              SELECT COUNT(DISTINCT l.id) FROM lessons l
-              JOIN telegram_messages ts ON l.\"telegramSourceId\"=ts.id
-              LEFT JOIN media m ON m.\"lessonId\"=l.id AND m.\"mediaType\"='AUDIO'
-              WHERE l.status='PUBLISHED' AND m.id IS NULL
-          ''')
-          print(cur.fetchone()[0])
-          conn.close()
-          " 2>/dev/null || echo "999")
-          echo "need_audio=$NEED" >> $GITHUB_OUTPUT
-          echo "Lessons needing audio: $NEED"
-
-          if [ "$NEED" -le "10" ]; then
-            # All old audio done — switch to NEW message monitoring mode
-            echo "mode=new_messages" >> $GITHUB_OUTPUT
-            echo "Strategy: MONITORING for new messages (oldest backlog done)"
-          else
-            echo "mode=backfill" >> $GITHUB_OUTPUT
-            echo "Strategy: BACKFILL old audio ($NEED lessons remaining)"
-          fi
-
-      - name: Run audio import — backfill mode (catch up on old lessons)
-        if: ${{ steps.strategy.outputs.mode == 'backfill' && github.event.inputs.no_media != 'true' }}
+      - name: Import new lessons from Telegram
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
           TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
           TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
-          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
-        run: |
-          pip install mutagen internetarchive -q
-          python -X utf8 scripts/upload_to_archive.py --session 1 --limit 500
-
-      - name: Run audio import — new messages mode (check for new lessons daily)
-        if: ${{ steps.strategy.outputs.mode == 'new_messages' }}
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
-          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
-          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          IA_ACCESS_KEY: ${{ secrets.IA_ACCESS_KEY }}
-          IA_SECRET_KEY: ${{ secrets.IA_SECRET_KEY }}
           TELEGRAM_PROXY_CHANNEL_ID: ${{ secrets.TELEGRAM_PROXY_CHANNEL_ID }}
         run: |
-          pip install mutagen -q
-          echo "Checking for new lessons from Telegram..."
-          python scripts/auto_publish_new.py
+          python -m telegram.importer.importer \
+            --live --limit 50 --no-media --auto-publish || true
+          echo "Import complete"
 
-      - name: Fix audio durations from B2 metadata
-        if: ${{ github.event.inputs.no_media != 'true' }}
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
-          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
-          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
-          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
-        run: |
-          pip install mutagen -q
-          python scripts/fix_audio_durations_from_b2.py || true
-
-      - name: Run PDF import
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-          TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
-          TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
-          TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
-          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
-          B2_BUCKET_NAME: ${{ secrets.B2_BUCKET_NAME }}
-          B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
-          STORAGE_PROVIDER: B2
-        run: python scripts/import_pdfs.py || true
-
-      - name: Save Telegram session back
+      - name: Save session for next run
         if: always()
         run: |
           if [ -f telegram/.session/importer.session ]; then
-            NEW_SESSION=$(base64 -w 0 telegram/.session/importer.session)
-            echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 secret with: $NEW_SESSION"
-            echo "✓ Session saved — copy the value above to update TELEGRAM_SESSION_BASE64 secret"
+            echo "::notice title=Session::Update TELEGRAM_SESSION_BASE64 with: $(base64 -w0 telegram/.session/importer.session)"
           fi
